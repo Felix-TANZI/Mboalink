@@ -1,0 +1,17 @@
+:root{
+  --ml-blue:#052F5F;
+  --ml-yellow:#EDC707;
+  --ml-green:#248232;
+  --ml-white:#ECF0F1;
+  --ml-red:#6F1A07;
+
+  --ink:#111827;
+  --muted:#6b7280;
+  --line:#d0d7e2;
+  --bg:#f3f5f7;
+  --card:#ffffff;
+
+  --shadow: 0 16px 35px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(148, 163, 184, 0.35);
+  --radius:10px;
+  --pill:999px;
+}
