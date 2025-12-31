@@ -1,0 +1,178 @@
+.manualLoginPage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+}
+
+.manualLoginCard {
+  width: 100%;
+  max-width: 900px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 32px;
+  text-align: center;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.cardTitle {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--mboa-blue-dark);
+  margin: 0 0 12px 0;
+}
+
+.cardSubtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cardBody {
+  padding: 32px;
+}
+
+.formSection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--mboa-blue-dark);
+  margin: 0 0 24px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.formField {
+  margin-bottom: 24px;
+}
+
+.formField:last-child {
+  margin-bottom: 0;
+}
+
+.formField label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
+  margin-bottom: 6px;
+}
+
+.fieldHelp {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.roomSelect,
+.passcodeInput {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: white;
+  font-family: inherit;
+}
+
+.roomSelect:focus,
+.passcodeInput:focus {
+  border-color: var(--mboa-yellow);
+  box-shadow: 0 0 0 3px rgba(237, 199, 7, 0.1);
+}
+
+.roomSelect {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23475569' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, var(--mboa-yellow) 0%, #ffd700 100%);
+  color: var(--mboa-blue-dark);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(237, 199, 7, 0.3);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}
+
+.btnSecondary {
+  background: white;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+}
+
+.btnSecondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+  .manualLoginPage {
+    padding-top: 20px;
+  }
+
+  .cardHeader,
+  .cardBody {
+    padding: 24px 20px;
+  }
+
+  .cardTitle {
+    font-size: 24px;
+  }
+
+  .formSection {
+    padding: 20px;
+  }
+
+  .cardActions {
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

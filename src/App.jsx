@@ -1,35 +1,59 @@
-import "./styles/theme.css";
-import "./styles/ui.css";
-
-import Topbar from "./components/Topbar";
-import Subnav from "./components/Subnav";
-import ClearAddressForm from "./components/ClearAddressForm";
-import ClearedTable from "./components/ClearedTable";
-import Footer from "./components/Footer";
+import { useState } from 'react'
+import './styles/theme.css'
+import './styles/global.css'
+import Login from './pages/Login'
+import TwoFactor from './pages/TwoFactor'
+import WifiCode from './pages/WifiCode'
+import LoginByAddress from './pages/LoginByAddress'
+import ManualLogin from './pages/ManualLogin'
+import WebsitesManager from './pages/WebsitesManager'
+import ConfigCode from './pages/ConfigCode'
+import StatutLogins from './pages/StatutLogins'
 
 export default function App() {
-  return (
-    <>
-      <Topbar active="Logins" />
-      <Subnav active="Login by Address" />
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [currentPage, setCurrentPage] = useState('login')
+  const [userEmail, setUserEmail] = useState('')
 
-      <main className="page">
-        <div className="wrap">
-          <section className="panel" aria-label="Clear IP/MAC Address">
-            <header className="panelHeader">
-              <h1 className="panelTitle">Clear IP/MAC Address</h1>
-              <p className="panelSubtitle">
-                If the IP you want to clear is a public IP, you must specify the network interface.
-              </p>
-            </header>
+  const handleLoginSuccess = (email) => {
+    setUserEmail(email)
+    setCurrentPage('2fa')
+  }
 
-            <ClearAddressForm />
-            <ClearedTable />
-          </section>
-        </div>
-      </main>
+  const handleBackToLogin = () => {
+    setCurrentPage('login')
+  }
 
-      <Footer />
-    </>
-  );
+  const handle2FASuccess = () => {
+    setIsAuthenticated(true)
+    setCurrentPage('wifi-code')
+  }
+
+  const handleNavigate = (page) => {
+    setCurrentPage(page)
+  }
+
+  if (!isAuthenticated) {
+    if (currentPage === '2fa') {
+      return <TwoFactor userEmail={userEmail} onBack={handleBackToLogin} onSuccess={handle2FASuccess} />
+    }
+    return <Login onSuccess={handleLoginSuccess} />
+  }
+
+  switch (currentPage) {
+    case 'wifi-code':
+      return <WifiCode onNavigate={handleNavigate} />
+    case 'login-by-address':
+      return <LoginByAddress onNavigate={handleNavigate} />
+    case 'status-logins':
+      return <StatutLogins onNavigate={handleNavigate} />
+    case 'manual-login':
+      return <ManualLogin onNavigate={handleNavigate} />
+    case 'website-manager':
+      return <WebsitesManager onNavigate={handleNavigate} />
+    case 'config-code':
+      return <ConfigCode onNavigate={handleNavigate} />
+    default:
+      return <WifiCode onNavigate={handleNavigate} />
+  }
 }
