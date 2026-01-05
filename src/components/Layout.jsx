@@ -3,7 +3,7 @@ import "./Layout.css";
 export default function Layout({
   children,
   activePage = "LOGINS",
-  activeSubPage = "WiFi Code",
+  activeSubPage = "WiFi Code", // ✅ ici c'est un LABEL
   onNavigate,
 }) {
   const mainPages = ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER"];
@@ -18,21 +18,34 @@ export default function Layout({
       { label: "Config Code", page: "config-code" },
     ],
     DASHBOARD: [],
-    "HOTEL MANAGER": [],
+    "HOTEL MANAGER": [
+      { label: "Hotels", page: "hotels" },
+      { label: "Rooms", page: "rooms" },
+      { label: "Config WiFi", page: "config-wifi" },
+      { label: "WiFi Policies", page: "wifi-policies" },
+    ],
     "DEVICE MANAGER": [],
+  };
+
+  const defaultSubPages = {
+    LOGINS: "wifi-code",
+    "HOTEL MANAGER": "hotels",
+    DASHBOARD: "dashboard",
+    "DEVICE MANAGER": "device-manager",
   };
 
   const handleMainPageClick = (e, page) => {
     e.preventDefault();
-    if (onNavigate) {
-      onNavigate(page); // ex: "LOGINS"
+    const defaultPage = defaultSubPages[page];
+    if (defaultPage && onNavigate) {
+      onNavigate(defaultPage); // envoie une "page" (slug)
     }
   };
 
   const handleSubPageClick = (e, page) => {
     e.preventDefault();
     if (onNavigate) {
-      onNavigate(page); // ex: "wifi-code"
+      onNavigate(page); // envoie une "page" (slug)
     }
   };
 

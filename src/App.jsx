@@ -9,6 +9,9 @@ import ManualLogin from './pages/ManualLogin'
 import WebsitesManager from './pages/WebsitesManager'
 import ConfigCode from './pages/ConfigCode'
 import StatutLogins from './pages/StatutLogins'
+import HotelList from './pages/HotelList'
+import RoomList from './pages/RoomList'
+import ConfigWifiList from './pages/ConfigWifiList'
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -41,6 +44,7 @@ export default function App() {
   }
 
   switch (currentPage) {
+    // LOGINS
     case 'wifi-code':
       return <WifiCode onNavigate={handleNavigate} />
     case 'login-by-address':
@@ -53,6 +57,15 @@ export default function App() {
       return <WebsitesManager onNavigate={handleNavigate} />
     case 'config-code':
       return <ConfigCode onNavigate={handleNavigate} />
+    
+    // HOTEL MANAGER
+    case 'hotels':
+      return <HotelList onNavigate={handleNavigate} />
+    case 'rooms':
+      return <RoomList onNavigate={handleNavigate} />
+    case 'config-wifi':
+      return <ConfigWifiList onNavigate={handleNavigate} />
+    
     default:
       return <WifiCode onNavigate={handleNavigate} />
   }

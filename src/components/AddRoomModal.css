@@ -1,0 +1,250 @@
+.roomModal {
+  max-width: 1000px;
+}
+
+.equipmentCheckboxes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.equipmentCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.equipmentCheckbox:hover {
+  background: rgba(5, 47, 95, 0.04);
+}
+
+.equipmentCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--mboa-yellow);
+}
+
+.equipmentCheckbox span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.customEquipmentInput {
+  display: flex;
+  gap: 12px;
+}
+
+.customEquipmentInput input {
+  flex: 1;
+}
+
+.selectedEquipments {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(237, 199, 7, 0.05);
+  border: 1px solid rgba(237, 199, 7, 0.2);
+  border-radius: 10px;
+}
+
+.selectedLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
+  margin: 0 0 12px 0;
+}
+
+.equipmentsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectedEquipmentItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 1.5px solid rgba(237, 199, 7, 0.4);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mboa-blue-dark);
+}
+
+.removeEquipmentBtn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeEquipmentBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.photoUploadSection {
+  width: 100%;
+}
+
+.uploadBtn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--mboa-yellow) 0%, #ffd700 100%);
+  color: var(--mboa-blue-dark);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.uploadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(237, 199, 7, 0.3);
+}
+
+.photosPreview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.photoItem {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.photoItem:hover {
+  border-color: var(--mboa-yellow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.photoItem img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.mainPhotoStar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.mainPhotoStar:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background: white;
+}
+
+.mainPhotoStar.active {
+  opacity: 1;
+  background: var(--mboa-yellow);
+  box-shadow: 0 2px 8px rgba(237, 199, 7, 0.5);
+}
+
+.removePhotoBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removePhotoBtn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.photoName {
+  padding: 8px;
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  background: white;
+}
+
+.mainLabel {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: var(--mboa-yellow);
+  color: var(--mboa-blue-dark);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .equipmentCheckboxes {
+    grid-template-columns: 1fr;
+  }
+
+  .photosPreview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .customEquipmentInput {
+    flex-direction: column;
+  }
+
+  .customEquipmentInput .btn {
+    width: 100%;
+  }
+}
