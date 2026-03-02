@@ -3,7 +3,7 @@ import "./Layout.css";
 export default function Layout({
   children,
   activePage = "LOGINS",
-  activeSubPage = "WiFi Code", // ✅ ici c'est un LABEL
+  activeSubPage = "WiFi Code", 
   onNavigate,
 }) {
   const mainPages = ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER"];
@@ -11,7 +11,7 @@ export default function Layout({
   const subPages = {
     LOGINS: [
       { label: "WiFi Code", page: "wifi-code" },
-      { label: "Login by Adress", page: "login-by-address" }, // ✅ fix
+      { label: "Login by Adress", page: "login-by-address" }, 
       { label: "Statut Logins", page: "status-logins" },
       { label: "Manual Login", page: "manual-login" },
       { label: "Web Site Manager", page: "website-manager" },
