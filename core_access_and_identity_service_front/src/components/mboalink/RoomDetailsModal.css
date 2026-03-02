@@ -1,0 +1,164 @@
+.roomDetailsModal {
+  max-width: 1200px;
+  max-height: 90vh;
+}
+
+.hotelBadge {
+  padding: 8px 16px;
+  background: rgba(237, 199, 7, 0.15);
+  border: 1.5px solid rgba(237, 199, 7, 0.4);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--mboa-blue-dark);
+}
+
+.statsHighlight {
+  background: linear-gradient(135deg, rgba(237, 199, 7, 0.1) 0%, rgba(237, 199, 7, 0.05) 100%);
+  border: 1.5px solid rgba(237, 199, 7, 0.3);
+}
+
+.characteristicsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.charCard {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.charIcon {
+  font-size: 32px;
+}
+
+.charNumber {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--mboa-blue-dark);
+}
+
+.charText {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.equipmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.equipmentCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.equipmentCard:hover {
+  border-color: var(--mboa-yellow);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.equipmentIcon {
+  font-size: 28px;
+}
+
+.equipmentName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
+}
+
+.wifiConfigSection {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1.5px solid #a5b4fc;
+}
+
+.wifiConfigSection .sectionTitle {
+  color: var(--mboa-blue-dark);
+  border-bottom-color: rgba(5, 47, 95, 0.2);
+}
+
+.wifiConfigGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.wifiConfigItem {
+  background: white;
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(165, 180, 252, 0.3);
+}
+
+.wifiConfigLabel {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.wifiConfigValue {
+  font-size: 16px;
+  color: var(--mboa-blue-dark);
+  font-weight: 800;
+}
+
+.wifiNote {
+  margin: 0;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+  border-left: 4px solid var(--mboa-yellow);
+}
+
+.wifiNote strong {
+  color: var(--mboa-blue-dark);
+  font-weight: 800;
+}
+
+@media (max-width: 1024px) {
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .characteristicsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .equipmentsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .wifiConfigGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .historyGrid {
+    grid-template-columns: 1fr;
+  }
+}

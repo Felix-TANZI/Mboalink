@@ -1,0 +1,11 @@
+export { default as WifiCodePage } from './WifiCode';
+export { default as LoginByAddressPage } from './LoginByAddress';
+export { default as StatutLoginsPage } from './StatutLogins';
+export { default as ManualLoginPage } from './ManualLogin';
+export { default as WebsitesManagerPage } from './WebsitesManager';
+export { default as ConfigCodePage } from './ConfigCode';
+export { default as HotelListPage } from './HotelList';
+export { default as RoomListPage } from './RoomList';
+export { default as ConfigWifiListPage } from './ConfigWifiList';
+export { default as DashboardPage } from './Dashboard';
+export { default as DeviceManagerPage } from './DeviceManager';

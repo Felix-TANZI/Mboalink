@@ -1,0 +1,304 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CLIENT
+  RECEPTIONIST
+  SUPPORT
+}
+
+enum HotelStatus {
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
+}
+
+enum WifiAuthMethod {
+  CAPTIVE_PORTAL
+  GUEST_PASS
+  ROOM_NUMBER
+  VOUCHER
+  SMS_CODE
+  EMAIL
+}
+
+enum WifiConfigStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  UNSTABLE
+}
+
+enum LoginStatus {
+  ONLINE
+  OFFLINE
+  AWAY
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AuditSeverity {
+  INFO
+  WARNING
+  ERROR
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  fullName      String
+  role          UserRole       @default(CLIENT)
+  isActive      Boolean        @default(true)
+  refreshTokens RefreshToken[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Hotel {
+  id           String      @id @default(cuid())
+  name         String
+  city         String
+  country      String
+  address      String
+  contactEmail String?
+  phone        String?
+  website      String?
+  description  String?
+  floors       Int?
+  latitude     Float?
+  longitude    Float?
+  amenities    Json?
+  photos       Json?
+  status       HotelStatus @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  rooms            Room[]
+  wifiConfig       WifiConfig?
+  guestConfig      GuestConfig?
+  guestPasses      GuestPass[]
+  clearedAddresses ClearedAddress[]
+  devices          Device[]
+  loginSessions    LoginSession[]
+  alerts           Alert[]
+  auditLogs        AuditLog[]
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  hotelId     String
+  type        String
+  name        String?
+  capacity    Int
+  floor       Int?
+  surface     Float?
+  description String?
+  equipments  Json?
+  photos      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel         Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  loginSessions LoginSession[]
+}
+
+model WifiConfig {
+  id                String           @id @default(cuid())
+  hotelId           String           @unique
+  ssid              String
+  password          String?
+  authMethod        WifiAuthMethod   @default(CAPTIVE_PORTAL)
+  sessionDuration   Int              @default(24)
+  sessionUnit       String           @default("hours")
+  maxDevices        Int              @default(2)
+  uploadSpeedKbps   Int              @default(1500)
+  downloadSpeedKbps Int              @default(1500)
+  zones             Json?
+  captivePortal     Json?
+  status            WifiConfigStatus @default(ACTIVE)
+  lastModifiedBy    String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model GuestPass {
+  id              String    @id @default(cuid())
+  hotelId         String
+  code            String    @unique
+  label           String?
+  durationValue   Int?
+  durationUnit    String?
+  maxUses         Int       @default(1)
+  uses            Int       @default(0)
+  expiryAt        DateTime?
+  uploadCapKbps   Int       @default(1500)
+  downloadCapKbps Int       @default(1500)
+  zones           Json?
+  isRevoked       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  hotel         Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  loginSessions LoginSession[]
+}
+
+model LoginSession {
+  id              String      @id @default(cuid())
+  hotelId         String
+  roomId          String?
+  guestPassId     String?
+  clientName      String?
+  ipAddress       String?
+  macAddress      String?
+  status          LoginStatus @default(OFFLINE)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  capDownKbps     Int?
+  capUpKbps       Int?
+  currentDownKbps Float?
+  currentUpKbps   Float?
+  usageDownMb     Float?
+  usageUpMb       Float?
+  type            String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  hotel     Hotel      @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  room      Room?      @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  guestPass GuestPass? @relation(fields: [guestPassId], references: [id], onDelete: SetNull)
+}
+
+model ClearedAddress {
+  id               String   @id @default(cuid())
+  hotelId          String
+  address          String
+  networkInterface String?
+  expiresAt        DateTime
+  uploadCapKbps    Int      @default(1500)
+  downloadCapKbps  Int      @default(1500)
+  connectionType   String?
+  notes            String?
+  issuedBy         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model GuestConfig {
+  id                       String   @id @default(cuid())
+  hotelId                  String   @unique
+  uploadClearAddressKbps   Int      @default(1500)
+  downloadClearAddressKbps Int      @default(1500)
+  uploadGuestPassKbps      Int      @default(1500)
+  downloadGuestPassKbps    Int      @default(1500)
+  maxPassDurationDays      Int      @default(180)
+  maxCountPass             Int      @default(600)
+  outageModeEnabled        Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id               String       @id @default(cuid())
+  hotelId          String
+  macAddress       String       @unique
+  serialNumber     String?
+  model            String?
+  firmwareVersion  String?
+  localIp          String?
+  zone             String?
+  floor            Int?
+  status           DeviceStatus @default(OFFLINE)
+  clientsConnected Int          @default(0)
+  lastHeartbeatAt  DateTime?
+  installedAt      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  hotel   Hotel          @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  metrics DeviceMetric[]
+}
+
+model DeviceMetric {
+  id                String   @id @default(cuid())
+  deviceId          String
+  cpuPercent        Float?
+  memoryPercent     Float?
+  temperatureC      Float?
+  latencyMs         Float?
+  errorRate         Float?
+  throughputInKbps  Float?
+  throughputOutKbps Float?
+  capturedAt        DateTime @default(now())
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+}
+
+model Alert {
+  id         String        @id @default(cuid())
+  hotelId    String
+  deviceId   String?
+  title      String
+  message    String
+  severity   AlertSeverity @default(MEDIUM)
+  isResolved Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String        @id @default(cuid())
+  requestId   String?
+  eventType   String
+  entityType  String
+  entityId    String?
+  action      String
+  severity    AuditSeverity @default(INFO)
+  actorUserId String?
+  hotelId     String?
+  payload     Json?
+  createdAt   DateTime      @default(now())
+
+  actor User?  @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  hotel Hotel? @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, createdAt])
+  @@index([hotelId, createdAt])
+}

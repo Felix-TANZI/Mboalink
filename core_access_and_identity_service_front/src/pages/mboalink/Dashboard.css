@@ -1,0 +1,86 @@
+.dashboardPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #052f5f;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.alertsSection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.alertsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.alertItem {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.alertItem.low {
+  border-left: 4px solid #38bdf8;
+}
+
+.alertItem.medium {
+  border-left: 4px solid #facc15;
+}
+
+.alertItem.high {
+  border-left: 4px solid #f97316;
+}
+
+.alertItem.critical {
+  border-left: 4px solid #ef4444;
+}
+
+.alertTitle {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.alertMessage {
+  color: #475569;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.alertMeta {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 6px;
+}

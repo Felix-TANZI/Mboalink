@@ -1,0 +1,43 @@
+{
+  "name": "core_access_and_identity_service_back",
+  "version": "1.0.0",
+  "description": "Mboalink backend in Node.js MVC (Express + Prisma)",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node index.js",
+    "seed:admin": "node scripts/create-admin.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "swagger:print": "node -e \"console.log('Swagger: http://localhost:3000/api-docs')\"",
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": [
+    "mboalink",
+    "nodejs",
+    "express",
+    "prisma",
+    "mvc"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^9.6.0",
+    "pino-http": "^10.3.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prisma": "^6.4.1"
+  }
+}
