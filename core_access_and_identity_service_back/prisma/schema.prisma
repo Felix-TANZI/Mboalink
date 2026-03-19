@@ -67,6 +67,8 @@ model User {
   fullName      String
   role          UserRole       @default(CLIENT)
   isActive      Boolean        @default(true)
+  otpCode       String?
+  otpExpiry     DateTime?
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

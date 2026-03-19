@@ -1,9 +1,12 @@
 // @ts-nocheck
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { authService } from '@/services'
+import { routes } from '@/router/routes'
 import './Login.css'
 
 export default function LoginPage() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -15,10 +18,14 @@ export default function LoginPage() {
     setError('')
 
     try {
-      await authService.login({ email, password })
-      window.location.href = '/home'
+      const result = await authService.login({ email, password })
+
+      if (result.mfaRequired) {
+        // Rediriger vers la page MFA en passant l'email via le state
+        navigate(routes.public.mfa, { state: { email: result.email } })
+      }
     } catch (err) {
-      setError(err?.message || 'Erreur de connexion')
+      setError(err?.message || 'Identifiants incorrects')
     } finally {
       setIsLoading(false)
     }

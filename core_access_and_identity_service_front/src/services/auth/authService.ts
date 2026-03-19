@@ -30,10 +30,18 @@ function toUser(input: { id?: string; sub?: string; email: string; fullName?: st
 }
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<User> {
-    const data = await apiRequest<LoginResponse>('/auth/login', {
+  async login(credentials: LoginCredentials): Promise<{ mfaRequired: boolean; email: string }> {
+    const data = await apiRequest<{ mfaRequired: boolean; email: string }>('/auth/login', {
       method: 'POST',
       body: credentials,
+    });
+    return data;
+  },
+
+  async verifyMfa(email: string, code: string): Promise<User> {
+    const data = await apiRequest<{ accessToken: string; refreshToken: string; user: { id: string; email: string; fullName?: string; role?: string } }>('/auth/mfa/verify', {
+      method: 'POST',
+      body: { email, code },
     });
 
     const user = toUser(data.user);

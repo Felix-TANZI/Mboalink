@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../../config/prisma');
 const env = require('../../config/env');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
+const { sendOtpEmail } = require('./mailer');
 
 function signAccessToken(user) {
   return jwt.sign(
@@ -24,6 +25,11 @@ function signRefreshToken(user) {
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function generateOtp() {
+  // Code OTP à 6 chiffres
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 async function registerUser(payload, context) {
@@ -81,6 +87,71 @@ async function loginUser(payload, context) {
     throw err;
   }
 
+  // Générer un OTP à 6 chiffres, valable 10 minutes
+  const otp = generateOtp();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+  // Stocker le hash du code en base
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      otpCode: hashToken(otp),
+      otpExpiry,
+    },
+  });
+
+  // Envoyer le code par email
+  await sendOtpEmail(user.email, otp);
+
+  await writeAuditLog({
+    requestId: context.requestId,
+    eventType: 'auth.mfa',
+    entityType: 'user',
+    entityId: user.id,
+    action: 'otp-sent',
+    severity: 'INFO',
+    actorUserId: user.id,
+    payload: { email: user.email },
+  });
+
+  // On ne retourne PAS les tokens ici — ils seront générés après vérification MFA
+  return {
+    mfaRequired: true,
+    email: user.email,
+  };
+}
+
+async function verifyMfa(payload, context) {
+  const user = await prisma.user.findUnique({ where: { email: payload.email } });
+
+  if (!user || !user.isActive) {
+    const err = new Error('Invalid credentials');
+    err.status = 401;
+    throw err;
+  }
+
+  // Vérifier que le code n'est pas expiré
+  if (!user.otpCode || !user.otpExpiry || user.otpExpiry < new Date()) {
+    const err = new Error('OTP expired or not found. Please login again.');
+    err.status = 401;
+    throw err;
+  }
+
+  // Vérifier le hash du code
+  const isValid = user.otpCode === hashToken(payload.code);
+  if (!isValid) {
+    const err = new Error('Invalid verification code');
+    err.status = 401;
+    throw err;
+  }
+
+  // Effacer le code OTP — usage unique
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { otpCode: null, otpExpiry: null },
+  });
+
+  // Générer les tokens JWT
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
   const decoded = jwt.decode(refreshToken);
@@ -162,5 +233,6 @@ async function refreshAccessToken(payload, context) {
 module.exports = {
   registerUser,
   loginUser,
+  verifyMfa,
   refreshAccessToken,
 };

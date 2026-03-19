@@ -12,6 +12,11 @@ const loginSchema = z.object({
   password: z.string().min(8).max(128),
 });
 
+const verifyMfaSchema = z.object({
+  email: z.string().email(),
+  code: z.string().length(6).regex(/^\d{6}$/, 'Le code doit contenir exactement 6 chiffres'),
+});
+
 const refreshSchema = z.object({
   refreshToken: z.string().min(10),
 });
@@ -19,5 +24,6 @@ const refreshSchema = z.object({
 module.exports = {
   registerSchema,
   loginSchema,
+  verifyMfaSchema,
   refreshSchema,
 };

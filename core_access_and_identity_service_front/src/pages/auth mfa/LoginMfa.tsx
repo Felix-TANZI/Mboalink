@@ -1,48 +1,52 @@
 // @ts-nocheck
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { authService } from '@/services'
+import { routes } from '@/router/routes'
 import './LoginMfa.css'
 
-export default function LoginMfa({ userEmail, onBack, onSuccess }) {
+export default function LoginMfa() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // L'email est transmis depuis LoginPage via navigate state
+  const email = location.state?.email || ''
+
   const [code, setCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Si on arrive sur cette page sans email (accès direct), retourner au login
+  if (!email) {
+    navigate(routes.public.login, { replace: true })
+    return null
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (code.length < 6) {
-      setError('Please enter a valid 6-digit code')
+      setError('Veuillez entrer un code valide à 6 chiffres')
       return
     }
 
     setIsLoading(true)
     setError('')
 
-    // TODO: Appel API
-    // try {
-    //   const response = await fetch('/api/auth/verify-2fa', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ code, email: userEmail })
-    //   })
-    //   const data = await response.json()
-    //   // Rediriger vers le dashboard
-    // } catch (error) {
-    //   setError('Invalid verification code')
-    // } finally {
-    //   setIsLoading(false)
-    // }
-
-    // Simulation
-    setTimeout(() => {
-      console.log('2FA Code:', code)
+    try {
+      await authService.verifyMfa(email, code)
+      // Tokens sauvegardés dans authService.verifyMfa → rediriger vers l'app
+      navigate(routes.public.home, { replace: true })
+    } catch (err) {
+      setError(err?.message || 'Code invalide ou expiré')
+      setCode('')
+    } finally {
       setIsLoading(false)
-      if (code === '123456') {
-  if (onSuccess) {
-    onSuccess()
+    }
   }
-}
-    }, 1000)
+
+  const handleBack = () => {
+    navigate(routes.public.login, { replace: true })
   }
 
   return (
@@ -70,31 +74,32 @@ export default function LoginMfa({ userEmail, onBack, onSuccess }) {
               </svg>
             </div>
             <div className="userEmail">
-              User: <strong>{userEmail}</strong>
+              User: <strong>{email}</strong>
             </div>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="restartLink"
-              onClick={onBack}
+              onClick={handleBack}
             >
               Restart login
             </button>
           </div>
 
           <p className="tfInstructions">
-            Enter the verification code from your authenticator application.
+            Un code de vérification à 6 chiffres a été envoyé à votre adresse email. Saisissez-le ci-dessous.
           </p>
 
           <form onSubmit={handleSubmit} className="tfForm">
             <input
               type="text"
-              placeholder="One-time code"
+              inputMode="numeric"
+              placeholder="000000"
               value={code}
               onChange={(e) => {
                 setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
                 setError('')
               }}
-              maxLength="6"
+              maxLength={6}
               className="codeInput"
               disabled={isLoading}
               autoFocus
@@ -102,8 +107,12 @@ export default function LoginMfa({ userEmail, onBack, onSuccess }) {
 
             {error && <div className="errorMessage">{error}</div>}
 
-            <button type="submit" className="tfSubmitBtn" disabled={isLoading || code.length < 6}>
-              {isLoading ? 'Verifying...' : 'Sign in'}
+            <button
+              type="submit"
+              className="tfSubmitBtn"
+              disabled={isLoading || code.length < 6}
+            >
+              {isLoading ? 'Vérification...' : 'Sign in'}
             </button>
           </form>
 
