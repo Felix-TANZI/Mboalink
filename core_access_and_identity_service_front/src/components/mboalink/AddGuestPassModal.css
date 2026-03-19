@@ -123,6 +123,7 @@
   outline: none;
   transition: all 0.2s ease;
   background: white;
+  box-sizing: border-box;
 }
 
 .formRow input:focus,
@@ -131,20 +132,40 @@
   box-shadow: 0 0 0 3px rgba(237, 199, 7, 0.1);
 }
 
+/* ====== FIX DURATION ====== */
 .durationGroup {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.durationGroup input[type="number"] {
+  flex: 1;
+  min-width: 0;        /* empêche l'input de déborder */
+  width: auto !important;
 }
 
 .durationGroup select {
-  min-width: 120px;
+  flex: 0 0 130px;     /* largeur fixe, ne grandit pas */
+  width: 130px !important;
 }
+/* ========================== */
 
 .dateTimeGroup {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.dateTimeGroup input[type="date"] {
+  flex: 1;
+  min-width: 0;
+  width: auto !important;
+}
+
+.dateTimeGroup input[type="time"] {
+  flex: 0 0 130px;
+  width: 130px !important;
 }
 
 .sliderGroup {
@@ -189,6 +210,12 @@
   font-size: 14px;
   font-weight: 800;
   color: var(--mboa-blue-dark);
+}
+
+.zonesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .checkboxGroup {
@@ -288,5 +315,9 @@
 
   .btn {
     width: 100%;
+  }
+
+  .zonesGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

@@ -14,8 +14,12 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+/* ── Gauche ── */
 .headerLeft {
   display: flex;
   align-items: center;
@@ -34,12 +38,6 @@
   font-weight: 900;
   color: white;
   margin: 0;
-}
-
-.headerBrandName::after {
-  content: '';
-  display: inline-block;
-  width: 0;
 }
 
 .mainNav {
@@ -74,9 +72,69 @@
 
 .mainNavLink.active {
   color: var(--mboa-yellow);
-  border-bottom-color: var(--mboa-yellow);
+  border-bottom: 2px solid var(--mboa-yellow);
 }
 
+/* ── Droite : utilisateur + déconnexion ── */
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  height: 70px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userAvatar {
+  width: 34px;
+  height: 34px;
+  background: rgba(237, 199, 7, 0.15);
+  border: 2px solid var(--mboa-yellow);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--mboa-yellow);
+  flex-shrink: 0;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+/* ── Sub navigation ── */
 .subNav {
   background: rgba(5, 47, 95, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -113,6 +171,7 @@
   border-bottom-color: var(--mboa-yellow);
 }
 
+/* ── Contenu principal ── */
 .mainContent {
   flex: 1;
   max-width: 1400px;
@@ -121,6 +180,7 @@
   padding: 32px;
 }
 
+/* ── Footer ── */
 .mainFooter {
   background: var(--mboa-blue-dark);
   color: rgba(255, 255, 255, 0.7);
@@ -132,27 +192,27 @@
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .footerLinks {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 12px;
+  gap: 12px;
 }
 
 .footerLinks a {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-weight: 600;
+  font-size: 13px;
   transition: color 0.2s ease;
 }
 
 .footerLinks a:hover {
-  color: var(--mboa-yellow);
+  color: white;
 }
 
 .separator {
@@ -160,51 +220,35 @@
 }
 
 .footerCopy {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
   margin: 0;
 }
 
+/* ── Responsive ── */
 @media (max-width: 1024px) {
-  .headerLeft {
-    flex-direction: column;
-    height: auto;
-    padding: 16px 0;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .mainNav {
-    gap: 20px;
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  .subNavInner {
-    gap: 16px;
+  .userName {
+    display: none;
   }
 }
 
-@media (max-width: 640px) {
-  .headerInner,
-  .subNavInner,
-  .mainContent,
-  .footerInner {
-    padding-left: 20px;
-    padding-right: 20px;
+@media (max-width: 768px) {
+  .headerInner {
+    padding: 0 16px;
+  }
+
+  .headerLeft {
+    gap: 20px;
+  }
+
+  .mainNav {
+    gap: 16px;
+  }
+
+  .mainNavLink {
+    font-size: 11px;
   }
 
   .mainContent {
-    padding-top: 24px;
-    padding-bottom: 24px;
-  }
-
-  .footerLinks {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .separator {
-    display: none;
+    padding: 16px;
   }
 }

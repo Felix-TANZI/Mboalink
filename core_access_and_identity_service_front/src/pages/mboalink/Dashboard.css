@@ -1,40 +1,448 @@
-.dashboardPage {
+.dashboardShell {
+  gap: 20px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(242, 195, 0, 0.08), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(22, 112, 230, 0.08), transparent 20%),
+    linear-gradient(180deg, #ffffff 0%, #f6f9fd 100%);
+  border: 1px solid #dbe5f1;
+  padding: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.dashboardTopbar {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.dashboardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #dbe5f1;
 }
 
-.statCard {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+.dashboardBrandBlock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.statValue {
-  font-size: 24px;
+.dashboardBrandName {
+  font-size: 1.35rem;
   font-weight: 800;
   color: #052f5f;
 }
 
-.statLabel {
-  font-size: 13px;
-  color: #64748b;
-  margin-top: 4px;
+.dashboardTabs {
+  display: inline-flex;
+  gap: 8px;
 }
 
-.alertsSection {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+.dashboardTab {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dashboardTab.active {
+  background: #052f5f;
+  color: #ffffff;
+}
+
+.dashboardPeriod {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
   border-radius: 12px;
-  padding: 16px;
+  background: #f4f7fb;
+  border: 1px solid #dbe5f1;
+  color: #475569;
+  font-weight: 600;
+}
+
+.dashboardHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dashboardEyebrow {
+  margin: 0 0 6px;
+  color: #1670e6;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboardTitle {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900;
+}
+
+.dashboardSubtitle {
+  margin: 8px 0 0;
+  max-width: 760px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.dashboardHeroActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.heroButton {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.heroButton.secondary {
+  background: #dcedff;
+  color: #1258b8;
+}
+
+.heroButton.success {
+  background: #dff7e6;
+  color: #178348;
+}
+
+.serviceStatusRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.servicePill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 16px;
+  padding: 16px 18px;
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.09);
+}
+
+.servicePill.success {
+  background: linear-gradient(135deg, #1ea54d, #27c25e);
+}
+
+.servicePill.warning {
+  background: linear-gradient(135deg, #f2c300, #deab00);
+  color: #0f172a;
+}
+
+.servicePill.info {
+  background: linear-gradient(135deg, #0a4f96, #1670e6);
+}
+
+.servicePill.neutral {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
+}
+
+.serviceDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.servicePill strong,
+.servicePill small {
+  display: block;
+}
+
+.servicePill small {
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+.dashboardLoading {
+  margin: 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  color: #475569;
+}
+
+.dashboardContent {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.kpiColumn {
+  display: grid;
+  gap: 14px;
+}
+
+.kpiTile {
+  min-height: 110px;
+  border-radius: 20px;
+  padding: 16px 14px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.12);
+}
+
+.kpiTile span {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.kpiTile strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.kpiTile.blue {
+  background: linear-gradient(180deg, #1d7df2 0%, #1258b8 100%);
+}
+
+.kpiTile.violet {
+  background: linear-gradient(180deg, #7b52d9 0%, #5b31b6 100%);
+}
+
+.kpiTile.green {
+  background: linear-gradient(180deg, #2bb55d 0%, #1f8d47 100%);
+}
+
+.kpiTile.gold {
+  background: linear-gradient(180deg, #f2c300 0%, #d7a100 100%);
+  color: #0f172a;
+}
+
+.dashboardMain {
+  display: grid;
+  gap: 18px;
+}
+
+.dashboardChartsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr)) 220px;
+  gap: 16px;
+}
+
+.dashboardBottomRow {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.2fr) minmax(280px, 1fr) 190px;
+  gap: 16px;
+}
+
+.dashboardPanel {
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  border: 1px solid #dde7f3;
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.06);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panelHeader h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.panelHeader span {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.chartPanelBody {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.donutWrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+}
+
+.donutChart {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.donutChart::after {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+}
+
+.donutCenter {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 1;
+}
+
+.donutCenter strong {
+  font-size: 1.25rem;
+  color: #0f172a;
+}
+
+.donutCenter span {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.chartLegend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.chartLegend li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.legendText {
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.chartLegend strong {
+  color: #0f172a;
+}
+
+.compactStatsPanel {
+  display: grid;
+  gap: 14px;
+}
+
+.compactStat {
+  min-height: 120px;
+  border-radius: 20px;
+  padding: 18px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.compactStat.blue {
+  background: linear-gradient(180deg, #1670e6 0%, #1157b0 100%);
+}
+
+.compactStat.violet {
+  background: linear-gradient(180deg, #7c4dff 0%, #6336dd 100%);
+}
+
+.compactStat span {
+  font-weight: 700;
+}
+
+.compactStat strong {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.compactStat small {
+  opacity: 0.86;
+}
+
+.metricProgressGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.metricBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.metricHeader strong {
+  color: #0f172a;
+}
+
+.metricBar {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: #e8eef6;
+  overflow: hidden;
+}
+
+.metricFill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.metricFill.blue {
+  background: linear-gradient(90deg, #1670e6, #3b8cff);
+}
+
+.metricFill.violet {
+  background: linear-gradient(90deg, #6e42d3, #946bff);
+}
+
+.metricFill.green {
+  background: linear-gradient(90deg, #24b35a, #44cf79);
+}
+
+.metricFill.gold {
+  background: linear-gradient(90deg, #f2c300, #ffc928);
+}
+
+.alertsPanel {
+  min-width: 0;
 }
 
 .alertsList {
@@ -46,10 +454,10 @@
 }
 
 .alertItem {
-  background: #ffffff;
+  padding: 14px;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px;
+  background: #ffffff;
 }
 
 .alertItem.low {
@@ -57,7 +465,7 @@
 }
 
 .alertItem.medium {
-  border-left: 4px solid #facc15;
+  border-left: 4px solid #f2c300;
 }
 
 .alertItem.high {
@@ -68,19 +476,115 @@
   border-left: 4px solid #ef4444;
 }
 
-.alertTitle {
-  font-weight: 700;
+.alertItemTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.alertItemTop strong {
   color: #0f172a;
 }
 
-.alertMessage {
-  color: #475569;
-  font-size: 13px;
-  margin-top: 4px;
+.alertItemTop span,
+.alertItem p {
+  color: #64748b;
+  font-size: 0.88rem;
 }
 
-.alertMeta {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 6px;
+.alertItem p {
+  margin: 8px 0 0;
+  line-height: 1.55;
+}
+
+.emptyStatePanel {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  color: #64748b;
+}
+
+.emptyStatePanel strong {
+  color: #0f172a;
+}
+
+.actionsPanel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.actionButton {
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, #f2c300 0%, #dfab00 100%);
+  color: #0f172a;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(242, 195, 0, 0.24);
+}
+
+.actionButton.secondary {
+  background: linear-gradient(180deg, #0a4f96 0%, #1670e6 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(22, 112, 230, 0.18);
+}
+
+@media (max-width: 1280px) {
+  .dashboardChartsRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboardBottomRow {
+    grid-template-columns: 1fr;
+  }
+
+  .actionsPanel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .dashboardContent {
+    grid-template-columns: 1fr;
+  }
+
+  .kpiColumn {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .serviceStatusRow,
+  .dashboardChartsRow,
+  .actionsPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardHero,
+  .dashboardTopbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboardShell {
+    padding: 16px;
+  }
+
+  .kpiColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .chartPanelBody {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .chartLegend {
+    width: 100%;
+  }
 }

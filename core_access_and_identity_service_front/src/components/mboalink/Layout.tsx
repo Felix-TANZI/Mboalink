@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "@/router/routes";
+import { authService } from "@/services/auth/authService";
 import "./Layout.css";
 
 type LayoutProps = {
@@ -26,34 +27,35 @@ const pageRoutes: Record<string, string> = {
 export default function Layout({
   children,
   activePage = "LOGINS",
-  activeSubPage = "WiFi Code", // ✅ ici c'est un LABEL
+  activeSubPage = "WiFi Code",
 }: LayoutProps) {
   const navigate = useNavigate();
+
+  const user = authService.getStoredUser();
+  const displayName = user?.name || user?.email || "Utilisateur";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+
   const mainPages = ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER"];
 
-  const subPages = {
+  const subPages: Record<string, { label: string; page: string }[]> = {
     LOGINS: [
       { label: "WiFi Code", page: "wifi-code" },
-      { label: "Login by Adress", page: "login-by-address" }, // ✅ fix
+      { label: "Login by Adress", page: "login-by-address" },
       { label: "Statut Logins", page: "status-logins" },
       { label: "Manual Login", page: "manual-login" },
       { label: "Web Site Manager", page: "website-manager" },
       { label: "Config Code", page: "config-code" },
     ],
-    DASHBOARD: [
-      { label: "Overview", page: "dashboard" },
-    ],
+    DASHBOARD: [{ label: "Overview", page: "dashboard" }],
     "HOTEL MANAGER": [
       { label: "Hotels", page: "hotels" },
       { label: "Rooms", page: "rooms" },
       { label: "Config WiFi", page: "config-wifi" },
     ],
-    "DEVICE MANAGER": [
-      { label: "Devices", page: "devices" },
-    ],
+    "DEVICE MANAGER": [{ label: "Devices", page: "devices" }],
   };
 
-  const defaultSubPages = {
+  const defaultSubPages: Record<string, string> = {
     LOGINS: "wifi-code",
     "HOTEL MANAGER": "hotels",
     DASHBOARD: "dashboard",
@@ -67,10 +69,16 @@ export default function Layout({
     }
   };
 
+  const handleLogout = async () => {
+    await authService.logout();
+    navigate(routes.public.login);
+  };
+
   return (
     <div className="layout">
       <header className="mainHeader">
         <div className="headerInner">
+          {/* Gauche : logo + nav */}
           <div className="headerLeft">
             <div className="headerBrand">
               <svg
@@ -99,6 +107,17 @@ export default function Layout({
                 </button>
               ))}
             </nav>
+          </div>
+
+          {/* Droite : utilisateur + déconnexion */}
+          <div className="headerRight">
+            <div className="userInfo">
+              <span className="userAvatar">{avatarLetter}</span>
+              <span className="userName">{displayName}</span>
+            </div>
+            <button className="logoutBtn" onClick={handleLogout} type="button">
+              Déconnexion
+            </button>
           </div>
         </div>
       </header>

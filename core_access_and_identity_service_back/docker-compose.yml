@@ -16,7 +16,8 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - .:/app
-    command: ["npm", "run", "dev"]
+      - /app/node_modules
+    command: ["/bin/sh", "-lc", "npm install && npm run prisma:generate && npm run prisma:migrate -- --name init && npm run seed:admin && npm run dev"]
     depends_on:
       - postgres
 
