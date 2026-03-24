@@ -81,17 +81,11 @@ export default function Layout({
           {/* Gauche : logo + nav */}
           <div className="headerLeft">
             <div className="headerBrand">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 40 40"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path d="M20 5L5 15V25L20 35L35 25V15L20 5Z" fill="#EDC707" />
-                <circle cx="20" cy="20" r="8" fill="#052F5F" />
-              </svg>
-              <h1 className="headerBrandName">MboaLink</h1>
+              <img
+                src="/src/assets/images/Logo Mboalink-02 1-1.png"
+                alt="MboaLink"
+                className="headerLogo"
+              />
             </div>
 
             <nav className="mainNav" aria-label="Main navigation">

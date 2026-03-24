@@ -1,12 +1,20 @@
 const { z } = require('zod');
 
 const createManualLoginSchema = z.object({
-  hotelId: z.string().min(3),
-  roomId: z.string().min(3),
-  passCode: z.string().max(40).optional(),
-  clientName: z.string().max(120).optional(),
-  ipAddress: z.string().max(64).optional(),
-  macAddress: z.string().max(64).optional(),
+  hotelId:     z.string().min(3),
+  roomId:      z.string().min(3),
+  clientName:  z.string().min(1).max(120),
+  startedAt:   z.string().datetime({ message: 'Date d\'entrée invalide' }),
+  endedAt:     z.string().datetime({ message: 'Date de sortie invalide' }),
+  ipAddress:   z.string().max(64).optional(),
+  macAddress:  z.string().max(64).optional(),
+});
+
+const updateManualLoginSchema = z.object({
+  clientName: z.string().min(1).max(120).optional(),
+  roomId:     z.string().min(3).optional(),
+  startedAt:  z.string().datetime().optional(),
+  endedAt:    z.string().datetime().optional(),
 });
 
 const deleteManySessionsSchema = z.object({
@@ -15,5 +23,6 @@ const deleteManySessionsSchema = z.object({
 
 module.exports = {
   createManualLoginSchema,
+  updateManualLoginSchema,
   deleteManySessionsSchema,
 };

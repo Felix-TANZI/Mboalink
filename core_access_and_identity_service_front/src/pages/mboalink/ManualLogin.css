@@ -1,178 +1,374 @@
-.manualLoginPage {
+.mlPage {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 40px;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.manualLoginCard {
-  width: 100%;
-  max-width: 900px;
+/*  En-tête  */
+.mlHeader {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  padding: 28px 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
 }
-
-.cardHeader {
-  padding: 32px;
-  text-align: center;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.cardTitle {
-  font-size: 32px;
+.mlTitle {
+  font-size: 30px;
   font-weight: 900;
   color: var(--mboa-blue-dark);
-  margin: 0 0 12px 0;
+  margin: 0 0 6px 0;
 }
-
-.cardSubtitle {
+.mlSubtitle {
   font-size: 14px;
   color: #64748b;
   margin: 0;
   line-height: 1.5;
+  max-width: 680px;
 }
 
-.cardBody {
-  padding: 32px;
+/*  Carte formulaire ─ */
+.mlCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  overflow: hidden;
 }
-
-.formSection {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
+.mlCardHeader {
+  padding: 18px 32px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(to bottom, #f8fafc, white);
 }
-
-.sectionTitle {
+.mlSectionTitle {
   font-size: 16px;
   font-weight: 800;
   color: var(--mboa-blue-dark);
-  margin: 0 0 24px 0;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  margin: 0;
+}
+.mlCardBody { padding: 32px; }
+
+/*  Grille 2 colonnes  */
+.mlFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-bottom: 28px;
 }
 
-.formField {
-  margin-bottom: 24px;
-}
+/*  Champ ─ */
+.mlField { display: flex; flex-direction: column; gap: 5px; }
+.mlField label { font-size: 13px; font-weight: 700; color: var(--mboa-blue-dark); }
+.required { color: #ef4444; }
+.mlFieldHelp { font-size: 11px; color: #64748b; margin: 0 0 3px; line-height: 1.4; }
 
-.formField:last-child {
-  margin-bottom: 0;
-}
-
-.formField label {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--mboa-blue-dark);
-  margin-bottom: 6px;
-}
-
-.fieldHelp {
-  font-size: 12px;
-  color: #64748b;
-  margin: 0 0 10px 0;
-  line-height: 1.4;
-}
-
-.roomSelect,
-.passcodeInput {
+/*  Inputs  */
+.mlInput,
+.mlSelect,
+.mlSelectModal {
   width: 100%;
-  padding: 14px 16px;
+  padding: 12px 16px;
   border: 1.5px solid #cbd5e1;
   border-radius: 10px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
   transition: all 0.2s ease;
   background: white;
-  font-family: inherit;
+  box-sizing: border-box;
 }
-
-.roomSelect:focus,
-.passcodeInput:focus {
+.mlInput:focus, .mlSelect:focus, .mlSelectModal:focus {
   border-color: var(--mboa-yellow);
-  box-shadow: 0 0 0 3px rgba(237, 199, 7, 0.1);
+  box-shadow: 0 0 0 3px rgba(237,199,7,.12);
 }
-
-.roomSelect {
+.mlInput:disabled, .mlSelect:disabled {
+  background: #f1f5f9;
+  opacity: .6;
+  cursor: not-allowed;
+}
+.mlInputError {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,.1) !important;
+}
+.mlInputValid {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.1) !important;
+}
+.mlSelect,
+.mlSelectModal {
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23475569' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
-  padding-right: 40px;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+.mlSelect { margin-top: 10px; }
+
+/*  Wrapper chambre  */
+.mlRoomInputWrapper { display: flex; flex-direction: column; gap: 4px; }
+.mlInputHint       { font-size: 11px; font-weight: 600; }
+.mlInputHintError  { color: #ef4444; }
+.mlInputHintOk     { color: #16a34a; }
+
+/*  Badge durée  */
+.mlDurationBadge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  background: rgba(237,199,7,.12);
+  border: 1px solid rgba(237,199,7,.3);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
 }
 
-.cardActions {
+/*  Boutons formulaire ─ */
+.mlActions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid #e2e8f0;
 }
-
-.btn {
-  padding: 14px 32px;
+.mlBtn {
+  padding: 12px 28px;
   border: none;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 120px;
+  min-width: 140px;
 }
-
-.btnPrimary {
+.mlBtnPrimary {
   background: linear-gradient(135deg, var(--mboa-yellow) 0%, #ffd700 100%);
   color: var(--mboa-blue-dark);
 }
-
-.btnPrimary:hover {
+.mlBtnPrimary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(237, 199, 7, 0.3);
+  box-shadow: 0 4px 12px rgba(237,199,7,.35);
 }
-
-.btnPrimary:active {
-  transform: translateY(0);
+.mlBtnPrimary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
 }
-
-.btnSecondary {
+.mlBtnSecondary {
   background: white;
   border: 1.5px solid #cbd5e1;
   color: #475569;
 }
-
-.btnSecondary:hover {
+.mlBtnSecondary:hover:not(:disabled) {
   background: #f8fafc;
   border-color: #94a3b8;
 }
 
-@media (max-width: 768px) {
-  .manualLoginPage {
-    padding-top: 20px;
-  }
+/*  Tableau ─ */
+.mlTableCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  overflow: hidden;
+}
+.mlTableHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 32px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(to bottom, #f8fafc, white);
+  flex-wrap: wrap;
+}
+.mlTableCount {
+  font-size: 13px;
+  color: #64748b;
+  margin: 4px 0 0;
+  font-weight: 500;
+}
+.mlSearch {
+  padding: 10px 16px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  width: 300px;
+  transition: all 0.2s ease;
+}
+.mlSearch:focus {
+  border-color: var(--mboa-yellow);
+  box-shadow: 0 0 0 3px rgba(237,199,7,.1);
+}
 
-  .cardHeader,
-  .cardBody {
-    padding: 24px 20px;
-  }
+.mlTableWrapper { overflow-x: auto; }
 
-  .cardTitle {
-    font-size: 24px;
-  }
+.mlTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.mlTable thead tr { background: #f8fafc; }
+.mlTable th {
+  padding: 13px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+.mlTable tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .15s;
+}
+.mlTable tbody tr:hover { background: #fafbfc; }
+.mlTable td {
+  padding: 13px 16px;
+  color: #334155;
+  vertical-align: middle;
+}
 
-  .formSection {
-    padding: 20px;
-  }
+.mlCellBold     { font-weight: 700; color: var(--mboa-blue-dark) !important; }
+.mlCellDate     { font-size: 12px; color: #64748b !important; white-space: nowrap; }
+.mlCellDuration { font-weight: 700; color: #0f172a !important; white-space: nowrap; }
+.mlEmptyRow     { text-align: center; padding: 48px 20px !important; color: #94a3b8; font-size: 14px; }
 
-  .cardActions {
-    flex-direction: column-reverse;
-  }
+/*  Cellule IP / MAC ─ */
+.mlCellMono {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+.mlIpLine {
+  display: block;
+  color: #334155;
+  font-weight: 600;
+}
+.mlMacLine {
+  display: block;
+  color: #94a3b8;
+  font-size: 11px;
+  margin-top: 2px;
+}
 
-  .btn {
-    width: 100%;
-  }
+/*  Badges accès ─ */
+.mlBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.mlBadgePENDING { background: rgba(99,102,241,.12);  color: #4338ca; }
+.mlBadgeACTIVE  { background: rgba(34,197,94,.12);   color: #16a34a; }
+.mlBadgeEXPIRED { background: rgba(239,68,68,.12);   color: #dc2626; }
+
+/* (conservés au cas où d'autres pages utilisent ces classes) */
+.mlBadgeONLINE  { background: rgba(34,197,94,.12);   color: #16a34a; }
+.mlBadgeOFFLINE { background: rgba(100,116,139,.12); color: #475569; }
+.mlBadgeAWAY    { background: rgba(245,158,11,.12);  color: #b45309; }
+
+/*  Boutons action tableau ─ */
+.mlActionBtns { display: flex; gap: 6px; }
+.mlActionBtn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s ease;
+  background: transparent;
+}
+.mlActionBtnEdit:hover   { background: rgba(59,130,246,.1); transform: scale(1.1); }
+.mlActionBtnDelete:hover { background: rgba(239,68,68,.1);  transform: scale(1.1); }
+
+/*  Modal d'édition  */
+.mlOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.mlModal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  overflow: hidden;
+}
+.mlModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(to bottom, #f8fafc, white);
+}
+.mlModalTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--mboa-blue-dark);
+  margin: 0;
+}
+.mlModalClose {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.mlModalClose:hover { background: #f1f5f9; color: #334155; }
+.mlModalBody {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mlModalField { display: flex; flex-direction: column; gap: 6px; }
+.mlModalField label { font-size: 13px; font-weight: 700; color: var(--mboa-blue-dark); }
+.mlModalGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.mlModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 28px;
+  border-top: 1px solid #e2e8f0;
+  background: linear-gradient(to top, #f8fafc, white);
+}
+.mlErrorBox {
+  padding: 12px 16px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/*  Responsive  */
+@media (max-width: 900px) {
+  .mlFormGrid    { grid-template-columns: 1fr; gap: 20px; }
+  .mlTableHeader { flex-direction: column; align-items: flex-start; }
+  .mlSearch      { width: 100%; }
+  .mlModalGrid   { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .mlHeader, .mlCardBody                           { padding: 20px; }
+  .mlCardHeader, .mlTableHeader,
+  .mlModalHeader, .mlModalBody, .mlModalFooter     { padding: 16px 20px; }
+  .mlActions, .mlModalFooter                       { flex-direction: column-reverse; }
+  .mlBtn                                           { width: 100%; }
 }
