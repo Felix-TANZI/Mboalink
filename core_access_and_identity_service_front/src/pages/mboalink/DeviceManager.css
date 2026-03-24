@@ -1,0 +1,40 @@
+.deviceManagerPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.deviceTableWrapper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.deviceTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.deviceTable th,
+.deviceTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.actionBtn {
+  border: none;
+  background: #052f5f;
+  color: #ffffff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  background: #0b3b73;
+}

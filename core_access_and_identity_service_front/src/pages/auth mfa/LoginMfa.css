@@ -1,0 +1,220 @@
+.twoFactorPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--mboa-blue-dark) 0%, var(--mboa-blue) 100%);
+  padding: 40px 20px;
+}
+
+.twoFactorCard {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.tfBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.tfLogo {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tfBrandName {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--mboa-blue-dark);
+  letter-spacing: -0.02em;
+}
+
+.tfContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tfTitle {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--mboa-blue-dark);
+  margin: 0;
+}
+
+.tfSubtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: -16px 0 0 0;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(5, 47, 95, 0.04);
+  border-radius: 16px;
+}
+
+.userAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: rgba(5, 47, 95, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mboa-blue);
+}
+
+.userEmail {
+  font-size: 15px;
+  color: #475569;
+}
+
+.userEmail strong {
+  color: var(--mboa-blue-dark);
+  font-weight: 600;
+}
+
+.restartLink {
+  background: none;
+  border: none;
+  color: var(--mboa-blue);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.restartLink:hover {
+  color: var(--mboa-blue-dark);
+}
+
+.tfInstructions {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tfForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.codeInput {
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+  background: white;
+  color: var(--mboa-blue-dark);
+}
+
+.codeInput:focus {
+  border-color: var(--mboa-yellow);
+  box-shadow: 0 0 0 4px rgba(237, 199, 7, 0.1);
+}
+
+.codeInput:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.codeInput::placeholder {
+  color: #cbd5e1;
+  letter-spacing: normal;
+}
+
+.errorMessage {
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.tfSubmitBtn {
+  padding: 16px;
+  background: linear-gradient(135deg, var(--mboa-yellow) 0%, #ffd700 100%);
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--mboa-blue-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.tfSubmitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(237, 199, 7, 0.4);
+}
+
+.tfSubmitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.tfSubmitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tfHelp {
+  font-size: 13px;
+  color: #64748b;
+  margin: 8px 0 0 0;
+  line-height: 1.6;
+}
+
+.tfHelp a {
+  color: var(--mboa-blue);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tfHelp a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .twoFactorCard {
+    padding: 32px 24px;
+  }
+
+  .tfTitle {
+    font-size: 24px;
+  }
+
+  .codeInput {
+    font-size: 16px;
+  }
+}

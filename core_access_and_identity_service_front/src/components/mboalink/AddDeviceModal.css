@@ -1,0 +1,132 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 820px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+  padding: 24px 32px;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(to bottom, #f8fafc, white);
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--mboa-blue);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.backBtn:hover {
+  background: rgba(5, 47, 95, 0.06);
+}
+
+.modalTitle h2 {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--mboa-blue-dark);
+  margin: 0 0 8px 0;
+}
+
+.modalTitle p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalBody {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.formSection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--mboa-blue-dark);
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+.formRow:last-child {
+  margin-bottom: 0;
+}
+
+.formLabel label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.formRow input[type="text"],
+.formRow input[type="number"],
+.formRow input[type="date"],
+.formRow select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.formRow input:focus,
+.formRow select:focus {
+  border-color: var(--mboa-yellow);
+  box-shadow: 0 0 0 3px rgba(237, 199, 7, 0.1);
+}
+
+.modalFooter {
+  padding: 20px 32px;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}

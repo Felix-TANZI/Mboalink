@@ -1,0 +1,270 @@
+.historyModal {
+  max-width: 1000px;
+  max-height: 90vh;
+}
+
+.historyBody {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.historySummary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.summaryCard {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.summaryIcon {
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summaryContent {
+  flex: 1;
+}
+
+.summaryValue {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--mboa-blue-dark);
+  margin-bottom: 4px;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.historyTimeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+.timelineEntry {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.timelineEntry:last-child {
+  margin-bottom: 0;
+}
+
+.timelineMarker {
+  position: absolute;
+  left: -40px;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.markerDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--mboa-yellow);
+  border: 3px solid white;
+  box-shadow: 0 0 0 3px var(--mboa-yellow);
+  z-index: 2;
+}
+
+.markerLine {
+  width: 2px;
+  height: calc(100% + 32px);
+  background: linear-gradient(to bottom, var(--mboa-yellow) 0%, #e2e8f0 100%);
+  margin-top: 4px;
+}
+
+.timelineContent {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.timelineContent:hover {
+  border-color: var(--mboa-yellow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.entryInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actionBadge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.actionCreate {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.actionModify {
+  background: rgba(237, 199, 7, 0.15);
+  color: #8a6b00;
+  border: 1px solid rgba(237, 199, 7, 0.3);
+}
+
+.actionActivate {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.actionDeactivate {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.actionDefault {
+  background: rgba(100, 116, 139, 0.15);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.entryDate {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.entryAuthor {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.entryAuthor strong {
+  color: var(--mboa-blue-dark);
+  font-weight: 800;
+}
+
+.changesTable {
+  overflow-x: auto;
+}
+
+.changesTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.changesTable thead {
+  background: #f8fafc;
+}
+
+.changesTable th {
+  padding: 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.changesTable td {
+  padding: 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.fieldName {
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
+}
+
+.oldValue {
+  color: #ef4444;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.05);
+  font-style: italic;
+}
+
+.arrow {
+  text-align: center;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.newValue {
+  color: #16a34a;
+  font-weight: 700;
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.emptyHistory {
+  padding: 60px;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
+
+.emptyHistory p {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .historySummary {
+    grid-template-columns: 1fr;
+  }
+
+  .historyTimeline {
+    padding-left: 30px;
+  }
+
+  .timelineMarker {
+    left: -30px;
+  }
+
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .changesTable {
+    overflow-x: scroll;
+  }
+}
