@@ -1,14 +1,21 @@
 const nodemailer = require('nodemailer');
+const logger = require('../../config/logger');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // TLS
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+function hasSmtpConfig() {
+  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // TLS
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
 
 /**
  * Envoie le code OTP par email à l'utilisateur.
@@ -16,6 +23,16 @@ const transporter = nodemailer.createTransport({
  * @param {string} otpCode - Code OTP à 6 chiffres
  */
 async function sendOtpEmail(toEmail, otpCode) {
+  if (!hasSmtpConfig()) {
+    logger.warn({
+      toEmail,
+      otpCode,
+    }, 'SMTP not configured, OTP logged instead of being sent');
+    return;
+  }
+
+  const transporter = createTransporter();
+
   await transporter.sendMail({
     from: `"MboaLink Security" <${process.env.SMTP_USER}>`,
     to: toEmail,
