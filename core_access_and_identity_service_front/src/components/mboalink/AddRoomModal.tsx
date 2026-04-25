@@ -29,6 +29,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
   const [formData, setFormData] = useState<Record<string, any>>({
     hotelId: '',
     type: '',
+    name: '',
     capacity: 2,
     floor: 1,
     surface: 25,
@@ -43,6 +44,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
       setFormData({
         hotelId: room.hotelId || '',
         type: room.type || '',
+        name: room.name || '',
         capacity: room.capacity || 2,
         floor: room.floor || 1,
         surface: room.surface || 25,
@@ -55,6 +57,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
       setFormData({
         hotelId: hotels.length > 0 ? hotels[0].id : '',
         type: '',
+        name: '',
         capacity: 2,
         floor: 1,
         surface: 25,
@@ -140,8 +143,8 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
   }
 
   const handleSubmit = () => {
-    if (!formData.hotelId || !formData.type || !formData.description) {
-      alert('Veuillez remplir tous les champs requis (Hôtel, Type, Description)')
+    if (!formData.hotelId || !formData.type || !formData.name || !formData.description) {
+      alert('Veuillez remplir tous les champs requis (Hôtel, Type, Numéro, Description)')
       return
     }
 
@@ -201,6 +204,20 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
                 value={formData.type}
                 onChange={(e) => handleInputChange('type', e.target.value)}
                 placeholder="Ex: Suite Présidentielle"
+                required
+              />
+            </div>
+
+            <div className="formRow">
+              <div className="formLabel">
+                <label>Numéro de chambre *</label>
+                <p className="labelHelp">Ex: 101, 204B, Suite 12. Ce numéro identifie la chambre dans l'hôtel.</p>
+              </div>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="Ex: 101"
                 required
               />
             </div>

@@ -84,9 +84,12 @@ export interface WifiConfigEntity {
 export interface GuestPassEntity {
   id: string;
   hotelId: string;
+  roomId?: string | null;
   code: string;
   label?: string;
+  clientName?: string | null;
   maxUses: number;
+  uses: number;
   usedCount: number;
   durationValue?: number;
   durationUnit?: "Hours" | "Days";
@@ -96,6 +99,11 @@ export interface GuestPassEntity {
   zones: string[];
   isRevoked: boolean;
   createdAt: string;
+  room?: {
+    id: string;
+    name?: string | null;
+    type: string;
+  };
 }
 
 export interface LoginSessionEntity {

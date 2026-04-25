@@ -1,0 +1,18 @@
+# ============================================================
+#  FreeRADIUS — authorize file (mods-config/files/authorize)
+#
+#  Ce fichier sert de FALLBACK si l'utilisateur n'est pas
+#  trouvé dans PostgreSQL. Il contient aussi le compte DEFAULT
+#  pour les règles globales.
+#
+#  Format :
+#    username  Auth-Type := Accept  (bypass complet — dangereux en prod)
+#    username  Cleartext-Password := "mdp"
+#
+#  Dans notre démo, la source principale est PostgreSQL.
+#  Ce fichier ne contient que DEFAULT.
+# ============================================================
+
+# Laisser le fichier vide pour cette démo.
+# Si SQL ne trouve pas l'utilisateur, FreeRADIUS rejettera
+# naturellement la requête sans écraser un utilisateur déjà trouvé.

@@ -11,6 +11,9 @@ const env = {
   refreshTokenTtl: process.env.REFRESH_TOKEN_TTL || '7d',
   databaseUrl: process.env.DATABASE_URL || '',
   serviceName: process.env.SERVICE_NAME || 'mboalink-backend',
+  radiusHost: process.env.RADIUS_HOST || 'freeradius',
+  radiusPort: Number(process.env.RADIUS_PORT || 1812),
+  radiusSecret: process.env.RADIUS_SECRET || 'testing123',
 };
 
 module.exports = env;

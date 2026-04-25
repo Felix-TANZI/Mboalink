@@ -1,5 +1,25 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
+const { syncRoomToRadius, syncGuestPassToRadius } = require('../radius/radius.service');
+
+function randomWifiCode(size = 6) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let out = '';
+  for (let i = 0; i < size; i += 1) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+async function uniqueWifiCode() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const code = randomWifiCode();
+    // eslint-disable-next-line no-await-in-loop
+    const exists = await prisma.guestPass.findUnique({ where: { code } });
+    if (!exists) return code;
+  }
+  return `${randomWifiCode(8)}${Date.now().toString(36).slice(-2)}`;
+}
 
 async function listLoginSessions(query) {
   const where = {
@@ -26,11 +46,38 @@ async function listLoginSessions(query) {
 }
 
 async function createManualLogin(payload, reqMeta) {
-  const room = await prisma.room.findUnique({ where: { id: payload.roomId } });
-  if (!room || room.hotelId !== payload.hotelId) {
-    const err = new Error('Room not found in selected hotel');
-    err.status = 404;
-    throw err;
+  let room = null;
+
+  if (payload.roomId) {
+    room = await prisma.room.findUnique({ where: { id: payload.roomId } });
+    if (!room || room.hotelId !== payload.hotelId) {
+      const err = new Error('Room not found in selected hotel');
+      err.status = 404;
+      throw err;
+    }
+  } else {
+    const roomNumber = String(payload.roomNumber || '').trim();
+    room = await prisma.room.findFirst({
+      where: {
+        hotelId: payload.hotelId,
+        name: { equals: roomNumber, mode: 'insensitive' },
+      },
+    });
+
+    if (!room) {
+      room = await prisma.room.create({
+        data: {
+          hotelId: payload.hotelId,
+          name: roomNumber,
+          type: 'Chambre non classée',
+          capacity: 1,
+          description: 'Créée automatiquement depuis le check-in manuel.',
+          equipments: [],
+          photos: [],
+        },
+      });
+      await syncRoomToRadius(room.id, reqMeta);
+    }
   }
 
   // Vérification cohérence des dates
@@ -42,16 +89,37 @@ async function createManualLogin(payload, reqMeta) {
     throw err;
   }
 
+  const wifiConfig = await prisma.wifiConfig.findUnique({ where: { hotelId: payload.hotelId } });
+  const guestPass = await prisma.guestPass.create({
+    data: {
+      hotelId: payload.hotelId,
+      roomId: room.id,
+      code: await uniqueWifiCode(),
+      label: `Manual Login - Chambre ${room.name || room.type}`,
+      clientName: payload.clientName,
+      maxUses: 0,
+      expiryAt: endedAt,
+      uploadCapKbps: wifiConfig?.uploadSpeedKbps || 1500,
+      downloadCapKbps: wifiConfig?.downloadSpeedKbps || 1500,
+      zones: wifiConfig?.zones || [],
+    },
+  });
+
+  await syncGuestPassToRadius(guestPass.id, reqMeta);
+
   const session = await prisma.loginSession.create({
     data: {
-      hotelId:    payload.hotelId,
-      roomId:     payload.roomId,
-      clientName: payload.clientName,
-      ipAddress:  payload.ipAddress,
-      macAddress: payload.macAddress,
-      status:     'ONLINE',
+      hotelId:     payload.hotelId,
+      roomId:      room.id,
+      guestPassId: guestPass.id,
+      clientName:  payload.clientName,
+      ipAddress:   payload.ipAddress,
+      macAddress:  payload.macAddress,
+      status:      'ONLINE',
       startedAt,
       endedAt,
+      capDownKbps: guestPass.downloadCapKbps,
+      capUpKbps:   guestPass.uploadCapKbps,
       type: 'Manual Login',
     },
     include: {
@@ -69,8 +137,11 @@ async function createManualLogin(payload, reqMeta) {
     actorUserId: reqMeta.actorUserId,
     hotelId:     payload.hotelId,
     payload: {
-      roomId:     payload.roomId,
+      roomId:     room.id,
+      roomNumber: payload.roomNumber || null,
       clientName: payload.clientName || null,
+      guestPassId: guestPass.id,
+      code: guestPass.code,
       startedAt:  payload.startedAt,
       endedAt:    payload.endedAt,
     },

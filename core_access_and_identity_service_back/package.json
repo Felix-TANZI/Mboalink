@@ -10,6 +10,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "prisma:push": "prisma db push",
     "swagger:print": "node -e \"console.log('Swagger: http://localhost:3000/api-docs')\"",
     "test": "echo \"No tests yet\""
   },

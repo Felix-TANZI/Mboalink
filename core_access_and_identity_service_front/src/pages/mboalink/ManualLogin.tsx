@@ -178,6 +178,7 @@ export default function ManualLogin() {
   const [selectedRoom, setSelectedRoom] = useState('')
   const [checkInDate,  setCheckInDate]  = useState('')
   const [checkOutDate, setCheckOutDate] = useState('')
+  const [lastWifiCode, setLastWifiCode] = useState('')
 
   // Tableau
   const [searchQuery, setSearchQuery] = useState('')
@@ -208,7 +209,9 @@ export default function ManualLogin() {
   const handleRoomTextChange = (value) => {
     setRoomText(value)
     const found = hotelRooms.find(
-      (r) => (r.name || r.type || '').toLowerCase() === value.trim().toLowerCase()
+      (r) => [r.name, r.type]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase() === value.trim().toLowerCase())
     )
     setSelectedRoom(found ? found.id : '')
   }
@@ -219,7 +222,8 @@ export default function ManualLogin() {
     if (room) setRoomText(room.name || room.type || '')
   }
 
-  const roomIsValid = !!selectedRoom
+  const roomExists = !!selectedRoom
+  const roomNumberIsFilled = !!roomText.trim()
 
   const durationLabel = useMemo(
     () => calcDuration(checkInDate, checkOutDate),
@@ -229,7 +233,7 @@ export default function ManualLogin() {
   // Soumission
   const handleProceed = async () => {
     if (!clientName.trim())   { alert('Le nom du client est requis'); return }
-    if (!roomIsValid)          { alert('Sélectionnez une chambre valide'); return }
+    if (!roomNumberIsFilled)   { alert('Saisissez un numéro de chambre'); return }
     if (!checkInDate)          { alert("La date d'entrée est requise"); return }
     if (!checkOutDate)         { alert('La date de sortie est requise'); return }
     if (new Date(checkOutDate) <= new Date(checkInDate)) {
@@ -238,13 +242,15 @@ export default function ManualLogin() {
 
     setIsLoading(true)
     try {
-      await mboalinkService.createManualLogin({
+      const created = await mboalinkService.createManualLogin({
         hotelId,
-        roomId:     selectedRoom,
+        roomId:     selectedRoom || undefined,
+        roomNumber: roomText.trim(),
         clientName: clientName.trim(),
         startedAt:  new Date(checkInDate).toISOString(),
         endedAt:    new Date(checkOutDate).toISOString(),
       })
+      setLastWifiCode(created.guestPass?.code || '')
       const updated = await mboalinkService.listLoginSessions()
       setSessions(updated)
       setClientName('')
@@ -265,6 +271,7 @@ export default function ManualLogin() {
     setSelectedRoom('')
     setCheckInDate('')
     setCheckOutDate('')
+    setLastWifiCode('')
   }
 
   // Modification
@@ -347,22 +354,24 @@ export default function ManualLogin() {
                     id="roomText"
                     type="text"
                     list="roomSuggestions"
-                    className={`mlInput ${roomText && !roomIsValid ? 'mlInputError' : ''} ${roomIsValid ? 'mlInputValid' : ''}`}
+                    className={`mlInput ${roomNumberIsFilled ? 'mlInputValid' : ''}`}
                     placeholder="Ex : 101"
                     value={roomText}
                     onChange={(e) => handleRoomTextChange(e.target.value)}
                     disabled={isLoading}
                     autoComplete="off"
                   />
-                  {roomText && !roomIsValid && (
-                    <span className="mlInputHint mlInputHintError">Chambre introuvable</span>
+                  {roomText && !roomExists && (
+                    <span className="mlInputHint mlInputHintOk">Nouvelle chambre: elle sera créée automatiquement</span>
                   )}
-                  {roomIsValid && (
+                  {roomExists && (
                     <span className="mlInputHint mlInputHintOk">✓ Chambre trouvée</span>
                   )}
                   <datalist id="roomSuggestions">
                     {hotelRooms.map((r) => (
-                      <option key={r.id} value={r.name || r.type} />
+                      <option key={r.id} value={r.name || r.type}>
+                        {r.type}
+                      </option>
                     ))}
                   </datalist>
                 </div>
@@ -436,7 +445,7 @@ export default function ManualLogin() {
                 disabled={
                   isLoading ||
                   !clientName.trim() ||
-                  !roomIsValid ||
+                  !roomNumberIsFilled ||
                   !checkInDate ||
                   !checkOutDate
                 }
@@ -444,6 +453,11 @@ export default function ManualLogin() {
                 {isLoading ? 'Enregistrement…' : 'Valider le check-in'}
               </button>
             </div>
+            {lastWifiCode && (
+              <div className="mlDurationBadge">
+                Code Wi-Fi à remettre au client : <strong>{lastWifiCode}</strong>
+              </div>
+            )}
           </div>
         </div>
 
@@ -473,6 +487,7 @@ export default function ManualLogin() {
                   <th>N° Chambre</th>
                   <th>Type</th>
                   <th>Accès</th>
+                  <th>Code Wi-Fi</th>
                   <th>Entrée</th>
                   <th>Sortie</th>
                   <th>Durée</th>
@@ -484,7 +499,7 @@ export default function ManualLogin() {
               <tbody>
                 {filteredSessions.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="mlEmptyRow">
+                    <td colSpan={11} className="mlEmptyRow">
                       Aucun check-in enregistré pour le moment.
                     </td>
                   </tr>
@@ -502,6 +517,7 @@ export default function ManualLogin() {
                             : '—'
                           }
                         </td>
+                        <td className="mlCellMono">{session.guestPass?.code || '—'}</td>
                         <td className="mlCellDate">{formatDate(session.startedAt)}</td>
                         <td className="mlCellDate">{formatDate(session.endedAt)}</td>
                         <td className="mlCellDuration">

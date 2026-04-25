@@ -1,0 +1,107 @@
+# ============================================================
+#  FreeRADIUS — site default
+#
+#  Définit le comportement du serveur pour les requêtes
+#  d'authentification et d'accounting entrants.
+#
+#  Sections importantes :
+#   authorize   → qui peut se connecter (lookup user)
+#   authenticate → comment vérifier le mot de passe
+#   accounting  → log des sessions
+#   post-auth   → actions après succès/échec
+# ============================================================
+
+server default {
+
+    # Écoutes UDP standards pour l'authentification et l'accounting.
+    listen {
+        type = auth
+        ipaddr = *
+        port = 1812
+    }
+
+    listen {
+        type = acct
+        ipaddr = *
+        port = 1813
+    }
+
+    # ── Authorize ──────────────────────────────────────────
+    # FreeRADIUS cherche l'utilisateur dans les sources
+    # configurées, dans l'ordre listé ici.
+    authorize {
+        # Filtre les attributs de la requête
+        filter_username
+
+        # Preprocess (macros, huntgroups)
+        preprocess
+
+        # Cherche l'utilisateur dans PostgreSQL (table radcheck)
+        sql
+
+        # Si pas trouvé dans SQL, cherche dans le fichier users
+        # (utile pour le compte DEFAULT et les tests)
+        files
+
+        # Expiry / logintime checks
+        expiration
+        logintime
+
+        # Sélectionne le type d'authentification
+        pap
+    }
+
+    # ── Authenticate ──────────────────────────────────────
+    # PAP : compare le mot de passe en clair avec radcheck
+    authenticate {
+        Auth-Type PAP {
+            pap
+        }
+        Auth-Type CHAP {
+            chap
+        }
+    }
+
+    # ── Pre-accounting ─────────────────────────────────────
+    preacct {
+        preprocess
+        acct_unique
+        suffix
+        files
+    }
+
+    # ── Accounting ─────────────────────────────────────────
+    accounting {
+        detail
+        sql
+        exec
+        attr_filter.accounting_response
+    }
+
+    # ── Session ────────────────────────────────────────────
+    session {
+        sql
+    }
+
+    # ── Post-auth ──────────────────────────────────────────
+    # Exécuté après chaque tentative d'authentification.
+    # Permet de logguer les succès et les échecs dans radpostauth.
+    post-auth {
+        sql
+        exec
+        remove_reply_message_if_eap
+
+        # Log des échecs aussi
+        Post-Auth-Type REJECT {
+            attr_filter.access_reject
+            sql
+        }
+    }
+
+    # ── Pre-proxy / Post-proxy ─────────────────────────────
+    pre-proxy {
+    }
+    post-proxy {
+        eap
+    }
+}

@@ -52,9 +52,12 @@ Backend Node.js/Express en architecture MVC pour couvrir les fonctionnalités du
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
 - `ACCESS_TOKEN_TTL`, `REFRESH_TOKEN_TTL`
 - `PORT` (par défaut `3000`)
+- `APP_HOST_PORT` (par défaut `13000` avec Docker Compose)
+- `POSTGRES_HOST_PORT` (par défaut `54320` avec Docker Compose)
 
 ### PostgreSQL local (Docker)
-Si tu utilises le `docker-compose.yml` avec le service `postgres`, utilise cette valeur:\n
+Si tu utilises le `docker-compose.yml` avec le service `postgres`, utilise cette valeur:
+
 `DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mboalink_local?schema=public`
 
 ## Endpoints principaux
@@ -62,6 +65,31 @@ Si tu utilises le `docker-compose.yml` avec le service `postgres`, utilise cette
 - OpenAPI JSON: `GET /swagger.json`
 - Health: `GET /health`
 - API base: `/api/v1`
+- Portail captif: `POST /api/v1/captive/auth`
+
+## Démo FreeRADIUS / portail captif
+Le backend Mboa pilote FreeRADIUS via PostgreSQL.
+
+1. Démarrer le backend avec PostgreSQL et FreeRADIUS:
+   - `docker compose up --build`
+2. Ouvrir le front MboaLink et créer un `Guest Pass` en sélectionnant une chambre et un client.
+3. Le backend synchronise automatiquement le code dans `radcheck` et les attributs réseau dans `radreply`.
+4. Depuis le portail captif, saisir le code Wi-Fi généré.
+5. Le portail appelle `POST /api/v1/captive/auth`; le backend envoie ensuite une requête RADIUS PAP à FreeRADIUS.
+
+Test direct possible:
+
+```bash
+docker compose exec freeradius radtest CODEPASS CODEPASS 127.0.0.1 0 testing123
+```
+
+Pour exposer FreeRADIUS sur la machine hote, par exemple pour un NAS externe:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.radius-host.yml up --build
+```
+
+Révoquer ou supprimer le pass dans MboaLink doit ensuite provoquer un `Access-Reject`.
 
 ## Logs IA-ready
 - Tous les événements importants écrivent dans `audit_logs` avec:

@@ -11,6 +11,7 @@ const guestConfigRoutes = require('../modules/guest-config/guest-config.routes')
 const deviceRoutes = require('../modules/devices/device.routes');
 const dashboardRoutes = require('../modules/dashboard/dashboard.routes');
 const auditLogRoutes = require('../modules/audit-logs/audit-log.routes');
+const captivePortalRoutes = require('../modules/captive-portal/captive-portal.routes');
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/', guestConfigRoutes);
 router.use('/devices', deviceRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/audit-logs', auditLogRoutes);
+router.use('/captive', captivePortalRoutes);
 
 module.exports = router;

@@ -8,7 +8,7 @@ const photoSchema = z.object({
 
 const createRoomSchema = z.object({
   type: z.string().min(2).max(80),
-  name: z.string().max(80).optional(),
+  name: z.string().min(1).max(80),
   capacity: z.number().int().positive().max(20),
   floor: z.number().int().min(-5).max(200).optional(),
   surface: z.number().positive().max(3000).optional(),

@@ -2,8 +2,10 @@ const { z } = require('zod');
 
 const basePassSchema = z.object({
   hotelId: z.string().min(3),
+  roomId: z.string().min(3).optional().or(z.literal('')),
   code: z.string().min(4).max(20).regex(/^[A-Z0-9#_-]+$/).optional(),
   label: z.string().max(80).optional(),
+  clientName: z.string().max(120).optional().or(z.literal('')),
   durationValue: z.number().int().min(0).max(3650).optional(),
   durationUnit: z.enum(['Hours', 'Days']).optional(),
   maxUses: z.number().int().min(0).max(100000).default(1),

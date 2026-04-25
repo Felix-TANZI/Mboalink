@@ -1,5 +1,9 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
+const {
+  syncClearedAddressToRadius,
+  removeClearedAddressFromRadius,
+} = require('../radius/radius.service');
 
 async function listClearedAddresses(query) {
   const where = {
@@ -33,6 +37,8 @@ async function createClearedAddress(payload, reqMeta) {
     },
   });
 
+  await syncClearedAddressToRadius(row.id, reqMeta);
+
   await writeAuditLog({
     requestId: reqMeta.requestId,
     eventType: 'wifi.whitelist',
@@ -60,6 +66,10 @@ async function deleteClearedAddresses(ids, reqMeta) {
   }
 
   await prisma.clearedAddress.deleteMany({ where: { id: { in: ids } } });
+  for (const row of rows) {
+    // eslint-disable-next-line no-await-in-loop
+    await removeClearedAddressFromRadius(row);
+  }
 
   await writeAuditLog({
     requestId: reqMeta.requestId,

@@ -1,0 +1,5 @@
+services:
+  freeradius:
+    ports:
+      - "${RADIUS_AUTH_HOST_PORT:-1812}:1812/udp"
+      - "${RADIUS_ACCT_HOST_PORT:-1813}:1813/udp"

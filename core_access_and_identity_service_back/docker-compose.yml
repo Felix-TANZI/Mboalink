@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${APP_HOST_PORT:-13000}:3000"
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -14,17 +14,30 @@ services:
       - ACCESS_TOKEN_TTL=${ACCESS_TOKEN_TTL}
       - REFRESH_TOKEN_TTL=${REFRESH_TOKEN_TTL}
       - LOG_LEVEL=${LOG_LEVEL}
+      - RADIUS_HOST=freeradius
+      - RADIUS_PORT=1812
+      - RADIUS_SECRET=testing123
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["/bin/sh", "-lc", "npm install && npm run prisma:generate && npm run prisma:migrate -- --name init && npm run seed:admin && npm run dev"]
+    command: ["/bin/sh", "-lc", "npm run prisma:generate && npm run prisma:push && npm run seed:admin && npm run dev"]
+    depends_on:
+      - postgres
+      - freeradius
+
+  freeradius:
+    build:
+      context: ./freeradius
+      dockerfile: Dockerfile
+    image: mboalink_freeradius:latest
+    restart: unless-stopped
     depends_on:
       - postgres
 
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-54320}:5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

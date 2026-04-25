@@ -177,6 +177,7 @@ export default function WifiCode() {
                 <th><input type="checkbox" /></th>
                 <th>Pass</th>
                 <th>Label</th>
+                <th>Room / Client</th>
                 <th># Uses</th>
                 <th>Max Uses</th>
                 <th>Duration</th>
@@ -192,7 +193,11 @@ export default function WifiCode() {
                   <td><input type="checkbox" /></td>
                   <td className="codeCell">{code.code}</td>
                   <td>{code.label || '-'}</td>
-                  <td>{code.usedCount}</td>
+                  <td>
+                    {code.room?.name || code.room?.type || '-'}
+                    {code.clientName ? <><br /><small>{code.clientName}</small></> : null}
+                  </td>
+                  <td>{code.usedCount ?? code.uses ?? 0}</td>
                   <td>{code.maxUses}</td>
                   <td>{code.durationValue ? `${code.durationValue} ${code.durationUnit || ''}` : '-'}</td>
                   <td className="bandwidthCell">{code.downloadCapKbps} / {code.uploadCapKbps} kb/s</td>

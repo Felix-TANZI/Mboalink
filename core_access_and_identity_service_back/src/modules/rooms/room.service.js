@@ -1,5 +1,6 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
+const { syncRoomToRadius, removeRoomFromRadius } = require('../radius/radius.service');
 
 async function listRooms(query) {
   const where = {
@@ -42,6 +43,8 @@ async function createRoom(hotelId, data, reqMeta) {
     include: { hotel: { select: { name: true } } },
   });
 
+  await syncRoomToRadius(room.id, reqMeta);
+
   await writeAuditLog({
     requestId: reqMeta.requestId,
     eventType: 'hotel.room',
@@ -70,6 +73,9 @@ async function updateRoom(roomId, data, reqMeta) {
     include: { hotel: { select: { name: true } } },
   });
 
+  await removeRoomFromRadius(existing);
+  await syncRoomToRadius(room.id, reqMeta);
+
   await writeAuditLog({
     requestId: reqMeta.requestId,
     eventType: 'hotel.room',
@@ -93,6 +99,7 @@ async function deleteRoom(roomId, reqMeta) {
   }
 
   await prisma.room.delete({ where: { id: roomId } });
+  await removeRoomFromRadius(existing);
 
   await writeAuditLog({
     requestId: reqMeta.requestId,

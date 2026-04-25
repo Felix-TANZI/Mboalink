@@ -26,6 +26,12 @@ const spec = {
     '/api/v1/auth/login': { post: { summary: 'Login', responses: { '200': { description: 'OK' } } } },
     '/api/v1/auth/refresh': { post: { summary: 'Refresh access token', responses: { '200': { description: 'OK' } } } },
     '/api/v1/auth/me': { get: { summary: 'Current user', responses: { '200': { description: 'OK' } } } },
+    '/api/v1/captive/auth': {
+      post: {
+        summary: 'Captive portal WiFi code authentication through FreeRADIUS',
+        responses: { '200': { description: 'Access accepted' }, '401': { description: 'Access rejected' } },
+      },
+    },
 
     '/api/v1/hotels': {
       get: { summary: 'List hotels', responses: { '200': { description: 'OK' } } },
