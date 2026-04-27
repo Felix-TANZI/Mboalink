@@ -6,10 +6,17 @@ RUN apt-get update -y \
 
 WORKDIR /app
 
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
+COPY package*.json ./
+RUN npm ci
+
 COPY . .
 
 RUN find . -not -path "./node_modules/*" \( -name "*.js" -o -name "*.json" -o -name "*.sh" -o -name "*.ts" -o -name "*.tsx" \) -exec dos2unix {} \; 2>/dev/null || true
+RUN npm run build
 
-EXPOSE 5173
+EXPOSE 4173
 
-CMD ["/bin/sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+CMD ["/bin/sh", "-lc", "npm run preview -- --host 0.0.0.0 --port ${PORT:-4173}"]

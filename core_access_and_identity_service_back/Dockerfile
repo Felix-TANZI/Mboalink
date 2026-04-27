@@ -6,11 +6,15 @@ RUN apt-get update -y \
 
 WORKDIR /app
 
+COPY package*.json ./
+RUN npm ci
+
 COPY . .
 
 # convertir les fins de ligne CRLF → LF (fix Windows)
 RUN find . -not -path "./node_modules/*" \( -name "*.js" -o -name "*.json" -o -name "*.sh" \) -exec dos2unix {} \; 2>/dev/null || true
+RUN npm run prisma:generate
 
 EXPOSE 3000
 
-CMD ["/bin/sh", "-lc", "npm install && npm run prisma:generate && npm run prisma:migrate -- --name init && npm run seed:admin && npm run dev"]
+CMD ["/bin/sh", "-lc", "npm run prisma:push && npm run seed:admin && npm start"]

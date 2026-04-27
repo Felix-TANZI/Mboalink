@@ -33,6 +33,13 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=mboalink_local
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - RADIUS_SECRET=${RADIUS_SECRET:-testing123}
 
   postgres:
     image: postgres:16-alpine

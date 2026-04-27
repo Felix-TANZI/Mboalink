@@ -1,0 +1,46 @@
+server inner-tunnel {
+    listen {
+        type = auth
+        ipaddr = 127.0.0.1
+        port = 18120
+    }
+
+    authorize {
+        filter_username
+        sql
+        if (&control:Cleartext-Password) {
+            update control {
+                Auth-Type := PAP
+            }
+        }
+        files
+        expiration
+        logintime
+        pap
+    }
+
+    authenticate {
+        Auth-Type PAP {
+            pap
+        }
+        Auth-Type CHAP {
+            chap
+        }
+        Auth-Type MS-CHAP {
+            mschap
+        }
+        eap
+    }
+
+    session {
+        sql
+    }
+
+    post-auth {
+        sql
+        Post-Auth-Type REJECT {
+            attr_filter.access_reject
+            sql
+        }
+    }
+}
