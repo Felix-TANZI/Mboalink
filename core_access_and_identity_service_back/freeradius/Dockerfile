@@ -11,4 +11,4 @@ COPY inner-tunnel /etc/freeradius/sites-available/inner-tunnel
 EXPOSE 1812/udp
 EXPOSE 1813/udp
 
-CMD ["freeradius", "-f"]
+CMD ["freeradius", "-f", "-X"]
