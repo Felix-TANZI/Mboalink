@@ -15,6 +15,7 @@ RUN npm ci
 COPY . .
 
 RUN find . -not -path "./node_modules/*" \( -name "*.js" -o -name "*.json" -o -name "*.sh" -o -name "*.ts" -o -name "*.tsx" \) -exec dos2unix {} \; 2>/dev/null || true
+RUN echo "VITE_API_BASE_URL=${VITE_API_BASE_URL}" > .env.production
 RUN npm run build
 
 EXPOSE 4173
