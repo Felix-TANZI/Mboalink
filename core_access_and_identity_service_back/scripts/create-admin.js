@@ -4,7 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 function getAdminEmails() {
-  const rawEmails = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || 'admin@gmail.com';
+  const rawEmails = process.env.ADMIN_EMAIL || process.env.ADMIN_EMAILS || 'admin@gmail.com';
   return rawEmails
     .split(',')
     .map((email) => email.trim().toLowerCase())
