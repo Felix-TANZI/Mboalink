@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const dgram = require('dgram');
 
 const prisma = require('../../config/prisma');
+const logger = require('../../config/logger');
 
 const RADIUS_HOST = process.env.RADIUS_HOST || 'freeradius';
 const RADIUS_PORT = Number(process.env.RADIUS_PORT || 1812);
@@ -99,6 +100,14 @@ function sendRadiusAccessRequest(username, password) {
       if (error) {
         clearTimeout(timer);
         cleanup();
+        logger.error({
+          radiusHost: RADIUS_HOST,
+          radiusPort: RADIUS_PORT,
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        }, 'RADIUS request failed');
         reject(error);
       }
     });
