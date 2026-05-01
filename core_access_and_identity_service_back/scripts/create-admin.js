@@ -4,9 +4,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'admin@gmail.com';
-  const password = 'admin123';
-  const fullName = 'System Administrator';
+  const email = process.env.ADMIN_EMAIL || 'admin@gmail.com';
+  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const fullName = process.env.ADMIN_FULL_NAME || 'System Administrator';
 
   const existing = await prisma.user.findUnique({ where: { email } });
   const passwordHash = await bcrypt.hash(password, 10);
