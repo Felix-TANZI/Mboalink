@@ -1,18 +1,32 @@
 const nodemailer = require('nodemailer');
 const logger = require('../../config/logger');
 
+function getSmtpConfig() {
+  return {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true',
+    user: process.env.SMTP_USER?.trim(),
+    pass: process.env.SMTP_PASS?.trim(),
+    from: process.env.SMTP_FROM?.trim() || process.env.SMTP_USER?.trim(),
+  };
+}
+
 function hasSmtpConfig() {
-  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+  const config = getSmtpConfig();
+  return Boolean(config.user && config.pass);
 }
 
 function createTransporter() {
+  const config = getSmtpConfig();
+
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // TLS
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: config.user,
+      pass: config.pass,
     },
   });
 }
@@ -26,15 +40,17 @@ async function sendOtpEmail(toEmail, otpCode) {
   if (!hasSmtpConfig()) {
     logger.warn({
       toEmail,
-      otpCode,
+      smtpUserConfigured: Boolean(process.env.SMTP_USER?.trim()),
+      smtpPassConfigured: Boolean(process.env.SMTP_PASS?.trim()),
     }, 'SMTP not configured, OTP logged instead of being sent');
     return;
   }
 
+  const config = getSmtpConfig();
   const transporter = createTransporter();
 
   await transporter.sendMail({
-    from: `"MboaLink Security" <${process.env.SMTP_USER}>`,
+    from: `"MboaLink Security" <${config.from}>`,
     to: toEmail,
     subject: 'Votre code de vérification MboaLink',
     html: `
