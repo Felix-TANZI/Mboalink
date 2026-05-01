@@ -160,14 +160,28 @@ export default function WifiCode() {
           <div className="actionButtons">
             <button className="btn btnSecondary">Remove Selected</button>
             <button className="btn btnSecondary">Print List</button>
-            <button className="btn btnPrimary" onClick={() => setIsMassModalOpen(true)}>
+            <button
+              className="btn btnPrimary"
+              disabled={!selectedHotelId}
+              onClick={() => setIsMassModalOpen(true)}
+            >
               Add Mass Guest Pass
             </button>
-            <button className="btn btnPrimary" onClick={() => setIsSingleModalOpen(true)}>
+            <button
+              className="btn btnPrimary"
+              disabled={!selectedHotelId}
+              onClick={() => setIsSingleModalOpen(true)}
+            >
               Add Guest Pass
             </button>
           </div>
         </div>
+
+        {!selectedHotelId && !isLoading && (
+          <div className="warningBanner">
+            Créez d'abord un hôtel dans Hotel Manager avant de générer des codes WiFi.
+          </div>
+        )}
 
         <div className="tableWrapper">
           {isLoading && <p>Chargement des codes...</p>}

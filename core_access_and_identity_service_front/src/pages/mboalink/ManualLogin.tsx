@@ -232,6 +232,7 @@ export default function ManualLogin() {
 
   // Soumission
   const handleProceed = async () => {
+    if (!hotelId)             { alert("Créez ou sélectionnez d'abord un hôtel"); return }
     if (!clientName.trim())   { alert('Le nom du client est requis'); return }
     if (!roomNumberIsFilled)   { alert('Saisissez un numéro de chambre'); return }
     if (!checkInDate)          { alert("La date d'entrée est requise"); return }

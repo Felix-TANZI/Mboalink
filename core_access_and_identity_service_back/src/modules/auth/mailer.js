@@ -154,10 +154,11 @@ async function sendOtpEmail(toEmail, otpCode) {
 
     await sendWithSmtp(toEmail, otpCode);
   } catch (error) {
+    const provider = hasResendConfig() ? 'resend' : 'smtp';
     const smtpConfig = getSmtpConfig();
     logger.error({
       toEmail,
-      provider: hasResendConfig() ? 'resend' : 'smtp',
+      provider,
       smtpHost: smtpConfig.host,
       smtpPort: smtpConfig.port,
       smtpSecure: smtpConfig.secure,
@@ -169,6 +170,9 @@ async function sendOtpEmail(toEmail, otpCode) {
         responseBody: error.responseBody,
       },
     }, 'Email delivery failed');
+    logger.error(
+      `Email delivery failed provider=${provider} statusCode=${error.statusCode || 'n/a'} code=${error.code || 'n/a'} message=${error.message} response=${error.responseBody || 'n/a'}`,
+    );
 
     const err = new Error('Email service unavailable');
     err.status = 503;
