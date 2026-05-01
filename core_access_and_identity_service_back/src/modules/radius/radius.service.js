@@ -128,6 +128,21 @@ async function removeGuestPassFromRadius(passOrCode) {
   return { username, status: 'removed' };
 }
 
+async function syncAllGuestPassesToRadius(reqMeta = {}) {
+  const passes = await prisma.guestPass.findMany({ select: { id: true } });
+  const results = [];
+
+  for (const pass of passes) {
+    results.push(await syncGuestPassToRadius(pass.id, reqMeta));
+  }
+
+  return {
+    count: results.length,
+    synced: results.filter((result) => result?.status === 'synced').length,
+    removed: results.filter((result) => result?.status === 'removed').length,
+  };
+}
+
 function roomRadiusUsername(room) {
   const label = room.name || room.type || room.id;
   return normalizeRadiusUsername(`ROOM-${label}`);
@@ -238,6 +253,7 @@ async function removeClearedAddressFromRadius(row) {
 module.exports = {
   normalizeRadiusUsername,
   syncGuestPassToRadius,
+  syncAllGuestPassesToRadius,
   removeGuestPassFromRadius,
   syncRoomToRadius,
   removeRoomFromRadius,
