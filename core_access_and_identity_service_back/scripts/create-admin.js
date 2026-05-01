@@ -3,11 +3,15 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-async function main() {
-  const email = process.env.ADMIN_EMAIL || 'admin@gmail.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
-  const fullName = process.env.ADMIN_FULL_NAME || 'System Administrator';
+function getAdminEmails() {
+  const rawEmails = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || 'admin@gmail.com';
+  return rawEmails
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
 
+async function upsertAdmin(email, password, fullName) {
   const existing = await prisma.user.findUnique({ where: { email } });
   const passwordHash = await bcrypt.hash(password, 10);
 
@@ -23,7 +27,7 @@ async function main() {
     });
 
     console.log(`Admin updated: ${updated.email} (${updated.role})`);
-    return;
+    return updated;
   }
 
   const created = await prisma.user.create({
@@ -37,6 +41,17 @@ async function main() {
   });
 
   console.log(`Admin created: ${created.email} (${created.role})`);
+  return created;
+}
+
+async function main() {
+  const emails = getAdminEmails();
+  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const fullName = process.env.ADMIN_FULL_NAME || 'System Administrator';
+
+  for (const email of emails) {
+    await upsertAdmin(email, password, fullName);
+  }
 }
 
 main()
