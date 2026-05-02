@@ -13,6 +13,11 @@ interface LoginResponse {
   };
 }
 
+type LoginResult = LoginResponse | {
+  mfaRequired: true;
+  email: string;
+};
+
 interface MeResponse {
   sub: string;
   email: string;
@@ -30,12 +35,24 @@ function toUser(input: { id?: string; sub?: string; email: string; fullName?: st
 }
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<{ mfaRequired: boolean; email: string }> {
-    const data = await apiRequest<{ mfaRequired: boolean; email: string }>('/auth/login', {
+  async login(credentials: LoginCredentials): Promise<{ mfaRequired: true; email: string } | { mfaRequired: false; user: User }> {
+    const data = await apiRequest<LoginResult>('/auth/login', {
       method: 'POST',
       body: credentials,
     });
-    return data;
+
+    if ('mfaRequired' in data && data.mfaRequired) {
+      return data;
+    }
+
+    const user = toUser(data.user);
+    saveSession({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      user,
+    });
+
+    return { mfaRequired: false, user };
   },
 
   async verifyMfa(email: string, code: string): Promise<User> {

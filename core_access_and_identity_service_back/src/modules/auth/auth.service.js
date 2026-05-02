@@ -7,6 +7,8 @@ const env = require('../../config/env');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 const { sendOtpEmail } = require('./mailer');
 
+const MFA_ENABLED = false;
+
 function signAccessToken(user) {
   return jwt.sign(
     { sub: user.id, email: user.email, role: user.role, fullName: user.fullName },
@@ -30,6 +32,42 @@ function hashToken(token) {
 function generateOtp() {
   // Code OTP à 6 chiffres
   return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function createAuthSession(user, context, action = 'login') {
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  const decoded = jwt.decode(refreshToken);
+
+  await prisma.refreshToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashToken(refreshToken),
+      expiresAt: new Date(decoded.exp * 1000),
+    },
+  });
+
+  await writeAuditLog({
+    requestId: context.requestId,
+    eventType: 'auth.session',
+    entityType: 'user',
+    entityId: user.id,
+    action,
+    severity: 'INFO',
+    actorUserId: user.id,
+    payload: { email: user.email },
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+    },
+  };
 }
 
 async function registerUser(payload, context) {
@@ -87,38 +125,49 @@ async function loginUser(payload, context) {
     throw err;
   }
 
-  // Générer un OTP à 6 chiffres, valable 10 minutes
-  const otp = generateOtp();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  if (MFA_ENABLED) {
+    // Générer un OTP à 6 chiffres, valable 10 minutes
+    const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Stocker le hash du code en base
+    // Stocker le hash du code en base
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otpCode: hashToken(otp),
+        otpExpiry,
+      },
+    });
+
+    // Envoyer le code par email
+    await sendOtpEmail(user.email, otp);
+
+    await writeAuditLog({
+      requestId: context.requestId,
+      eventType: 'auth.mfa',
+      entityType: 'user',
+      entityId: user.id,
+      action: 'otp-sent',
+      severity: 'INFO',
+      actorUserId: user.id,
+      payload: { email: user.email },
+    });
+
+    // On ne retourne PAS les tokens ici — ils seront générés après vérification MFA
+    return {
+      mfaRequired: true,
+      email: user.email,
+    };
+  }
+
+  // MFA gelée temporairement: connexion directe après validation du mot de passe.
+  // Le code OTP et verifyMfa restent en place pour réactivation ultérieure.
   await prisma.user.update({
     where: { id: user.id },
-    data: {
-      otpCode: hashToken(otp),
-      otpExpiry,
-    },
+    data: { otpCode: null, otpExpiry: null },
   });
 
-  // Envoyer le code par email
-  await sendOtpEmail(user.email, otp);
-
-  await writeAuditLog({
-    requestId: context.requestId,
-    eventType: 'auth.mfa',
-    entityType: 'user',
-    entityId: user.id,
-    action: 'otp-sent',
-    severity: 'INFO',
-    actorUserId: user.id,
-    payload: { email: user.email },
-  });
-
-  // On ne retourne PAS les tokens ici — ils seront générés après vérification MFA
-  return {
-    mfaRequired: true,
-    email: user.email,
-  };
+  return createAuthSession(user, context);
 }
 
 async function verifyMfa(payload, context) {
@@ -151,40 +200,7 @@ async function verifyMfa(payload, context) {
     data: { otpCode: null, otpExpiry: null },
   });
 
-  // Générer les tokens JWT
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
-  const decoded = jwt.decode(refreshToken);
-
-  await prisma.refreshToken.create({
-    data: {
-      userId: user.id,
-      tokenHash: hashToken(refreshToken),
-      expiresAt: new Date(decoded.exp * 1000),
-    },
-  });
-
-  await writeAuditLog({
-    requestId: context.requestId,
-    eventType: 'auth.session',
-    entityType: 'user',
-    entityId: user.id,
-    action: 'login',
-    severity: 'INFO',
-    actorUserId: user.id,
-    payload: { email: user.email },
-  });
-
-  return {
-    accessToken,
-    refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-    },
-  };
+  return createAuthSession(user, context);
 }
 
 async function refreshAccessToken(payload, context) {

@@ -23,6 +23,8 @@ export default function LoginPage() {
       if (result.mfaRequired) {
         // Rediriger vers la page MFA en passant l'email via le state
         navigate(routes.public.mfa, { state: { email: result.email } })
+      } else {
+        navigate(routes.public.home, { replace: true })
       }
     } catch (err) {
       setError(err?.message || 'Identifiants incorrects')
