@@ -39,22 +39,25 @@ async function ensureHotel(hotelId) {
   return hotel;
 }
 
+// Include createdBy user in all queries
+const includeCreator = {
+  hotel:     { select: { id: true, name: true } },
+  createdBy: { select: { id: true, fullName: true, email: true } },
+};
+
 async function listGuestPasses(query) {
   const where = {
-    hotelId: query.hotelId || undefined,
+    hotelId:   query.hotelId   || undefined,
     isRevoked: query.isRevoked ? query.isRevoked === 'true' : undefined,
     OR: query.search ? [
-      { code: { contains: query.search, mode: 'insensitive' } },
+      { code:  { contains: query.search, mode: 'insensitive' } },
       { label: { contains: query.search, mode: 'insensitive' } },
     ] : undefined,
   };
 
   return prisma.guestPass.findMany({
     where,
-    include: {
-      hotel: { select: { id: true, name: true } },
-      room: { select: { id: true, name: true, type: true } },
-    },
+    include: includeCreator,
     orderBy: { createdAt: 'desc' },
   });
 }
@@ -73,36 +76,34 @@ async function createGuestPass(payload, reqMeta) {
   const code = payload.code || randomCode();
   const guestPass = await prisma.guestPass.create({
     data: {
-      hotelId: payload.hotelId,
-      roomId: payload.roomId || null,
+      hotelId:        payload.hotelId,
       code,
-      label: payload.label,
-      clientName: payload.clientName || null,
-      durationValue: payload.durationValue,
-      durationUnit: payload.durationUnit,
-      maxUses: payload.maxUses,
-      expiryAt: computeExpiry(payload),
-      uploadCapKbps: payload.uploadCapKbps,
+      label:          payload.label,
+      durationValue:  payload.durationValue,
+      durationUnit:   payload.durationUnit,
+      maxUses:        payload.maxUses,
+      expiryAt:       computeExpiry(payload),
+      uploadCapKbps:  payload.uploadCapKbps,
       downloadCapKbps: payload.downloadCapKbps,
-      zones: payload.zones || [],
+      zones:          payload.zones || [],
+      createdById:    reqMeta.actorUserId || null,
     },
+    include: includeCreator,
   });
 
   await syncGuestPassToRadius(guestPass.id, reqMeta);
 
   await writeAuditLog({
-    requestId: reqMeta.requestId,
-    eventType: 'wifi.guest-pass',
-    entityType: 'guest_pass',
-    entityId: guestPass.id,
-    action: 'create',
+    requestId:   reqMeta.requestId,
+    eventType:   'wifi.guest-pass',
+    entityType:  'guest_pass',
+    entityId:    guestPass.id,
+    action:      'create',
     actorUserId: reqMeta.actorUserId,
-    hotelId: payload.hotelId,
+    hotelId:     payload.hotelId,
     payload: {
-      code: guestPass.code,
-      roomId: guestPass.roomId,
-      clientName: guestPass.clientName,
-      maxUses: guestPass.maxUses,
+      code:     guestPass.code,
+      maxUses:  guestPass.maxUses,
       expiryAt: guestPass.expiryAt,
     },
   });
@@ -122,49 +123,51 @@ async function createGuestPassesBulk(payload, reqMeta) {
   }
 
   const entries = Array.from({ length: payload.quantity }).map((_, index) => {
-    const suffix = String(index + 1).padStart(3, '0');
+    const suffix  = String(index + 1).padStart(3, '0');
     const rawCode = payload.codePrefix ? `${payload.codePrefix}${suffix}` : randomCode();
     return {
-      hotelId: payload.hotelId,
+      hotelId:        payload.hotelId,
       roomId: payload.roomId || null,
-      code: rawCode,
-      label: payload.label ? `${payload.label}-${suffix}` : undefined,
+      code:           rawCode,
+      label:          payload.label ? `${payload.label}-${suffix}` : undefined,
       clientName: payload.clientName || null,
-      durationValue: payload.durationValue,
-      durationUnit: payload.durationUnit,
-      maxUses: payload.maxUses,
-      expiryAt: computeExpiry(payload),
-      uploadCapKbps: payload.uploadCapKbps,
+      durationValue:  payload.durationValue,
+      durationUnit:   payload.durationUnit,
+      maxUses:        payload.maxUses,
+      expiryAt:       computeExpiry(payload),
+      uploadCapKbps:  payload.uploadCapKbps,
       downloadCapKbps: payload.downloadCapKbps,
-      zones: payload.zones || [],
+      zones:          payload.zones || [],
+      createdById:    reqMeta.actorUserId || null,
     };
   });
 
   const created = [];
   for (const entry of entries) {
-    // Sequential to keep code uniqueness handling deterministic.
-    // Can be optimized with retries + createMany in a later iteration.
     // eslint-disable-next-line no-await-in-loop
-    const row = await prisma.guestPass.create({ data: entry });
+    const row = await prisma.guestPass.create({
+      data: entry,
+      include: includeCreator,
+    });
     // eslint-disable-next-line no-await-in-loop
     await syncGuestPassToRadius(row.id, reqMeta);
     created.push(row);
   }
 
   await writeAuditLog({
-    requestId: reqMeta.requestId,
-    eventType: 'wifi.guest-pass',
-    entityType: 'guest_pass',
-    action: 'bulk-create',
+    requestId:   reqMeta.requestId,
+    eventType:   'wifi.guest-pass',
+    entityType:  'guest_pass',
+    action:      'bulk-create',
     actorUserId: reqMeta.actorUserId,
-    hotelId: payload.hotelId,
+    hotelId:     payload.hotelId,
     payload: {
-      quantity: payload.quantity,
-      label: payload.label,
+      quantity:      payload.quantity,
+      label:         payload.label,
       roomId: payload.roomId || null,
       clientName: payload.clientName || null,
       durationValue: payload.durationValue,
-      durationUnit: payload.durationUnit,
+      durationUnit:  payload.durationUnit,
     },
   });
 
@@ -181,21 +184,22 @@ async function revokeGuestPass(passId, reqMeta) {
 
   const pass = await prisma.guestPass.update({
     where: { id: passId },
-    data: { isRevoked: true },
+    data:  { isRevoked: true },
+    include: includeCreator,
   });
 
   await syncGuestPassToRadius(pass.id, reqMeta);
 
   await writeAuditLog({
-    requestId: reqMeta.requestId,
-    eventType: 'wifi.guest-pass',
-    entityType: 'guest_pass',
-    entityId: pass.id,
-    action: 'revoke',
+    requestId:   reqMeta.requestId,
+    eventType:   'wifi.guest-pass',
+    entityType:  'guest_pass',
+    entityId:    pass.id,
+    action:      'revoke',
     actorUserId: reqMeta.actorUserId,
-    hotelId: pass.hotelId,
-    payload: { code: pass.code },
-    severity: 'WARNING',
+    hotelId:     pass.hotelId,
+    payload:     { code: pass.code },
+    severity:    'WARNING',
   });
 
   return pass;
@@ -213,15 +217,15 @@ async function deleteGuestPass(passId, reqMeta) {
   await removeGuestPassFromRadius(existing);
 
   await writeAuditLog({
-    requestId: reqMeta.requestId,
-    eventType: 'wifi.guest-pass',
-    entityType: 'guest_pass',
-    entityId: passId,
-    action: 'delete',
+    requestId:   reqMeta.requestId,
+    eventType:   'wifi.guest-pass',
+    entityType:  'guest_pass',
+    entityId:    passId,
+    action:      'delete',
     actorUserId: reqMeta.actorUserId,
-    hotelId: existing.hotelId,
-    payload: { code: existing.code },
-    severity: 'WARNING',
+    hotelId:     existing.hotelId,
+    payload:     { code: existing.code },
+    severity:    'WARNING',
   });
 }
 

@@ -22,21 +22,20 @@
 
     /* Path mapping */
     "ignoreDeprecations": "6.0",
-    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./app/*"],
-      "@/components/*": ["./components/*"],
-      "@/pages/*": ["./pages/*"],
-      "@/hooks/*": ["./hooks/*"],
-      "@/services/*": ["./services/*"],
-      "@/guards/*": ["./guards/*"],
-      "@/router/*": ["./router/*"],
-      "@/ui/*": ["./ui/*"],
-      "@/types/*": ["./types/*"],
-      "@/utils/*": ["./utils/*"],
-      "@/styles/*": ["./styles/*"],
-      "@/config/*": ["./config/*"]
+      "@/*": ["./src/*"],
+      "@/app/*": ["./src/app/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/pages/*": ["./src/pages/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/guards/*": ["./src/guards/*"],
+      "@/router/*": ["./src/router/*"],
+      "@/ui/*": ["./src/ui/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/config/*": ["./src/config/*"]
     }
   },
   "include": [
@@ -54,6 +53,7 @@
     "src/styles",
     "src/i18n",
     "src/assets",
+    "src/vite-env.d.ts",
     "main.tsx"
   ],
   "exclude": ["node_modules"],

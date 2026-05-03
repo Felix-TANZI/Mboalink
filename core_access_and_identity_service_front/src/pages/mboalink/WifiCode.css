@@ -5,15 +5,26 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.pageHeader {
-  margin-bottom: 24px;
-}
+/* ── En-tête ─────────────────────────────────────────────── */
+.pageHeader { margin-bottom: 20px; }
 
 .pageTitle {
   font-size: 32px;
   font-weight: 900;
   color: var(--mboa-blue-dark);
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
+}
+
+.hotelBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(5, 47, 95, 0.08);
+  border: 1px solid rgba(5, 47, 95, 0.15);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mboa-blue-dark);
+  margin-bottom: 10px;
 }
 
 .pageDescription {
@@ -24,6 +35,7 @@
   max-width: 900px;
 }
 
+/* ── Infos & bannière ─────────────────────────────────────── */
 .displayInfo {
   padding: 12px 16px;
   background: rgba(34, 197, 94, 0.1);
@@ -46,11 +58,13 @@
   margin-bottom: 24px;
 }
 
+/* ── Barre d'actions ──────────────────────────────────────── */
 .actionsBar {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .searchInput {
@@ -63,7 +77,6 @@
   outline: none;
   transition: all 0.2s ease;
 }
-
 .searchInput:focus {
   border-color: var(--mboa-yellow);
   box-shadow: 0 0 0 3px rgba(237, 199, 7, 0.1);
@@ -85,28 +98,20 @@
   transition: all 0.2s ease;
   white-space: nowrap;
 }
-
 .btnPrimary {
   background: linear-gradient(135deg, var(--mboa-yellow) 0%, #ffd700 100%);
   color: var(--mboa-blue-dark);
 }
-
-.btnPrimary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(237, 199, 7, 0.3);
-}
-
+.btnPrimary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(237, 199, 7, 0.3); }
 .btnSecondary {
   background: white;
   border: 1.5px solid #e2e8f0;
   color: #475569;
 }
+.btnSecondary:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+.btnSecondary:disabled { opacity: .45; cursor: not-allowed; }
 
-.btnSecondary:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-
+/* ── Tableau ──────────────────────────────────────────────── */
 .tableWrapper {
   overflow-x: auto;
   border: 1px solid #e2e8f0;
@@ -124,31 +129,36 @@
 }
 
 .wifiTable th {
-  padding: 14px 16px;
+  padding: 13px 16px;
   text-align: left;
   font-weight: 800;
   color: #334155;
   border-bottom: 2px solid #e2e8f0;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .wifiTable td {
-  padding: 14px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid #f1f5f9;
   color: #475569;
+  vertical-align: middle;
 }
 
-.wifiTable tbody tr:hover {
-  background: #fafbfc;
-}
+.wifiTable tbody tr:hover { background: #fafbfc; }
 
+/* ── Ligne expirée ────────────────────────────────────────── */
+.rowExpired { background: rgba(239, 68, 68, 0.03); }
+.rowExpired:hover { background: rgba(239, 68, 68, 0.06) !important; }
+
+/* ── Cellules ─────────────────────────────────────────────── */
 .codeCell {
   font-family: 'Courier New', monospace;
   font-weight: 700;
   color: var(--mboa-blue-dark);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .bandwidthCell {
@@ -156,25 +166,24 @@
   font-size: 12px;
 }
 
-.optionsCell {
-  display: flex;
-  gap: 8px;
+.dateCell {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
 }
 
-.optionBtn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
+.expiredDate {
+  color: #dc2626 !important;
+  font-weight: 700;
 }
 
-.optionBtn:hover {
-  background: rgba(5, 47, 95, 0.06);
+.createdByCell {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
 }
 
+/* ── Checkbox ─────────────────────────────────────────────── */
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
@@ -182,24 +191,61 @@ input[type="checkbox"] {
   accent-color: var(--mboa-yellow);
 }
 
+/* ── Boutons icônes ───────────────────────────────────────── */
+.optionsCell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.actionIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.actionIconBtnRevoke {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.actionIconBtnRevoke:hover {
+  background: rgba(245, 158, 11, 0.2);
+  transform: translateY(-1px);
+}
+
+.actionIconBtnEdit {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.actionIconBtnEdit:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+.actionIconBtnDelete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.actionIconBtnDelete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .wifiCodePage {
-    padding: 20px;
-  }
-
-  .pageTitle {
-    font-size: 24px;
-  }
-
-  .actionsBar {
-    flex-direction: column;
-  }
-
-  .actionButtons {
-    width: 100%;
-  }
-
-  .btn {
-    flex: 1;
-  }
+  .wifiCodePage { padding: 20px; }
+  .pageTitle    { font-size: 24px; }
+  .actionsBar   { flex-direction: column; }
+  .actionButtons { width: 100%; }
+  .btn          { flex: 1; }
 }

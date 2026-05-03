@@ -218,6 +218,65 @@
   gap: 12px;
 }
 
+/* ── Cap (slider + input + unité) ─────────────────────────── */
+.capGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.capSlider {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  /* pas de width:100% — flex:1 suffit */
+  width: auto !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.capSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mboa-blue-dark);
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px rgba(5, 47, 95, 0.3);
+}
+
+.capSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mboa-blue-dark);
+  cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px rgba(5, 47, 95, 0.3);
+}
+
+.capInput {
+  flex: 0 0 90px;
+  width: 90px !important;
+  padding: 8px 10px !important;
+  text-align: right;
+  font-weight: 700;
+  font-size: 13px !important;
+}
+
+.capUnit {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .checkboxGroup {
   display: flex;
   flex-direction: column;
