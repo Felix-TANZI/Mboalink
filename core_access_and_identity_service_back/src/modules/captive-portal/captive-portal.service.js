@@ -118,6 +118,10 @@ function normalizeCode(code) {
   return String(code || '').trim().toUpperCase();
 }
 
+function normalizeText(value) {
+  return String(value || '').trim();
+}
+
 function guestPassIsUsable(pass) {
   if (!pass || pass.isRevoked) return false;
   if (pass.expiryAt && new Date(pass.expiryAt) <= new Date()) return false;
@@ -127,28 +131,52 @@ function guestPassIsUsable(pass) {
 
 async function authenticateCaptivePortal(payload) {
   const code = normalizeCode(payload.code);
+  const uuid = normalizeText(payload.uuid);
+  const clientName = normalizeText(payload.clientName);
+  const roomNumber = normalizeText(payload.roomNumber);
+  const hotelId = normalizeText(payload.hotelId);
+  const now = new Date();
+  const include = {
+    hotel: { select: { id: true, name: true } },
+    room: { select: { id: true, name: true, type: true } },
+  };
 
-  let pass = await prisma.guestPass.findUnique({
-    where: { code },
-    include: {
-      hotel: { select: { id: true, name: true } },
-      room: { select: { id: true, name: true, type: true } },
-    },
-  });
+  let pass = null;
 
-  if (!pass) {
+  if (uuid) {
+    pass = await prisma.guestPass.findUnique({
+      where: { id: uuid },
+      include,
+    });
+  }
+
+  if (!pass && code) {
+    pass = await prisma.guestPass.findUnique({
+      where: { code },
+      include,
+    });
+  }
+
+  if (!pass && roomNumber) {
     pass = await prisma.guestPass.findFirst({
       where: {
+        hotelId: hotelId || undefined,
         isRevoked: false,
-        expiryAt: { gt: new Date() },
+        OR: [
+          { expiryAt: null },
+          { expiryAt: { gt: now } },
+        ],
         room: {
-          name: { equals: code, mode: 'insensitive' },
+          OR: [
+            { name: { equals: roomNumber, mode: 'insensitive' } },
+            { type: { equals: roomNumber, mode: 'insensitive' } },
+          ],
         },
+        clientName: clientName
+          ? { contains: clientName, mode: 'insensitive' }
+          : undefined,
       },
-      include: {
-        hotel: { select: { id: true, name: true } },
-        room: { select: { id: true, name: true, type: true } },
-      },
+      include,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -200,6 +228,46 @@ async function authenticateCaptivePortal(payload) {
   };
 }
 
+async function getCaptiveHotel(hotelId) {
+  const where = hotelId
+    ? { id: hotelId }
+    : { status: 'ACTIVE' };
+
+  const hotel = await prisma.hotel.findFirst({
+    where,
+    select: {
+      id: true,
+      name: true,
+      city: true,
+      country: true,
+      address: true,
+      phone: true,
+      website: true,
+      description: true,
+      latitude: true,
+      longitude: true,
+      amenities: true,
+      photos: true,
+      wifiConfig: {
+        select: {
+          ssid: true,
+          captivePortal: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (!hotel) {
+    const err = new Error('Hotel not found');
+    err.status = 404;
+    throw err;
+  }
+
+  return hotel;
+}
+
 module.exports = {
   authenticateCaptivePortal,
+  getCaptiveHotel,
 };

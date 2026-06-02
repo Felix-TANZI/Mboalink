@@ -10,6 +10,15 @@ type AddRoomModalProps = {
   hotels: Array<Record<string, any>>;
 };
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: AddRoomModalProps) {
   // Equipment Catalog (normalement vient de l'API)
   const equipmentCatalog = [
@@ -142,13 +151,22 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
     }))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.hotelId || !formData.type || !formData.name || !formData.description) {
       alert('Veuillez remplir tous les champs requis (Hôtel, Type, Numéro, Description)')
       return
     }
 
-    onSave(formData)
+    const photos = await Promise.all((formData.photos || []).map(async (photo) => {
+      const url = photo.file instanceof File ? await fileToDataUrl(photo.file) : photo.url
+      return {
+        url,
+        name: photo.name,
+        isMain: Boolean(photo.isMain),
+      }
+    }))
+
+    onSave({ ...formData, photos })
   }
 
   if (!isOpen) return null

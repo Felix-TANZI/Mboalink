@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "@/router/routes";
 import { authService } from "@/services/auth/authService";
+import mboalinkLogo from "@/assets/images/Logo Mboalink-02 1-1.png";
 import "./Layout.css";
 
 type LayoutProps = {
@@ -82,7 +83,7 @@ export default function Layout({
           <div className="headerLeft">
             <div className="headerBrand">
               <img
-                src="/src/assets/images/Logo Mboalink-02 1-1.png"
+                src={mboalinkLogo}
                 alt="MboaLink"
                 className="headerLogo"
               />

@@ -1,4 +1,5 @@
 import React from 'react';
+import mboalinkLogo from '@/assets/images/Logo Mboalink-02 1-1.png';
 
 interface LogoProps {
   variant?: 'desktop' | 'tablet' | 'mobile';
@@ -10,7 +11,7 @@ export const Logo: React.FC<LogoProps> = ({ variant = 'desktop' }) => {
   return (
     <div className="flex items-center gap-3">
       <img
-        src="/src/assets/images/Logo Mboalink-02 1-1.png"
+        src={mboalinkLogo}
         alt="MboaLink Logo"
         className={`${sizeClass} object-contain`}
       />

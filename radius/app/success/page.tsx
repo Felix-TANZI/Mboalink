@@ -9,6 +9,7 @@ function SuccessContent() {
   const router = useRouter();
   const prenom = params.get("prenom") ?? "Client";
   const chambre = params.get("chambre") ?? "";
+  const hotelName = params.get("hotel") ?? "MboaLink";
 
   return (
     <div
@@ -43,7 +44,7 @@ function SuccessContent() {
               lineHeight: 1.2,
             }}
           >
-            Hilton Brazzaville Les Tours Jumelles Hotel &amp; Résidences
+            {hotelName}
           </h1>
         </div>
 
@@ -126,7 +127,7 @@ function SuccessContent() {
                   className="text-sm font-semibold"
                   style={{ color: "#C8963E" }}
                 >
-                  Wi-Fi Hilton Guest
+                  Wi-Fi {hotelName}
                 </span>
               </div>
               <p className="text-gray-600 text-xs">
@@ -175,7 +176,7 @@ function SuccessContent() {
           {/* Footer carte */}
           <div className="px-8 pb-5 text-center">
             <p className="text-xs text-gray-300">
-              © {new Date().getFullYear()} Hilton Brazzaville Les Tours Jumelles
+              © {new Date().getFullYear()} {hotelName}
             </p>
           </div>
         </div>

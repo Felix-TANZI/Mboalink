@@ -5,6 +5,8 @@ import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
 import './HotelList.css'
 
+const imagePlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23eef2f7"/%3E%3Ctext x="200" y="150" text-anchor="middle" dominant-baseline="middle" fill="%2364758b" font-family="Arial" font-size="16"%3EImage indisponible%3C/text%3E%3C/svg%3E'
+
 const mapStatusFromApi = (status: string) => {
   if (status === 'ACTIVE') return 'Actif'
   if (status === 'MAINTENANCE') return 'Maintenance'
@@ -120,7 +122,8 @@ export default function HotelList() {
 
   const getMainPhoto = (hotel: Record<string, any>) => {
     const mainPhoto = hotel.photos?.find(p => p.isMain)
-    return mainPhoto?.url || hotel.photos?.[0]?.url || '/api/placeholder/400/300'
+    const url = mainPhoto?.url || hotel.photos?.[0]?.url
+    return url && !String(url).startsWith('blob:') ? url : imagePlaceholder
   }
 
   return (

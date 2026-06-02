@@ -1,21 +1,54 @@
 "use client";
 
-import { useState, FormEvent, CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, FormEvent, CSSProperties, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+type CaptiveHotel = {
+  id: string;
+  name: string;
+  city?: string;
+  country?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  description?: string;
+  amenities?: string[];
+  photos?: Array<{ url: string; isMain?: boolean; name?: string }>;
+  wifiConfig?: {
+    ssid?: string;
+    captivePortal?: {
+      welcomeMessage?: string;
+    };
+  };
+};
+
+function LoginContent() {
   const router = useRouter();
+  const params = useSearchParams();
+  const hotelId = params.get("hotelId") || "";
   const [identifiantClient, setIdentifiantClient] = useState("");
   const [numeroChambre, setNumeroChambre] = useState("");
+  const [uuid, setUuid] = useState("");
+  const [hotel, setHotel] = useState<CaptiveHotel | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const suffix = hotelId ? `?hotelId=${encodeURIComponent(hotelId)}` : "";
+    fetch(`/api/hotel${suffix}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setHotel(data.hotel);
+      })
+      .catch(() => undefined);
+  }, [hotelId]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
 
-    if (!identifiantClient.trim() && !numeroChambre.trim()) {
-      setError("Veuillez saisir votre nom ou votre numéro de chambre.");
+    if (!uuid.trim() && (!identifiantClient.trim() || !numeroChambre.trim())) {
+      setError("Veuillez saisir votre UUID ou votre nom avec votre numéro de chambre.");
       return;
     }
 
@@ -26,6 +59,8 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          hotelId,
+          uuid: uuid.trim(),
           identifiantClient: identifiantClient.trim(),
           numeroChambre: numeroChambre.trim(),
         }),
@@ -35,7 +70,7 @@ export default function LoginPage() {
 
       if (res.ok && data.success) {
         router.push(
-          `/success?prenom=${encodeURIComponent(data.prenom)}&chambre=${encodeURIComponent(data.numeroChambre)}`
+          `/success?prenom=${encodeURIComponent(data.prenom)}&chambre=${encodeURIComponent(data.numeroChambre)}&hotel=${encodeURIComponent(data.hotelName)}`
         );
       } else {
         setError(data.message || "Identifiants incorrects. Veuillez réessayer.");
@@ -47,6 +82,10 @@ export default function LoginPage() {
     }
   }
 
+  const hotelName = hotel?.name || "MboaLink";
+  const mainPhoto = hotel?.photos?.find((photo) => photo.isMain)?.url || hotel?.photos?.[0]?.url;
+  const ssid = hotel?.wifiConfig?.ssid || "MboaLink Guest";
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f5f5f5" }}>
 
@@ -54,10 +93,12 @@ export default function LoginPage() {
       <div
         className="relative w-full flex items-center justify-center"
         style={{
-          backgroundImage: "linear-gradient(135deg, #0D2240 0%, #315C7D 55%, #C8963E 100%)",
+          backgroundImage: mainPhoto
+            ? `linear-gradient(to bottom, rgba(10,20,45,0.30), rgba(10,20,45,0.78)), url("${mainPhoto}")`
+            : "linear-gradient(135deg, #0D2240 0%, #315C7D 55%, #C8963E 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight: "320px",
+          minHeight: "340px",
         }}
       >
         {/* Overlay dégradé sombre */}
@@ -87,8 +128,13 @@ export default function LoginPage() {
               margin: "0 auto",
             }}
           >
-            Hilton Brazzaville Les Tours Jumelles Hotel &amp; Résidences
+            {hotelName}
           </h1>
+          {(hotel?.city || hotel?.country) && (
+            <p className="text-white text-sm mt-4 opacity-90">
+              {[hotel.city, hotel.country].filter(Boolean).join(", ")}
+            </p>
+          )}
         </div>
       </div>
 
@@ -97,14 +143,30 @@ export default function LoginPage() {
         className="flex-1 flex items-start justify-center px-4 py-10"
         style={{ backgroundColor: "#f5f5f5" }}
       >
-        <div
-          className="bg-white w-full max-w-sm shadow-xl"
-          style={{ borderRadius: "4px" }}
-        >
+        <div className="w-full max-w-5xl grid gap-6 md:grid-cols-[1fr_380px] items-start">
+          <section className="bg-white shadow-xl px-7 py-7" style={{ borderRadius: "4px" }}>
+            <h2 className="text-gray-900 text-xl font-black uppercase" style={{ fontFamily: "Georgia, serif" }}>
+              {hotel?.wifiConfig?.captivePortal?.welcomeMessage || `Bienvenue chez ${hotelName}`}
+            </h2>
+            {hotel?.description && (
+              <p className="text-gray-600 text-sm mt-3 leading-6">{hotel.description}</p>
+            )}
+            <div className="grid sm:grid-cols-2 gap-3 mt-6 text-sm text-gray-600">
+              {hotel?.address && <p><strong>Adresse:</strong> {hotel.address}</p>}
+              {hotel?.phone && <p><strong>Téléphone:</strong> {hotel.phone}</p>}
+              {hotel?.website && <p><strong>Site:</strong> {hotel.website}</p>}
+              <p><strong>Wi-Fi:</strong> {ssid}</p>
+            </div>
+          </section>
+
+          <div
+            className="bg-white w-full shadow-xl"
+            style={{ borderRadius: "4px" }}
+          >
           {/* En-tête carte */}
           <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100">
             <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-1 leading-relaxed">
-              Entrez votre nom et votre numéro de chambre pour vous connecter
+              Entrez votre nom et votre numéro de chambre, ou votre UUID
             </p>
             <h2
               className="text-gray-900 text-xl font-black uppercase mt-2"
@@ -116,6 +178,25 @@ export default function LoginPage() {
 
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <KeyIcon />
+              </span>
+              <input
+                id="uuid"
+                type="text"
+                value={uuid}
+                onChange={(e) => setUuid(e.target.value)}
+                placeholder="UUID ou code Wi-Fi"
+                autoComplete="off"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition text-sm"
+                style={{ "--tw-ring-color": "#C8963E" } as CSSProperties}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="text-center text-xs uppercase tracking-widest text-gray-400">ou</div>
+
             {/* Nom client */}
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -194,13 +275,22 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+        </div>
       </div>
 
       {/* ── FOOTER PAGE ── */}
       <p className="text-center text-gray-400 text-xs pb-6 opacity-70">
-        © {new Date().getFullYear()} Hilton Brazzaville Les Tours Jumelles Hotel &amp; Résidences
+        © {new Date().getFullYear()} {hotelName}
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   );
 }
 
@@ -229,6 +319,16 @@ function DoorIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+function KeyIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="M12 12l8-8" />
+      <path d="M17 4h3v3" />
     </svg>
   );
 }

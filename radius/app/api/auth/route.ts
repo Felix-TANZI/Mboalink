@@ -6,13 +6,15 @@ const MBOALINK_API_BASE_URL =
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const code = String(body.numeroChambre || body.roomNumber || body.code || body.identifiantClient || "")
-      .trim()
-      .toUpperCase();
+    const code = String(body.code || "").trim().toUpperCase();
+    const uuid = String(body.uuid || "").trim();
+    const clientName = String(body.identifiantClient || body.clientName || "").trim();
+    const roomNumber = String(body.numeroChambre || body.roomNumber || "").trim();
+    const hotelId = String(body.hotelId || "").trim();
 
-    if (!code) {
+    if (!code && !uuid && (!clientName || !roomNumber)) {
       return NextResponse.json(
-        { success: false, message: "Code Wi-Fi requis." },
+        { success: false, message: "Saisissez un UUID, un code Wi-Fi ou votre nom avec votre numéro de chambre." },
         { status: 400 }
       );
     }
@@ -21,7 +23,11 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        code,
+        code: code || undefined,
+        uuid: uuid || undefined,
+        clientName: clientName || undefined,
+        roomNumber: roomNumber || undefined,
+        hotelId: hotelId || undefined,
         ipAddress:
           req.headers.get("x-forwarded-for") ??
           req.headers.get("x-real-ip") ??

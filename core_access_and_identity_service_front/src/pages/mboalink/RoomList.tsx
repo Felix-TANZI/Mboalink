@@ -5,6 +5,8 @@ import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
 import './RoomList.css'
 
+const imagePlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23eef2f7"/%3E%3Ctext x="200" y="150" text-anchor="middle" dominant-baseline="middle" fill="%2364758b" font-family="Arial" font-size="16"%3EImage indisponible%3C/text%3E%3C/svg%3E'
+
 export default function RoomList() {
   const [hotels, setHotels] = useState<Array<Record<string, any>>>([])
   const [rooms, setRooms] = useState<Array<Record<string, any>>>([])
@@ -141,7 +143,8 @@ export default function RoomList() {
 
   const getMainPhoto = (room: Record<string, any>) => {
     const mainPhoto = room.photos?.find(p => p.isMain)
-    return mainPhoto?.url || room.photos?.[0]?.url || '/api/placeholder/400/300'
+    const url = mainPhoto?.url || room.photos?.[0]?.url
+    return url && !String(url).startsWith('blob:') ? url : imagePlaceholder
   }
 
   return (

@@ -9,6 +9,15 @@ type AddHotelModalProps = {
   hotel?: Record<string, any> | null;
 };
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHotelModalProps) {
   const [formData, setFormData] = useState<Record<string, any>>({
     name: '',
@@ -135,7 +144,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
     }))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.name || !formData.city || !formData.contact || !formData.address) {
       alert('Veuillez remplir tous les champs requis (Nom, Ville, Adresse, Contact)')
       return
@@ -161,8 +170,18 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
     if (formData.amenities.conference) amenitiesList.push('Salle de conférence')
     if (formData.amenities.restaurant) amenitiesList.push('Restaurant')
 
+    const photos = await Promise.all((formData.photos || []).map(async (photo) => {
+      const url = photo.file instanceof File ? await fileToDataUrl(photo.file) : photo.url
+      return {
+        url,
+        name: photo.name,
+        isMain: Boolean(photo.isMain),
+      }
+    }))
+
     const hotelData = {
       ...formData,
+      photos,
       latitude: formData.latitude ? parseFloat(formData.latitude) : null,
       longitude: formData.longitude ? parseFloat(formData.longitude) : null,
       amenities: amenitiesList,

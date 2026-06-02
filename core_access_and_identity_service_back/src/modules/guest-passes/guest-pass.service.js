@@ -42,6 +42,7 @@ async function ensureHotel(hotelId) {
 // Include createdBy user in all queries
 const includeCreator = {
   hotel:     { select: { id: true, name: true } },
+  room:      { select: { id: true, name: true, type: true } },
   createdBy: { select: { id: true, fullName: true, email: true } },
 };
 
@@ -50,8 +51,10 @@ async function listGuestPasses(query) {
     hotelId:   query.hotelId   || undefined,
     isRevoked: query.isRevoked ? query.isRevoked === 'true' : undefined,
     OR: query.search ? [
-      { code:  { contains: query.search, mode: 'insensitive' } },
-      { label: { contains: query.search, mode: 'insensitive' } },
+      { code:       { contains: query.search, mode: 'insensitive' } },
+      { label:      { contains: query.search, mode: 'insensitive' } },
+      { clientName: { contains: query.search, mode: 'insensitive' } },
+      { room:       { name: { contains: query.search, mode: 'insensitive' } } },
     ] : undefined,
   };
 
@@ -77,8 +80,10 @@ async function createGuestPass(payload, reqMeta) {
   const guestPass = await prisma.guestPass.create({
     data: {
       hotelId:        payload.hotelId,
+      roomId:         payload.roomId || null,
       code,
       label:          payload.label,
+      clientName:     payload.clientName || null,
       durationValue:  payload.durationValue,
       durationUnit:   payload.durationUnit,
       maxUses:        payload.maxUses,

@@ -46,6 +46,7 @@ function isExpired(expiryAt) {
 
 export default function WifiCode() {
   const [codes,       setCodes]       = useState([])
+  const [rooms,       setRooms]       = useState([])
   const [hotelId,     setHotelId]     = useState('')
   const [isLoading,   setIsLoading]   = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,8 +59,12 @@ export default function WifiCode() {
   const loadCodes = async (hId) => {
     if (!hId) return
     try {
-      const passList = await mboalinkService.listGuestPasses({ hotelId: hId })
+      const [passList, roomList] = await Promise.all([
+        mboalinkService.listGuestPasses({ hotelId: hId }),
+        mboalinkService.listRooms({ hotelId: hId }),
+      ])
       setCodes(passList)
+      setRooms(roomList)
     } catch (err) {
       alert(err.message || 'Impossible de charger les codes')
     }
@@ -96,7 +101,7 @@ export default function WifiCode() {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return codes
     return codes.filter((c) =>
-      `${c.code} ${c.label || ''}`.toLowerCase().includes(q)
+      `${c.code} ${c.label || ''} ${c.clientName || ''} ${c.room?.name || ''} ${c.room?.type || ''}`.toLowerCase().includes(q)
     )
   }, [codes, searchQuery])
 
@@ -156,6 +161,8 @@ export default function WifiCode() {
         hotelId,
         code:            newPass.passCode,
         label:           newPass.label,
+        roomId:          newPass.roomId || undefined,
+        clientName:      newPass.clientName || undefined,
         durationValue,
         durationUnit:    newPass.durationType,
         maxUses:         Number(newPass.maxUses || 0),
@@ -340,6 +347,10 @@ export default function WifiCode() {
                       </td>
                       <td className="codeCell">{code.code}</td>
                       <td>{code.label || '—'}</td>
+                      <td>
+                        {code.room?.name || code.room?.type || '—'}
+                        {code.clientName ? <><br /><small>{code.clientName}</small></> : null}
+                      </td>
                       <td>{code.maxUses === 0 ? '∞' : code.maxUses}</td>
                       <td>
                         {code.durationValue ? `${code.durationValue} ${code.durationUnit || ''}` : '—'}
@@ -394,6 +405,7 @@ export default function WifiCode() {
         isOpen={isSingleModalOpen}
         onClose={() => setIsSingleModalOpen(false)}
         onSubmit={handleAddGuestPass}
+        rooms={rooms}
       />
 
       <AddMassGuestPassModal

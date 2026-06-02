@@ -1,6 +1,6 @@
 const asyncHandler = require('../../utils/async-handler');
 const { success } = require('../../utils/api-response');
-const { authenticateCaptivePortal } = require('./captive-portal.service');
+const { authenticateCaptivePortal, getCaptiveHotel } = require('./captive-portal.service');
 
 const postCaptiveAuth = asyncHandler(async (req, res) => {
   const data = await authenticateCaptivePortal({
@@ -14,6 +14,12 @@ const postCaptiveAuth = asyncHandler(async (req, res) => {
   res.json(success(data));
 });
 
+const getCaptiveHotelPublic = asyncHandler(async (req, res) => {
+  const data = await getCaptiveHotel(req.params.hotelId || req.query.hotelId);
+  res.json(success(data));
+});
+
 module.exports = {
   postCaptiveAuth,
+  getCaptiveHotelPublic,
 };

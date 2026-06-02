@@ -17,6 +17,8 @@ function todayStr() {
 const defaultForm = () => ({
   passCode:     generateCode(),
   label:        '',
+  roomId:       '',
+  clientName:   '',
   duration:     '',
   durationType: 'Hours',
   maxUses:      0,
@@ -37,9 +39,10 @@ type GuestPassModalProps = {
   isOpen:    boolean
   onClose:   () => void
   onSubmit?: (data: Record<string, unknown>) => void
+  rooms?: Array<{ id: string; name?: string | null; type: string }>
 }
 
-export default function AddGuestPassModal({ isOpen, onClose, onSubmit }: GuestPassModalProps) {
+export default function AddGuestPassModal({ isOpen, onClose, onSubmit, rooms = [] }: GuestPassModalProps) {
   const [formData, setFormData] = useState<Record<string, any>>(defaultForm())
 
   const handleInputChange = (field: string, value: string | number) =>
@@ -112,6 +115,41 @@ export default function AddGuestPassModal({ isOpen, onClose, onSubmit }: GuestPa
                 value={formData.label}
                 onChange={(e) => handleInputChange('label', e.target.value)}
                 placeholder="Ex : Conférence Total Energie"
+              />
+            </div>
+
+            <div className="formRow">
+              <div className="formLabel">
+                <label>Chambre <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optionnel)</span></label>
+                <p className="labelHelp">
+                  Associez le ticket à une chambre pour permettre la connexion par nom + numéro de chambre.
+                </p>
+              </div>
+              <select
+                value={formData.roomId}
+                onChange={(e) => handleInputChange('roomId', e.target.value)}
+              >
+                <option value="">Aucune chambre</option>
+                {rooms.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name || room.type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="formRow">
+              <div className="formLabel">
+                <label>Nom du client <span style={{ fontWeight: 400, color: '#94a3b8' }}>(optionnel)</span></label>
+                <p className="labelHelp">
+                  Ce nom sera utilisé avec la chambre sur le portail captif.
+                </p>
+              </div>
+              <input
+                type="text"
+                value={formData.clientName}
+                onChange={(e) => handleInputChange('clientName', e.target.value)}
+                placeholder="Ex : Jean Dupont"
               />
             </div>
 
