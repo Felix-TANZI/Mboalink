@@ -3,6 +3,8 @@ import ConfigWifiHistoryModal from '@/components/mboalink/ConfigWifiHistoryModal
 import ConfigWifiModal from '@/components/mboalink/ConfigWifiModal'
 import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './ConfigWifiList.css'
 
 const authMethodFromApi: Record<string, string> = {
@@ -24,6 +26,10 @@ const authMethodToApi: Record<string, string> = {
 }
 
 export default function ConfigWifiList() {
+  const currentUser = authService.getStoredUser()
+  const canChooseHotel = canSelectHotelScope(currentUser)
+  const [hotels, setHotels] = useState<Array<Record<string, any>>>([])
+  const [hotelId, setHotelId] = useState('')
   const [wifiConfigs, setWifiConfigs] = useState<Array<Record<string, any>>>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -33,9 +39,10 @@ export default function ConfigWifiList() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
   const [selectedConfig, setSelectedConfig] = useState<Record<string, any> | null>(null)
 
-  const loadConfigs = async () => {
+  const loadConfigs = async (scope = hotelId) => {
     try {
-      const data = await mboalinkService.listWifiConfigs()
+      const scopedHotelId = hotelScopeToQuery(scope)
+      const data = await mboalinkService.listWifiConfigs(scopedHotelId ? { hotelId: scopedHotelId } : undefined)
       setWifiConfigs(data.map((config) => ({
         ...config,
         hotelName: config.hotel?.name || '',
@@ -54,8 +61,20 @@ export default function ConfigWifiList() {
   }
 
   useEffect(() => {
-    loadConfigs()
+    mboalinkService.listHotels()
+      .then(async (hotelList) => {
+        setHotels(hotelList)
+        const defaultId = getInitialHotelScope(currentUser, hotelList)
+        setHotelId(defaultId)
+        await loadConfigs(defaultId)
+      })
+      .catch((error) => alert((error as Error).message || 'Impossible de charger les hôtels'))
   }, [])
+
+  useEffect(() => {
+    if (!hotelId) return
+    loadConfigs(hotelId)
+  }, [hotelId])
 
   const filteredConfigs = wifiConfigs.filter(config => {
     const matchesSearch = config.hotelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -101,7 +120,7 @@ export default function ConfigWifiList() {
     }
 
     mboalinkService.upsertWifiConfig(selectedConfig.hotelId, payload)
-      .then(() => loadConfigs())
+      .then(() => loadConfigs(hotelId))
       .catch((error) => alert((error as Error).message || 'Mise à jour impossible'))
       .finally(() => {
         setIsConfigModalOpen(false)
@@ -159,6 +178,18 @@ export default function ConfigWifiList() {
         </div>
 
         <div className="filtersBar">
+          {canChooseHotel && (
+            <select
+              className="filterSelect"
+              value={hotelId}
+              onChange={(e) => setHotelId(e.target.value)}
+            >
+              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              {hotels.map((hotel) => (
+                <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+              ))}
+            </select>
+          )}
           <input
             type="text"
             className="searchInput"

@@ -2,6 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 
 const MBOALINK_API_BASE_URL =
   process.env.MBOALINK_API_BASE_URL || "http://localhost:13000/api/v1";
+const MBOALINK_PUBLIC_ASSET_BASE_URL =
+  process.env.MBOALINK_PUBLIC_ASSET_BASE_URL ||
+  MBOALINK_API_BASE_URL.replace(/\/api\/v\d+\/?$/, "");
+
+function normalizeAssetUrl(url?: string) {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  const base = MBOALINK_PUBLIC_ASSET_BASE_URL.replace(/\/$/, "");
+  const path = url.startsWith("/") ? url : `/${url}`;
+  return `${base}${path}`;
+}
+
+function normalizeHotelAssets(hotel: any) {
+  return {
+    ...hotel,
+    photos: Array.isArray(hotel?.photos)
+      ? hotel.photos.map((photo: any) => ({
+          ...photo,
+          url: normalizeAssetUrl(photo?.url),
+        }))
+      : hotel?.photos,
+    wifiConfig: hotel?.wifiConfig
+      ? {
+          ...hotel.wifiConfig,
+          captivePortal: {
+            ...hotel.wifiConfig.captivePortal,
+            logo: normalizeAssetUrl(hotel.wifiConfig.captivePortal?.logo),
+          },
+        }
+      : hotel?.wifiConfig,
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,7 +58,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, hotel: payload.data });
+    return NextResponse.json({ success: true, hotel: normalizeHotelAssets(payload.data) });
   } catch (err) {
     console.error("[MBOALINK CAPTIVE HOTEL ERROR]", err);
     return NextResponse.json(

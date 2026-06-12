@@ -4,6 +4,8 @@ import AddGuestPassModal from '@/components/mboalink/AddGuestPassModal'
 import AddMassGuestPassModal from '@/components/mboalink/AddMassGuestPassModal'
 import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hasConcreteHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './WifiCode.css'
 
 // ── Icônes SVG ────────────────────────────────────────────
@@ -45,8 +47,12 @@ function isExpired(expiryAt) {
 }
 
 export default function WifiCode() {
+  const currentUser = authService.getStoredUser()
+  const isHotelIt = currentUser?.role === 'HOTEL_IT'
+  const canChooseHotel = canSelectHotelScope(currentUser)
   const [codes,       setCodes]       = useState([])
   const [rooms,       setRooms]       = useState([])
+  const [hotels,      setHotels]      = useState([])
   const [hotelId,     setHotelId]     = useState('')
   const [isLoading,   setIsLoading]   = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -57,11 +63,11 @@ export default function WifiCode() {
   const selectAllRef = useRef(null)
 
   const loadCodes = async (hId) => {
-    if (!hId) return
     try {
+      const scopedHotelId = hotelScopeToQuery(hId)
       const [passList, roomList] = await Promise.all([
-        mboalinkService.listGuestPasses({ hotelId: hId }),
-        mboalinkService.listRooms({ hotelId: hId }),
+        mboalinkService.listGuestPasses(scopedHotelId ? { hotelId: scopedHotelId } : undefined),
+        mboalinkService.listRooms(scopedHotelId ? { hotelId: scopedHotelId } : undefined),
       ])
       setCodes(passList)
       setRooms(roomList)
@@ -73,13 +79,20 @@ export default function WifiCode() {
   useEffect(() => {
     mboalinkService.listHotels()
       .then((hotelList) => {
-        const defaultId = hotelList[0]?.id || ''
+        setHotels(hotelList)
+        const defaultId = getInitialHotelScope(currentUser, hotelList)
         setHotelId(defaultId)
         return loadCodes(defaultId)
       })
       .catch((err) => alert(err.message || 'Chargement impossible'))
       .finally(() => setIsLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (!hotelId || isLoading) return
+    loadCodes(hotelId)
+    setSelected([])
+  }, [hotelId])
 
   // Mise à jour état indéterminé
   useEffect(() => {
@@ -153,7 +166,7 @@ export default function WifiCode() {
 
   // ── Création ──────────────────────────────────────────────
   const handleAddGuestPass = async (newPass) => {
-    if (!hotelId) { alert('Aucun hôtel disponible'); return }
+    if (!hasConcreteHotelScope(hotelId)) { alert('Sélectionnez un hôtel précis avant de créer un code'); return }
     try {
       const durationValue = newPass.duration === '' || newPass.duration === undefined
         ? undefined : Number(newPass.duration)
@@ -179,7 +192,7 @@ export default function WifiCode() {
   }
 
   const handleAddMassGuestPass = async (massData) => {
-    if (!hotelId) { alert('Aucun hôtel disponible'); return }
+    if (!hasConcreteHotelScope(hotelId)) { alert('Sélectionnez un hôtel précis avant de créer des codes'); return }
     try {
       const durationValue = massData.duration === '' || massData.duration === undefined
         ? undefined : Number(massData.duration)
@@ -203,6 +216,8 @@ export default function WifiCode() {
     }
   }
 
+  const canCreatePass = hasConcreteHotelScope(hotelId)
+
   return (
     <Layout activePage="LOGINS" activeSubPage="WiFi Code">
       <div className="wifiCodePage">
@@ -210,10 +225,15 @@ export default function WifiCode() {
         {/* ── En-tête ──────────────────────────────────────── */}
         <div className="pageHeader">
           <h1 className="pageTitle">Guest WiFi Codes</h1>
+          {isHotelIt && (
+            <span className="hotelBadge">
+              Vue IT hôtel - accès clients
+            </span>
+          )}
           <p className="pageDescription">
-            Les WiFi Codes permettent à vos invités d'accéder à Internet via MboaLink.
-            Vous pouvez créer de nouveaux codes, ajuster la durée, le débit et le nombre d'utilisations,
-            ou supprimer les codes existants à partir de cette liste.
+            {isHotelIt
+                ? "Gérez les accès Wi-Fi clients de votre hôtel, avec un périmètre limité à votre établissement."
+              : "Les WiFi Codes permettent à vos invités d'accéder à Internet via MboaLink. Vous pouvez créer de nouveaux codes, ajuster la durée, le débit et le nombre d'utilisations, ou supprimer les codes existants à partir de cette liste."}
           </p>
         </div>
 
@@ -230,6 +250,18 @@ export default function WifiCode() {
 
         {/* ── Barre d'actions ──────────────────────────────── */}
         <div className="actionsBar">
+          {canChooseHotel && (
+            <select
+              className="filterSelect"
+              value={hotelId}
+              onChange={(e) => setHotelId(e.target.value)}
+            >
+              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              {hotels.map((hotel) => (
+                <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+              ))}
+            </select>
+          )}
           <input
             type="text"
             placeholder="Rechercher un code, un label..."
@@ -250,14 +282,14 @@ export default function WifiCode() {
             </button>
             <button
               className="btn btnPrimary"
-              disabled={!hotelId}
+              disabled={!canCreatePass}
               onClick={() => setIsMassModalOpen(true)}
             >
               Add Mass Guest Pass
             </button>
             <button
               className="btn btnPrimary"
-              disabled={!hotelId}
+              disabled={!canCreatePass}
               onClick={() => setIsSingleModalOpen(true)}
             >
               Add Guest Pass
@@ -271,9 +303,9 @@ export default function WifiCode() {
           </div>
         )}
 
-        {!hotelId && !isLoading && (
+        {hotelId === ALL_HOTELS && !isLoading && (
           <div className="warningBanner">
-            Créez d'abord un hôtel dans Hotel Manager avant de générer des codes WiFi.
+            Vue globale active : sélectionnez un hôtel précis pour créer de nouveaux codes WiFi.
           </div>
         )}
 

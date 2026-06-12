@@ -4,7 +4,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(128),
   fullName: z.string().min(2).max(120),
-  role: z.enum(['ADMIN', 'CLIENT', 'RECEPTIONIST', 'SUPPORT']).optional(),
+  role: z.enum(['ADMIN', 'CLIENT', 'RECEPTIONIST', 'SUPPORT', 'HOTEL_IT']).optional(),
+  hotelId: z.string().min(3).optional().or(z.literal('')),
 });
 
 const loginSchema = z.object({

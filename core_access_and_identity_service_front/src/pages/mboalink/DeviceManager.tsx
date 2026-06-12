@@ -2,9 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import Layout from '@/components/mboalink/Layout'
 import AddDeviceModal from '@/components/mboalink/AddDeviceModal'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hasConcreteHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './DeviceManager.css'
 
 export default function DeviceManager() {
+  const currentUser = authService.getStoredUser()
+  const canChooseHotel = canSelectHotelScope(currentUser)
   const [devices, setDevices] = useState<Array<Record<string, any>>>([])
   const [hotels, setHotels] = useState<Array<Record<string, any>>>([])
   const [selectedHotelId, setSelectedHotelId] = useState('')
@@ -15,8 +19,9 @@ export default function DeviceManager() {
 
   const loadDevices = async (hotelId?: string) => {
     try {
+      const scopedHotelId = hotelScopeToQuery(hotelId)
       const list = await mboalinkService.listDevices({
-        hotelId: hotelId || undefined,
+        hotelId: scopedHotelId,
         status: statusFilter === 'all' ? undefined : (statusFilter as any),
         search: searchQuery || undefined,
       })
@@ -32,7 +37,7 @@ export default function DeviceManager() {
     mboalinkService.listHotels()
       .then((hotelList) => {
         setHotels(hotelList)
-        const defaultHotelId = hotelList[0]?.id || ''
+        const defaultHotelId = getInitialHotelScope(currentUser, hotelList)
         setSelectedHotelId(defaultHotelId)
         return loadDevices(defaultHotelId)
       })
@@ -43,6 +48,8 @@ export default function DeviceManager() {
     if (!selectedHotelId) return
     loadDevices(selectedHotelId)
   }, [selectedHotelId, statusFilter])
+
+  const canCreateDevice = hasConcreteHotelScope(selectedHotelId)
 
   const filteredDevices = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
@@ -62,22 +69,29 @@ export default function DeviceManager() {
             <h1 className="pageTitle">Device Manager</h1>
             <p className="pageSubtitle">Supervision des équipements WiFi et de leur état.</p>
           </div>
-          <button className="btn btnPrimary" onClick={() => setIsAddModalOpen(true)}>
+          <button
+            className="btn btnPrimary"
+            onClick={() => setIsAddModalOpen(true)}
+            disabled={!canCreateDevice}
+            title={!canCreateDevice ? 'Sélectionnez un hôtel précis pour ajouter un device' : undefined}
+          >
             + Ajouter un device
           </button>
         </div>
 
         <div className="filtersBar">
-          <select
-            className="filterSelect"
-            value={selectedHotelId}
-            onChange={(e) => setSelectedHotelId(e.target.value)}
-          >
-            <option value="">Sélectionner un hôtel</option>
-            {hotels.map((hotel) => (
-              <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
-            ))}
-          </select>
+          {canChooseHotel ? (
+            <select
+              className="filterSelect"
+              value={selectedHotelId}
+              onChange={(e) => setSelectedHotelId(e.target.value)}
+            >
+              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              {hotels.map((hotel) => (
+                <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+              ))}
+            </select>
+          ) : null}
           <input
             type="text"
             className="searchInput"

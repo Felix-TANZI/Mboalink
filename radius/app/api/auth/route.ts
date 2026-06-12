@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const MBOALINK_API_BASE_URL =
   process.env.MBOALINK_API_BASE_URL || "http://localhost:13000/api/v1";
+const MBOALINK_CAPTIVE_API_KEY = process.env.MBOALINK_CAPTIVE_API_KEY || "";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +22,12 @@ export async function POST(req: NextRequest) {
 
     const res = await fetch(`${MBOALINK_API_BASE_URL}/captive/auth`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(MBOALINK_CAPTIVE_API_KEY
+          ? { "x-mboalink-captive-key": MBOALINK_CAPTIVE_API_KEY }
+          : {}),
+      },
       body: JSON.stringify({
         code: code || undefined,
         uuid: uuid || undefined,

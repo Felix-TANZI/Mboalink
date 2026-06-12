@@ -1,10 +1,33 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 
-async function listDevices(query) {
+function scopedHotelId(queryHotelId, user) {
+  if (user?.role === 'RECEPTIONIST' || user?.role === 'HOTEL_IT') {
+    if (!user.hotelId) {
+      const err = new Error('Hotel-scoped account is not linked to a hotel');
+      err.status = 403;
+      throw err;
+    }
+    return user.hotelId;
+  }
+
+  return queryHotelId || undefined;
+}
+
+function ensureCanAccessHotel(hotelId, user) {
+  if (user?.role !== 'RECEPTIONIST' && user?.role !== 'HOTEL_IT') return;
+
+  if (!user.hotelId || user.hotelId !== hotelId) {
+    const err = new Error('Hotel-scoped account cannot access another hotel');
+    err.status = 403;
+    throw err;
+  }
+}
+
+async function listDevices(query, user) {
   return prisma.device.findMany({
     where: {
-      hotelId: query.hotelId || undefined,
+      hotelId: scopedHotelId(query.hotelId, user),
       status: query.status || undefined,
       macAddress: query.macAddress ? { equals: query.macAddress } : undefined,
       OR: query.search ? [
@@ -20,10 +43,10 @@ async function listDevices(query) {
   });
 }
 
-async function listDeviceMacAddresses(query) {
+async function listDeviceMacAddresses(query, user) {
   return prisma.device.findMany({
     where: {
-      hotelId: query.hotelId || undefined,
+      hotelId: scopedHotelId(query.hotelId, user),
       status: query.status || undefined,
       macAddress: { not: null },
     },
@@ -37,7 +60,7 @@ async function listDeviceMacAddresses(query) {
   });
 }
 
-async function getDeviceByMac(macAddress) {
+async function getDeviceByMac(macAddress, user) {
   const device = await prisma.device.findUnique({
     where: { macAddress },
     include: { hotel: { select: { id: true, name: true } } },
@@ -48,6 +71,7 @@ async function getDeviceByMac(macAddress) {
     err.status = 404;
     throw err;
   }
+  ensureCanAccessHotel(device.hotelId, user);
 
   return device;
 }
@@ -181,7 +205,15 @@ async function addMetric(deviceId, payload, reqMeta) {
   return metric;
 }
 
-async function listMetrics(deviceId, query) {
+async function listMetrics(deviceId, query, user) {
+  const device = await prisma.device.findUnique({ where: { id: deviceId } });
+  if (!device) {
+    const err = new Error('Device not found');
+    err.status = 404;
+    throw err;
+  }
+  ensureCanAccessHotel(device.hotelId, user);
+
   const take = Math.min(Number(query.limit || 100), 1000);
 
   return prisma.deviceMetric.findMany({

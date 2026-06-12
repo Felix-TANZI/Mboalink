@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "@/router/routes";
 import { authService } from "@/services/auth/authService";
-import mboalinkLogo from "@/assets/images/Logo Mboalink-02 1-1.png";
+import mboalinkLogo from "@/assets/images/mboalink-logo-navbar.png";
 import "./Layout.css";
 
 type LayoutProps = {
@@ -13,6 +13,7 @@ type LayoutProps = {
 
 const pageRoutes: Record<string, string> = {
   dashboard: routes.public.dashboard,
+  "network-map": routes.public.networkMap,
   "wifi-code": routes.public.wifiCode,
   "login-by-address": routes.public.loginByAddress,
   "status-logins": routes.public.statusLogins,
@@ -23,6 +24,7 @@ const pageRoutes: Record<string, string> = {
   rooms: routes.public.rooms,
   "config-wifi": routes.public.configWifi,
   devices: routes.public.devices,
+  users: routes.public.users,
 };
 
 export default function Layout({
@@ -35,32 +37,58 @@ export default function Layout({
   const user = authService.getStoredUser();
   const displayName = user?.name || user?.email || "Utilisateur";
   const avatarLetter = displayName.charAt(0).toUpperCase();
+  const isReceptionist = user?.role === "RECEPTIONIST";
+  const isHotelIt = user?.role === "HOTEL_IT";
 
-  const mainPages = ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER"];
+  const mainPages = isReceptionist
+    ? ["LOGINS"]
+    : isHotelIt
+      ? ["DASHBOARD", "LOGINS", "HOTEL MANAGER", "DEVICE MANAGER"]
+      : user?.role === "ADMIN"
+        ? ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "ADMIN"]
+        : ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER"];
 
   const subPages: Record<string, { label: string; page: string }[]> = {
-    LOGINS: [
-      { label: "WiFi Code", page: "wifi-code" },
-      { label: "Login by Adress", page: "login-by-address" },
-      { label: "Statut Logins", page: "status-logins" },
-      { label: "Manual Login", page: "manual-login" },
-      { label: "Web Site Manager", page: "website-manager" },
-      { label: "Config Code", page: "config-code" },
+    LOGINS: isReceptionist
+      ? [{ label: "Manual Login", page: "manual-login" }]
+      : isHotelIt
+        ? [
+            { label: "WiFi Code", page: "wifi-code" },
+            { label: "Statut Logins", page: "status-logins" },
+            { label: "Web Site Manager", page: "website-manager" },
+          ]
+      : [
+          { label: "WiFi Code", page: "wifi-code" },
+          { label: "Login by Adress", page: "login-by-address" },
+          { label: "Statut Logins", page: "status-logins" },
+          { label: "Manual Login", page: "manual-login" },
+          { label: "Web Site Manager", page: "website-manager" },
+          { label: "Config Code", page: "config-code" },
+        ],
+    DASHBOARD: [
+      { label: "Overview", page: "dashboard" },
+      { label: "Network Map", page: "network-map" },
     ],
-    DASHBOARD: [{ label: "Overview", page: "dashboard" }],
-    "HOTEL MANAGER": [
-      { label: "Hotels", page: "hotels" },
-      { label: "Rooms", page: "rooms" },
-      { label: "Config WiFi", page: "config-wifi" },
-    ],
+    "HOTEL MANAGER": isHotelIt
+      ? [
+          { label: "Rooms", page: "rooms" },
+          { label: "Config WiFi", page: "config-wifi" },
+        ]
+      : [
+          { label: "Hotels", page: "hotels" },
+          { label: "Rooms", page: "rooms" },
+          { label: "Config WiFi", page: "config-wifi" },
+        ],
     "DEVICE MANAGER": [{ label: "Devices", page: "devices" }],
+    ADMIN: [{ label: "Users", page: "users" }],
   };
 
   const defaultSubPages: Record<string, string> = {
-    LOGINS: "wifi-code",
-    "HOTEL MANAGER": "hotels",
+    LOGINS: isReceptionist ? "manual-login" : "wifi-code",
+    "HOTEL MANAGER": isHotelIt ? "rooms" : "hotels",
     DASHBOARD: "dashboard",
     "DEVICE MANAGER": "devices",
+    ADMIN: "users",
   };
 
   const handleMainPageClick = (page: string) => {

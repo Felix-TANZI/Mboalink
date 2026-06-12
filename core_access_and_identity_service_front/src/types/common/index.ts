@@ -4,7 +4,9 @@ export interface User {
   id: string;
   email: string;
   name?: string;
+  fullName?: string;
   role?: string;
+  hotelId?: string | null;
 }
 
 export interface LoginCredentials {

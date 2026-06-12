@@ -13,6 +13,7 @@ enum UserRole {
   CLIENT
   RECEPTIONIST
   SUPPORT
+  HOTEL_IT
 }
 
 enum HotelStatus {
@@ -62,6 +63,7 @@ enum AuditSeverity {
 
 model User {
   id            String      @id @default(cuid())
+  hotelId       String?
   email         String      @unique
   passwordHash  String
   fullName      String
@@ -75,6 +77,9 @@ model User {
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
   guestPasses   GuestPass[]    @relation("GuestPassCreator")
+  hotel         Hotel?         @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+
+  @@index([hotelId])
 }
 
 model RefreshToken {
@@ -107,6 +112,7 @@ model Hotel {
   updatedAt    DateTime    @updatedAt
 
   rooms            Room[]
+  users            User[]
   wifiConfig       WifiConfig?
   guestConfig      GuestConfig?
   guestPasses      GuestPass[]

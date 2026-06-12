@@ -14,9 +14,9 @@ const { createGuestPassSchema, bulkGuestPassSchema } = require('./guest-pass.val
 const router = Router();
 
 router.get('/', requireAuth, getGuestPasses);
-router.post('/', requireAuth, requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST'), validate(createGuestPassSchema), postGuestPass);
-router.post('/bulk', requireAuth, requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST'), validate(bulkGuestPassSchema), postGuestPassesBulk);
-router.patch('/:passId/revoke', requireAuth, requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST'), patchRevokeGuestPass);
-router.delete('/:passId', requireAuth, requireRole('ADMIN', 'SUPPORT'), removeGuestPass);
+router.post('/', requireAuth, requireRole('ADMIN', 'SUPPORT', 'HOTEL_IT'), validate(createGuestPassSchema), postGuestPass);
+router.post('/bulk', requireAuth, requireRole('ADMIN', 'SUPPORT', 'HOTEL_IT'), validate(bulkGuestPassSchema), postGuestPassesBulk);
+router.patch('/:passId/revoke', requireAuth, requireRole('ADMIN', 'SUPPORT', 'HOTEL_IT'), patchRevokeGuestPass);
+router.delete('/:passId', requireAuth, requireRole('ADMIN', 'SUPPORT', 'HOTEL_IT'), removeGuestPass);
 
 module.exports = router;

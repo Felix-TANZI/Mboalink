@@ -10,6 +10,7 @@ interface LoginResponse {
     email: string;
     fullName?: string;
     role?: string;
+    hotelId?: string | null;
   };
 }
 
@@ -23,14 +24,17 @@ interface MeResponse {
   email: string;
   fullName?: string;
   role?: string;
+  hotelId?: string | null;
 }
 
-function toUser(input: { id?: string; sub?: string; email: string; fullName?: string; role?: string }): User {
+function toUser(input: { id?: string; sub?: string; email: string; fullName?: string; role?: string; hotelId?: string | null }): User {
   return {
     id: input.id || input.sub || '',
     email: input.email,
     name: input.fullName,
+    fullName: input.fullName,
     role: input.role,
+    hotelId: input.hotelId || null,
   };
 }
 
@@ -56,7 +60,7 @@ export const authService = {
   },
 
   async verifyMfa(email: string, code: string): Promise<User> {
-    const data = await apiRequest<{ accessToken: string; refreshToken: string; user: { id: string; email: string; fullName?: string; role?: string } }>('/auth/mfa/verify', {
+    const data = await apiRequest<{ accessToken: string; refreshToken: string; user: { id: string; email: string; fullName?: string; role?: string; hotelId?: string | null } }>('/auth/mfa/verify', {
       method: 'POST',
       body: { email, code },
     });

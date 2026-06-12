@@ -196,6 +196,23 @@ export interface DeviceMetricEntity {
   capturedAt: string;
 }
 
+export type UserRole = "ADMIN" | "SUPPORT" | "HOTEL_IT" | "RECEPTIONIST" | "CLIENT";
+
+export interface UserEntity {
+  id: string;
+  email: string;
+  fullName: string;
+  role: UserRole;
+  hotelId?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  hotel?: {
+    id: string;
+    name: string;
+  } | null;
+}
+
 export interface DashboardOverview {
   hotels: number;
   rooms: number;
@@ -445,5 +462,31 @@ export const mboalinkService = {
 
   getDashboardOverview(query?: { hotelId?: string }) {
     return authedRequest<DashboardOverview>("/dashboard/overview", { query });
+  },
+
+  listUsers(query?: {
+    search?: string;
+    role?: UserRole;
+    hotelId?: string;
+    isActive?: boolean;
+  }) {
+    return authedRequest<UserEntity[]>("/users", { query });
+  },
+  createUser(payload: Record<string, unknown>) {
+    return authedRequest<UserEntity>("/users", {
+      method: "POST",
+      body: payload,
+    });
+  },
+  updateUser(userId: string, payload: Record<string, unknown>) {
+    return authedRequest<UserEntity>(`/users/${userId}`, {
+      method: "PATCH",
+      body: payload,
+    });
+  },
+  deactivateUser(userId: string) {
+    return authedRequest<UserEntity>(`/users/${userId}/deactivate`, {
+      method: "PATCH",
+    });
   },
 };

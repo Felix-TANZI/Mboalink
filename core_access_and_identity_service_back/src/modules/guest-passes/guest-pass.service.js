@@ -39,6 +39,35 @@ async function ensureHotel(hotelId) {
   return hotel;
 }
 
+function scopedHotelId(queryHotelId, user) {
+  if (user?.role === 'RECEPTIONIST' || user?.role === 'HOTEL_IT') {
+    if (!user.hotelId) {
+      const err = new Error('Receptionist account is not linked to a hotel');
+      err.status = 403;
+      throw err;
+    }
+    return user.hotelId;
+  }
+
+  return queryHotelId || undefined;
+}
+
+function ensureCanUseHotel(hotelId, reqMeta) {
+  if (reqMeta.actorRole !== 'RECEPTIONIST' && reqMeta.actorRole !== 'HOTEL_IT') return;
+
+  if (!reqMeta.actorHotelId) {
+    const err = new Error('Receptionist account is not linked to a hotel');
+    err.status = 403;
+    throw err;
+  }
+
+  if (hotelId !== reqMeta.actorHotelId) {
+    const err = new Error('Receptionist cannot manage another hotel');
+    err.status = 403;
+    throw err;
+  }
+}
+
 // Include createdBy user in all queries
 const includeCreator = {
   hotel:     { select: { id: true, name: true } },
@@ -46,9 +75,9 @@ const includeCreator = {
   createdBy: { select: { id: true, fullName: true, email: true } },
 };
 
-async function listGuestPasses(query) {
+async function listGuestPasses(query, user) {
   const where = {
-    hotelId:   query.hotelId   || undefined,
+    hotelId:   scopedHotelId(query.hotelId, user),
     isRevoked: query.isRevoked ? query.isRevoked === 'true' : undefined,
     OR: query.search ? [
       { code:       { contains: query.search, mode: 'insensitive' } },
@@ -66,6 +95,7 @@ async function listGuestPasses(query) {
 }
 
 async function createGuestPass(payload, reqMeta) {
+  ensureCanUseHotel(payload.hotelId, reqMeta);
   await ensureHotel(payload.hotelId);
   if (payload.roomId) {
     const room = await prisma.room.findUnique({ where: { id: payload.roomId } });
@@ -117,6 +147,7 @@ async function createGuestPass(payload, reqMeta) {
 }
 
 async function createGuestPassesBulk(payload, reqMeta) {
+  ensureCanUseHotel(payload.hotelId, reqMeta);
   await ensureHotel(payload.hotelId);
   if (payload.roomId) {
     const room = await prisma.room.findUnique({ where: { id: payload.roomId } });
@@ -186,6 +217,7 @@ async function revokeGuestPass(passId, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanUseHotel(existing.hotelId, reqMeta);
 
   const pass = await prisma.guestPass.update({
     where: { id: passId },
@@ -217,6 +249,7 @@ async function deleteGuestPass(passId, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanUseHotel(existing.hotelId, reqMeta);
 
   await prisma.guestPass.delete({ where: { id: passId } });
   await removeGuestPassFromRadius(existing);

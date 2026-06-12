@@ -11,7 +11,13 @@ const MFA_ENABLED = false;
 
 function signAccessToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role, fullName: user.fullName },
+    {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      fullName: user.fullName,
+      hotelId: user.hotelId || null,
+    },
     env.jwtAccessSecret,
     { expiresIn: env.accessTokenTtl },
   );
@@ -66,6 +72,7 @@ async function createAuthSession(user, context, action = 'login') {
       email: user.email,
       fullName: user.fullName,
       role: user.role,
+      hotelId: user.hotelId || null,
     },
   };
 }
@@ -79,13 +86,25 @@ async function registerUser(payload, context) {
   }
 
   const passwordHash = await bcrypt.hash(payload.password, 10);
+  const role = payload.role || 'CLIENT';
+  const hotelId = payload.hotelId || null;
+
+  if ((role === 'RECEPTIONIST' || role === 'HOTEL_IT' || role === 'CLIENT') && hotelId) {
+    const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
+    if (!hotel) {
+      const err = new Error('Hotel not found');
+      err.status = 404;
+      throw err;
+    }
+  }
 
   const user = await prisma.user.create({
     data: {
       email: payload.email,
       passwordHash,
       fullName: payload.fullName,
-      role: payload.role || 'CLIENT',
+      role,
+      hotelId,
     },
   });
 
@@ -105,6 +124,7 @@ async function registerUser(payload, context) {
     email: user.email,
     fullName: user.fullName,
     role: user.role,
+    hotelId: user.hotelId || null,
     createdAt: user.createdAt,
   };
 }

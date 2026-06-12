@@ -24,7 +24,7 @@ router.get(
 router.post(
   '/manual',
   requireAuth,
-  requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST'),
+  requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST', 'HOTEL_IT'),
   validate(createManualLoginSchema),
   postManualLogin
 );
@@ -32,7 +32,7 @@ router.post(
 router.patch(
   '/:id',
   requireAuth,
-  requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST'),
+  requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST', 'HOTEL_IT'),
   validate(updateManualLoginSchema),
   patchLoginSession
 );
@@ -40,7 +40,7 @@ router.patch(
 router.delete(
   '/',
   requireAuth,
-  requireRole('ADMIN', 'SUPPORT', 'RECEPTIONIST'),
+  requireRole('ADMIN', 'SUPPORT', 'HOTEL_IT'),
   validate(deleteManySessionsSchema),
   deleteLoginSessions
 );

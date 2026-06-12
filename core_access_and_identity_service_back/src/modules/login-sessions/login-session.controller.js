@@ -8,7 +8,7 @@ const {
 } = require('./login-session.service');
 
 const getLoginSessions = asyncHandler(async (req, res) => {
-  const data = await listLoginSessions(req.query);
+  const data = await listLoginSessions(req.query, req.user);
   res.json(success(data));
 });
 
@@ -16,6 +16,8 @@ const postManualLogin = asyncHandler(async (req, res) => {
   const data = await createManualLogin(req.body, {
     requestId:   req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.status(201).json(success(data));
 });
@@ -24,6 +26,8 @@ const patchLoginSession = asyncHandler(async (req, res) => {
   const data = await updateLoginSession(req.params.id, req.body, {
     requestId:   req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.json(success(data));
 });
@@ -32,6 +36,8 @@ const deleteLoginSessions = asyncHandler(async (req, res) => {
   const data = await removeSessions(req.body.ids, {
     requestId:   req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.json(success(data));
 });

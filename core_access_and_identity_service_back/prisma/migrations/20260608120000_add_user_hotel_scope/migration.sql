@@ -1,0 +1,10 @@
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'HOTEL_IT';
+
+ALTER TABLE "User" ADD COLUMN "hotelId" TEXT;
+
+ALTER TABLE "User"
+  ADD CONSTRAINT "User_hotelId_fkey"
+  FOREIGN KEY ("hotelId") REFERENCES "Hotel"("id")
+  ON DELETE SET NULL ON UPDATE CASCADE;
+
+CREATE INDEX "User_hotelId_idx" ON "User"("hotelId");

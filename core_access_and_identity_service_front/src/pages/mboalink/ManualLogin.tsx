@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hasConcreteHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './ManualLogin.css'
 
 //  Helpers
@@ -166,6 +168,9 @@ function EditModal({ session, rooms, onClose, onSave }) {
 
 //  Page principale
 export default function ManualLogin() {
+  const currentUser = authService.getStoredUser()
+  const isReceptionist = currentUser?.role === 'RECEPTIONIST'
+  const canChooseHotel = canSelectHotelScope(currentUser)
   const [hotels,    setHotels]    = useState([])
   const [rooms,     setRooms]     = useState([])
   const [sessions,  setSessions]  = useState([])
@@ -184,21 +189,34 @@ export default function ManualLogin() {
   const [searchQuery, setSearchQuery] = useState('')
   const [editSession, setEditSession] = useState(null)
 
-  // Chargement initial
-  useEffect(() => {
-    Promise.all([
-      mboalinkService.listHotels(),
-      mboalinkService.listRooms(),
-      mboalinkService.listLoginSessions(),
+  const loadScopedData = async (scope) => {
+    const scopedHotelId = hotelScopeToQuery(scope)
+    const query = scopedHotelId ? { hotelId: scopedHotelId } : undefined
+    const [roomList, sessionList] = await Promise.all([
+      mboalinkService.listRooms(query),
+      mboalinkService.listLoginSessions(query),
     ])
-      .then(([hotelList, roomList, sessionList]) => {
+    setRooms(roomList)
+    setSessions(sessionList)
+  }
+
+  useEffect(() => {
+    mboalinkService.listHotels()
+      .then(async (hotelList) => {
         setHotels(hotelList)
-        setRooms(roomList)
-        setSessions(sessionList)
-        if (hotelList[0]) setHotelId(hotelList[0].id)
+        const defaultId = getInitialHotelScope(currentUser, hotelList)
+        setHotelId(defaultId)
+        await loadScopedData(defaultId)
       })
       .catch((err) => alert(err.message || 'Chargement impossible'))
   }, [])
+
+  useEffect(() => {
+    if (!hotelId) return
+    loadScopedData(hotelId).catch((err) => alert(err.message || 'Chargement impossible'))
+    setRoomText('')
+    setSelectedRoom('')
+  }, [hotelId])
 
   const hotelRooms = useMemo(
     () => rooms.filter((r) => r.hotelId === hotelId),
@@ -232,7 +250,7 @@ export default function ManualLogin() {
 
   // Soumission
   const handleProceed = async () => {
-    if (!hotelId)             { alert("Créez ou sélectionnez d'abord un hôtel"); return }
+    if (!hasConcreteHotelScope(hotelId)) { alert("Sélectionnez d'abord un hôtel précis"); return }
     if (!clientName.trim())   { alert('Le nom du client est requis'); return }
     if (!roomNumberIsFilled)   { alert('Saisissez un numéro de chambre'); return }
     if (!checkInDate)          { alert("La date d'entrée est requise"); return }
@@ -252,7 +270,8 @@ export default function ManualLogin() {
         endedAt:    new Date(checkOutDate).toISOString(),
       })
       setLastWifiCode(created.guestPass?.code || '')
-      const updated = await mboalinkService.listLoginSessions()
+      const scopedHotelId = hotelScopeToQuery(hotelId)
+      const updated = await mboalinkService.listLoginSessions(scopedHotelId ? { hotelId: scopedHotelId } : undefined)
       setSessions(updated)
       setClientName('')
       setRoomText('')
@@ -278,7 +297,8 @@ export default function ManualLogin() {
   // Modification
   const handleSave = async (id, payload) => {
     await mboalinkService.updateLoginSession(id, payload)
-    const updated = await mboalinkService.listLoginSessions()
+    const scopedHotelId = hotelScopeToQuery(hotelId)
+    const updated = await mboalinkService.listLoginSessions(scopedHotelId ? { hotelId: scopedHotelId } : undefined)
     setSessions(updated)
   }
 
@@ -295,13 +315,19 @@ export default function ManualLogin() {
 
   const filteredSessions = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-    const manual = sessions.filter((s) => s.type === 'Manual Login')
+    const manual = sessions.filter((s) => {
+      const matchesType = s.type === 'Manual Login'
+      const matchesHotel = hotelId === ALL_HOTELS || s.hotelId === hotelId
+      return matchesType && matchesHotel
+    })
     if (!q) return manual
     return manual.filter((s) =>
       [s.clientName, s.room?.name, s.room?.type, s.ipAddress, s.macAddress]
         .some((v) => String(v || '').toLowerCase().includes(q))
     )
   }, [sessions, searchQuery])
+
+  const canCreateManualLogin = hasConcreteHotelScope(hotelId)
 
   return (
     <Layout activePage="LOGINS" activeSubPage="Manual Login">
@@ -320,9 +346,26 @@ export default function ManualLogin() {
         <div className="mlCard">
           <div className="mlCardHeader">
             <h2 className="mlSectionTitle">Nouveau check-in client</h2>
+            {canChooseHotel && (
+              <select
+                className="mlSelectModal"
+                value={hotelId}
+                onChange={(e) => setHotelId(e.target.value)}
+              >
+                <option value={ALL_HOTELS}>Tous les hôtels</option>
+                {hotels.map((hotel) => (
+                  <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="mlCardBody">
+            {hotelId === ALL_HOTELS && (
+              <div className="mlErrorBox">
+                Vue globale active : sélectionnez un hôtel précis pour enregistrer un check-in.
+              </div>
+            )}
             <div className="mlFormGrid">
 
               {/* Nom */}
@@ -338,7 +381,7 @@ export default function ManualLogin() {
                   placeholder="Ex : Felix TANZI"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || !canCreateManualLogin}
                 />
               </div>
 
@@ -359,7 +402,7 @@ export default function ManualLogin() {
                     placeholder="Ex : 101"
                     value={roomText}
                     onChange={(e) => handleRoomTextChange(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoading || !canCreateManualLogin}
                     autoComplete="off"
                   />
                   {roomText && !roomExists && (
@@ -380,7 +423,7 @@ export default function ManualLogin() {
                   className="mlSelect"
                   value={selectedRoom}
                   onChange={(e) => handleDropdownChange(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || !canCreateManualLogin}
                 >
                   <option value="">— Parcourir les chambres —</option>
                   {hotelRooms.map((r) => (
@@ -406,7 +449,7 @@ export default function ManualLogin() {
                   value={checkInDate}
                   min={nowDatetimeLocal()}
                   onChange={(e) => setCheckInDate(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || !canCreateManualLogin}
                 />
               </div>
 
@@ -423,7 +466,7 @@ export default function ManualLogin() {
                   value={checkOutDate}
                   min={checkInDate || nowDatetimeLocal()}
                   onChange={(e) => setCheckOutDate(e.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || !canCreateManualLogin}
                 />
                 {durationLabel !== '—' && (
                   <span className="mlDurationBadge">Durée du séjour : {durationLabel}</span>
@@ -445,6 +488,7 @@ export default function ManualLogin() {
                 onClick={handleProceed}
                 disabled={
                   isLoading ||
+                  !canCreateManualLogin ||
                   !clientName.trim() ||
                   !roomNumberIsFilled ||
                   !checkInDate ||
@@ -543,13 +587,15 @@ export default function ManualLogin() {
                             >
                               ✏️
                             </button>
-                            <button
-                              className="mlActionBtn mlActionBtnDelete"
-                              title="Supprimer"
-                              onClick={() => handleDelete(session.id)}
-                            >
-                              🗑️
-                            </button>
+                            {!isReceptionist && (
+                              <button
+                                className="mlActionBtn mlActionBtnDelete"
+                                title="Supprimer"
+                                onClick={() => handleDelete(session.id)}
+                              >
+                                🗑️
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

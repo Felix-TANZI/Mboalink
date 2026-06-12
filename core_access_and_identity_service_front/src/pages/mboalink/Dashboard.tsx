@@ -1,7 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  Activity,
+  BellRing,
+  Building2,
+  ChevronRight,
+  Gauge,
+  Hotel,
+  Network,
+  RadioTower,
+  Router,
+  Server,
+  ShieldCheck,
+  Wifi,
+} from 'lucide-react'
 import Layout from '@/components/mboalink/Layout'
+import { routes } from '@/router/routes'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './Dashboard.css'
 
 type DashboardData = {
@@ -74,8 +91,10 @@ function formatPeriodLabel() {
 function DonutCard({
   title,
   items,
+  subtitle,
 }: {
   title: string
+  subtitle?: string
   items: Array<{ label: string; value: number; color: string }>
 }) {
   const { background, total } = useMemo(() => buildSegments(items), [items])
@@ -83,7 +102,10 @@ function DonutCard({
   return (
     <section className="dashboardPanel chartPanel">
       <div className="panelHeader">
-        <h3>{title}</h3>
+        <div>
+          <h3>{title}</h3>
+          {subtitle && <p>{subtitle}</p>}
+        </div>
         <span>{total} total</span>
       </div>
 
@@ -112,22 +134,40 @@ function DonutCard({
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const currentUser = authService.getStoredUser()
+  const canChooseHotel = canSelectHotelScope(currentUser)
+  const [hotelOptions, setHotelOptions] = useState<Array<Record<string, any>>>([])
+  const [selectedHotelId, setSelectedHotelId] = useState('')
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const loadDashboard = async (scope: string, availableHotels = hotelOptions) => {
+    setIsLoading(true)
+    const scopedHotelId = hotelScopeToQuery(scope)
+    const query = scopedHotelId ? { hotelId: scopedHotelId } : undefined
+    const [overview, devices, sessions, wifiConfigs] = await Promise.all([
+      mboalinkService.getDashboardOverview(query),
+      mboalinkService.listDevices(query),
+      mboalinkService.listLoginSessions(query),
+      mboalinkService.listWifiConfigs(query),
+    ])
+    const visibleHotels = scopedHotelId
+      ? availableHotels.filter((hotel) => hotel.id === scopedHotelId)
+      : availableHotels
+    setData({ overview, devices, sessions, hotels: visibleHotels, wifiConfigs })
+    setIsLoading(false)
+  }
 
   useEffect(() => {
     let isMounted = true
 
-    Promise.all([
-      mboalinkService.getDashboardOverview(),
-      mboalinkService.listDevices(),
-      mboalinkService.listLoginSessions(),
-      mboalinkService.listHotels(),
-      mboalinkService.listWifiConfigs(),
-    ])
-      .then(([overview, devices, sessions, hotels, wifiConfigs]) => {
+    mboalinkService.listHotels()
+      .then(async (hotels) => {
         if (!isMounted) return
-        setData({ overview, devices, sessions, hotels, wifiConfigs })
+        setHotelOptions(hotels)
+        const defaultScope = getInitialHotelScope(currentUser, hotels)
+        setSelectedHotelId(defaultScope)
+        await loadDashboard(defaultScope, hotels)
       })
       .catch((error) => {
         alert((error as Error).message || 'Impossible de charger le dashboard')
@@ -140,6 +180,14 @@ export default function Dashboard() {
       isMounted = false
     }
   }, [])
+
+  useEffect(() => {
+    if (!selectedHotelId || hotelOptions.length === 0) return
+    loadDashboard(selectedHotelId).catch((error) => {
+      setIsLoading(false)
+      alert((error as Error).message || 'Impossible de charger le dashboard')
+    })
+  }, [selectedHotelId])
 
   const computed = useMemo(() => {
     if (!data) return null
@@ -180,10 +228,34 @@ export default function Dashboard() {
     const openAlerts = overview.recentAlerts?.length || 0
 
     const overviewCards = [
-      { label: 'Total Rooms', value: overview.rooms || 0, tone: 'blue' },
-      { label: 'Devices', value: devices.length, tone: 'violet' },
-      { label: 'Switches actifs', value: deviceTypes.Switch || 0, tone: 'green' },
-      { label: 'Access Points', value: deviceTypes['Access Point'] || 0, tone: 'gold' },
+      {
+        label: 'Chambres',
+        value: overview.rooms || 0,
+        tone: 'blue',
+        helper: `${roomUsage}% occupation reseau`,
+        icon: Hotel,
+      },
+      {
+        label: 'Equipements',
+        value: devices.length,
+        tone: 'slate',
+        helper: `${statusCounts.ONLINE || 0} en ligne`,
+        icon: Router,
+      },
+      {
+        label: 'Switches actifs',
+        value: deviceTypes.Switch || 0,
+        tone: 'green',
+        helper: 'Infrastructure filaire',
+        icon: Network,
+      },
+      {
+        label: 'Access Points',
+        value: deviceTypes['Access Point'] || 0,
+        tone: 'gold',
+        helper: 'Couverture Wi-Fi',
+        icon: RadioTower,
+      },
     ]
 
     return {
@@ -201,23 +273,25 @@ export default function Dashboard() {
       roomUsage,
       openAlerts,
       overviewCards,
-      activeHotelsLabel: hotels[0]?.name || 'Vue multi-sites',
+      activeHotelsLabel: selectedHotelId === ALL_HOTELS
+        ? 'Vue multi-sites'
+        : hotels[0]?.name || 'Hotel MboaLink',
     }
-  }, [data])
+  }, [data, selectedHotelId])
 
   const deviceStatusItems = useMemo(() => {
     if (!computed) return []
     return [
-      { label: 'Online', value: computed.statusCounts.ONLINE || 0, color: '#1670E6' },
-      { label: 'Offline', value: computed.statusCounts.OFFLINE || 0, color: '#6E42D3' },
-      { label: 'Instable', value: computed.statusCounts.UNSTABLE || 0, color: '#F2C300' },
+      { label: 'Online', value: computed.statusCounts.ONLINE || 0, color: '#2563eb' },
+      { label: 'Offline', value: computed.statusCounts.OFFLINE || 0, color: '#64748b' },
+      { label: 'Instable', value: computed.statusCounts.UNSTABLE || 0, color: '#f2c300' },
     ]
   }, [computed])
 
   const zoneItems = useMemo(() => {
     if (!computed) return []
 
-    const palette = ['#1670E6', '#6E42D3', '#24B35A', '#F2C300', '#EF6B6B', '#0EA5A6']
+    const palette = ['#2563eb', '#0f766e', '#16a34a', '#f2c300', '#dc2626', '#7c3aed']
     return Object.entries(computed.zoneCounts)
       .slice(0, 6)
       .map(([label, value], index) => ({ label, value: Number(value), color: palette[index % palette.length] }))
@@ -226,7 +300,7 @@ export default function Dashboard() {
   const sessionTypeItems = useMemo(() => {
     if (!computed) return []
 
-    const palette = ['#1670E6', '#6E42D3', '#F2C300', '#24B35A']
+    const palette = ['#2563eb', '#7c3aed', '#f2c300', '#16a34a']
     return Object.entries(computed.sessionTypes)
       .slice(0, 4)
       .map(([label, value], index) => ({ label, value: Number(value), color: palette[index % palette.length] }))
@@ -240,11 +314,27 @@ export default function Dashboard() {
             <span className="dashboardBrandName">MboaLink</span>
             <div className="dashboardTabs">
               <button type="button" className="dashboardTab active">Dashboard</button>
-              <button type="button" className="dashboardTab">Reports</button>
+              <button type="button" className="dashboardTab">Operations</button>
             </div>
           </div>
 
           <div className="dashboardMeta">
+            {canChooseHotel && (
+              <select
+                className="dashboardScopeSelect"
+                value={selectedHotelId}
+                onChange={(event) => setSelectedHotelId(event.target.value)}
+              >
+                <option value={ALL_HOTELS}>Tous les hôtels</option>
+                {hotelOptions.map((hotel) => (
+                  <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+                ))}
+              </select>
+            )}
+            <span className="dashboardLiveBadge">
+              <span />
+              Live
+            </span>
             <span className="dashboardPeriod">{formatPeriodLabel()}</span>
           </div>
         </div>
@@ -254,15 +344,17 @@ export default function Dashboard() {
             <p className="dashboardEyebrow">Vue generale</p>
             <h1 className="dashboardTitle">{computed?.activeHotelsLabel || 'MboaLink Dashboard'}</h1>
             <p className="dashboardSubtitle">
-              Supervision reseau et activite client dans une vue simple, detaillee et directement exploitable.
+              Supervision reseau, activite client et etat operationnel des hotels depuis un espace clair et exploitable.
             </p>
           </div>
 
           <div className="dashboardHeroActions">
-            <button type="button" className="heroButton secondary" onClick={() => navigate('/device-manager/devices')}>
+            <button type="button" className="heroButton secondary" onClick={() => navigate(routes.public.networkMap)}>
+              <Network size={16} />
               Network Map
             </button>
             <button type="button" className="heroButton success">
+              <BellRing size={16} />
               Alertes actives
             </button>
           </div>
@@ -270,19 +362,25 @@ export default function Dashboard() {
 
         <div className="serviceStatusRow">
           <div className="servicePill success">
-            <span className="serviceDot" />
-            <strong>OVI Server</strong>
-            <small>{computed ? 'Disponible' : 'Chargement'}</small>
+            <span className="serviceIcon"><Server size={18} /></span>
+            <div>
+              <strong>OVI Server</strong>
+              <small>{computed ? 'Disponible' : 'Chargement'}</small>
+            </div>
           </div>
           <div className={`servicePill ${computed && computed.activeWifiConfigs > 0 ? 'warning' : 'neutral'}`}>
-            <span className="serviceDot" />
-            <strong>Captive Portal</strong>
-            <small>{computed ? `${computed.activeWifiConfigs} config(s) active(s)` : 'Chargement'}</small>
+            <span className="serviceIcon"><Wifi size={18} /></span>
+            <div>
+              <strong>Captive Portal</strong>
+              <small>{computed ? `${computed.activeWifiConfigs} config(s) active(s)` : 'Chargement'}</small>
+            </div>
           </div>
           <div className={`servicePill ${computed && computed.statusCounts.ONLINE > 0 ? 'info' : 'neutral'}`}>
-            <span className="serviceDot" />
-            <strong>Internet Uplink</strong>
-            <small>{computed ? `${computed.statusCounts.ONLINE} equipements en ligne` : 'Chargement'}</small>
+            <span className="serviceIcon"><Activity size={18} /></span>
+            <div>
+              <strong>Internet Uplink</strong>
+              <small>{computed ? `${computed.statusCounts.ONLINE} equipements en ligne` : 'Chargement'}</small>
+            </div>
           </div>
         </div>
 
@@ -293,25 +391,31 @@ export default function Dashboard() {
             <aside className="kpiColumn">
               {computed.overviewCards.map((card) => (
                 <article key={card.label} className={`kpiTile ${card.tone}`}>
-                  <span>{card.label}</span>
+                  <div className="kpiTileTop">
+                    <span>{card.label}</span>
+                    <card.icon size={18} />
+                  </div>
                   <strong>{card.value}</strong>
+                  <small>{card.helper}</small>
                 </article>
               ))}
             </aside>
 
             <div className="dashboardMain">
               <div className="dashboardChartsRow">
-                <DonutCard title="Devices by Status" items={deviceStatusItems} />
-                <DonutCard title="Devices by Zone" items={zoneItems} />
-                <DonutCard title="Sessions by Type" items={sessionTypeItems} />
+                <DonutCard title="Devices by Status" subtitle="Disponibilite reseau" items={deviceStatusItems} />
+                <DonutCard title="Devices by Zone" subtitle="Repartition par zone" items={zoneItems} />
+                <DonutCard title="Sessions by Type" subtitle="Origine des connexions" items={sessionTypeItems} />
 
                 <section className="dashboardPanel compactStatsPanel">
                   <article className="compactStat blue">
+                    <div className="compactStatIcon"><Gauge size={18} /></div>
                     <span>Guest Logins</span>
                     <strong>{computed.sessions.length}</strong>
                     <small>sur la periode</small>
                   </article>
                   <article className="compactStat violet">
+                    <div className="compactStatIcon"><ShieldCheck size={18} /></div>
                     <span>WiFi Coverage</span>
                     <strong>{computed.wifiCoverage}%</strong>
                     <small>{computed.activeWifiConfigs} / {computed.hotels.length || 0} hotels configures</small>
@@ -322,7 +426,10 @@ export default function Dashboard() {
               <div className="dashboardBottomRow">
                 <section className="dashboardPanel metricsPanel">
                   <div className="panelHeader">
-                    <h3>Infrastructure Snapshot</h3>
+                    <div>
+                      <h3>Infrastructure Snapshot</h3>
+                      <p>Indicateurs de sante operationnelle</p>
+                    </div>
                     <span>Temps reel logique</span>
                   </div>
 
@@ -377,7 +484,10 @@ export default function Dashboard() {
 
                 <section className="dashboardPanel alertsPanel">
                   <div className="panelHeader">
-                    <h3>Recent Alerts</h3>
+                    <div>
+                      <h3>Recent Alerts</h3>
+                      <p>Evenements recents a suivre</p>
+                    </div>
                     <span>{computed.overview.recentAlerts?.length || 0} evenement(s)</span>
                   </div>
 
@@ -403,18 +513,27 @@ export default function Dashboard() {
 
                 <section className="dashboardPanel actionsPanel">
                   <div className="panelHeader">
-                    <h3>Actions</h3>
+                    <div>
+                      <h3>Actions</h3>
+                      <p>Acces rapides</p>
+                    </div>
                     <span>Details</span>
                   </div>
 
                   <button type="button" className="actionButton" onClick={() => navigate('/device-manager/devices')}>
+                    <Router size={16} />
                     Switches
+                    <ChevronRight size={16} />
                   </button>
                   <button type="button" className="actionButton" onClick={() => navigate('/device-manager/devices')}>
+                    <RadioTower size={16} />
                     Access Points
+                    <ChevronRight size={16} />
                   </button>
                   <button type="button" className="actionButton secondary" onClick={() => navigate('/hotel-manager/config-wifi')}>
+                    <Building2 size={16} />
                     Config WiFi
+                    <ChevronRight size={16} />
                   </button>
                 </section>
               </div>

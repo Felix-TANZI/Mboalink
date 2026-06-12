@@ -3,11 +3,15 @@ import AddRoomModal from '@/components/mboalink/AddRoomModal'
 import RoomDetailsModal from '@/components/mboalink/RoomDetailsModal'
 import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './RoomList.css'
 
 const imagePlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%23eef2f7"/%3E%3Ctext x="200" y="150" text-anchor="middle" dominant-baseline="middle" fill="%2364758b" font-family="Arial" font-size="16"%3EImage indisponible%3C/text%3E%3C/svg%3E'
 
 export default function RoomList() {
+  const currentUser = authService.getStoredUser()
+  const canChooseHotel = canSelectHotelScope(currentUser)
   const [hotels, setHotels] = useState<Array<Record<string, any>>>([])
   const [rooms, setRooms] = useState<Array<Record<string, any>>>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -20,11 +24,12 @@ export default function RoomList() {
   const [editingRoom, setEditingRoom] = useState<Record<string, any> | null>(null)
   const [viewingRoom, setViewingRoom] = useState<Record<string, any> | null>(null)
 
-  const loadData = async () => {
+  const loadData = async (scope = filterHotel) => {
     try {
+      const scopedHotelId = hotelScopeToQuery(scope)
       const [hotelList, roomList] = await Promise.all([
         mboalinkService.listHotels(),
-        mboalinkService.listRooms(),
+        mboalinkService.listRooms(scopedHotelId ? { hotelId: scopedHotelId } : undefined),
       ])
 
       setHotels(hotelList.map((hotel) => ({ id: hotel.id, name: hotel.name })))
@@ -40,16 +45,27 @@ export default function RoomList() {
   }
 
   useEffect(() => {
-    loadData()
+    mboalinkService.listHotels()
+      .then((hotelList) => {
+        const defaultScope = getInitialHotelScope(currentUser, hotelList)
+        setFilterHotel(defaultScope)
+        return loadData(defaultScope)
+      })
+      .catch((error) => alert((error as Error).message || 'Impossible de charger les chambres'))
   }, [])
+
+  useEffect(() => {
+    if (!filterHotel) return
+    loadData(filterHotel)
+  }, [filterHotel])
 
   // Filtrage
   const filteredRooms = rooms.filter(room => {
-    const matchesSearch = room.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         room.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = String(room.type || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         String(room.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                          room.hotelName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesHotel = filterHotel === 'all' || room.hotelId === filterHotel
-    const matchesType = filterType === 'all' || room.type.includes(filterType)
+    const matchesHotel = filterHotel === ALL_HOTELS || room.hotelId === filterHotel
+    const matchesType = filterType === 'all' || String(room.type || '').includes(filterType)
     
     return matchesSearch && matchesHotel && matchesType
   })
@@ -136,7 +152,7 @@ export default function RoomList() {
         return
       }
     }
-    await loadData()
+    await loadData(filterHotel)
     setIsAddModalOpen(false)
     setEditingRoom(null)
   }
@@ -196,16 +212,18 @@ export default function RoomList() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           
-          <select 
-            className="filterSelect"
-            value={filterHotel}
-            onChange={(e) => setFilterHotel(e.target.value)}
-          >
-            <option value="all">Tous les hôtels</option>
-            {hotels.map(hotel => (
-              <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
-            ))}
-          </select>
+          {canChooseHotel && (
+            <select
+              className="filterSelect"
+              value={filterHotel}
+              onChange={(e) => setFilterHotel(e.target.value)}
+            >
+              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              {hotels.map(hotel => (
+                <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+              ))}
+            </select>
+          )}
 
           <select 
             className="filterSelect"

@@ -3,12 +3,12 @@ const { success } = require('../../utils/api-response');
 const { listHotels, getHotelById, createHotel, updateHotel, deleteHotel } = require('./hotel.service');
 
 const getHotels = asyncHandler(async (req, res) => {
-  const hotels = await listHotels(req.query);
+  const hotels = await listHotels(req.query, req.user);
   res.json(success(hotels));
 });
 
 const getHotel = asyncHandler(async (req, res) => {
-  const hotel = await getHotelById(req.params.hotelId);
+  const hotel = await getHotelById(req.params.hotelId, req.user);
   res.json(success(hotel));
 });
 
@@ -24,6 +24,8 @@ const patchHotel = asyncHandler(async (req, res) => {
   const hotel = await updateHotel(req.params.hotelId, req.body, {
     requestId: req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.json(success(hotel));
 });

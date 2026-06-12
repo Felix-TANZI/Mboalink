@@ -1,12 +1,14 @@
 // @ts-nocheck
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { authService } from '@/services'
 import { routes } from '@/router/routes'
+import mboalinkLogo from '@/assets/images/mboalink-logo-navbar.png'
 import './Login.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -24,7 +26,13 @@ export default function LoginPage() {
         // Rediriger vers la page MFA en passant l'email via le state
         navigate(routes.public.mfa, { state: { email: result.email } })
       } else {
-        navigate(routes.public.home, { replace: true })
+        const redirect = new URLSearchParams(location.search).get('redirect')
+        const target = result.user?.role === 'RECEPTIONIST'
+          ? routes.public.manualLogin
+          : ['ADMIN', 'SUPPORT', 'HOTEL_IT'].includes(result.user?.role)
+            ? routes.public.dashboard
+            : routes.public.home
+        navigate(redirect?.startsWith('/') && redirect !== routes.public.login ? redirect : target, { replace: true })
       }
     } catch (err) {
       setError(err?.message || 'Identifiants incorrects')
@@ -38,13 +46,9 @@ export default function LoginPage() {
       <div className="loginLeft">
         <div className="loginBrand">
           <div className="brandLogo">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <path d="M20 5L5 15V25L20 35L35 25V15L20 5Z" fill="#EDC707"/>
-              <circle cx="20" cy="20" r="8" fill="#052F5F"/>
-            </svg>
+            <img src={mboalinkLogo} alt="MboaLink" />
           </div>
           <div className="brandText">
-            <h1 className="brandName">MboaLink</h1>
             <p className="brandTagline">HOSPITALITY • TRANSPORT • SMART ACCESS</p>
           </div>
         </div>

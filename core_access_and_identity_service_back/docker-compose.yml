@@ -17,10 +17,11 @@ services:
       - RADIUS_HOST=freeradius
       - RADIUS_PORT=1812
       - RADIUS_SECRET=testing123
+      - CAPTIVE_PORTAL_SKIP_RADIUS=${CAPTIVE_PORTAL_SKIP_RADIUS:-true}
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["/bin/sh", "-lc", "npm run prisma:generate && npm run prisma:push && npm run seed:admin && npm run dev"]
+    command: ["/bin/sh", "-lc", "npm run prisma:generate && npm run prisma:push && npm run seed:admin && npm run verify:startup && npm run dev"]
     depends_on:
       - postgres
       - freeradius

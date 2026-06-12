@@ -1,0 +1,20 @@
+image: node:20
+
+stages:
+  - build
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+
+captive_portal_build:
+  stage: build
+  variables:
+    NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+    MBOALINK_API_BASE_URL: "http://localhost:13000/api/v1"
+  script:
+    - npm ci
+    - npm run build

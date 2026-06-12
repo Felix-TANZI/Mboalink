@@ -8,6 +8,8 @@ const RADIUS_HOST = process.env.RADIUS_HOST || 'freeradius';
 const RADIUS_PORT = Number(process.env.RADIUS_PORT || 1812);
 const RADIUS_SECRET = process.env.RADIUS_SECRET || 'testing123';
 const RADIUS_TIMEOUT_MS = Number(process.env.RADIUS_TIMEOUT_MS || 5000);
+const SKIP_RADIUS_AUTH = process.env.CAPTIVE_PORTAL_SKIP_RADIUS === 'true'
+  || process.env.NODE_ENV === 'test';
 
 const RADIUS_CODE = {
   ACCESS_REQUEST: 1,
@@ -122,6 +124,35 @@ function normalizeText(value) {
   return String(value || '').trim();
 }
 
+function normalizeComparable(value) {
+  return normalizeText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function roomMatches(room, roomNumber) {
+  const expected = normalizeComparable(roomNumber);
+  if (!expected) return false;
+  return [room?.name, room?.type]
+    .map(normalizeComparable)
+    .some((candidate) => candidate === expected);
+}
+
+function clientNameMatches(passClientName, clientName) {
+  const expected = normalizeComparable(clientName);
+  if (!expected) return true;
+
+  const actual = normalizeComparable(passClientName);
+  if (!actual) return false;
+  if (actual.includes(expected) || expected.includes(actual)) return true;
+
+  const expectedTokens = expected.split(/\s+/).filter(Boolean);
+  return expectedTokens.every((token) => actual.includes(token));
+}
+
 function guestPassIsUsable(pass) {
   if (!pass || pass.isRevoked) return false;
   if (pass.expiryAt && new Date(pass.expiryAt) <= new Date()) return false;
@@ -144,10 +175,17 @@ async function authenticateCaptivePortal(payload) {
   let pass = null;
 
   if (uuid) {
-    pass = await prisma.guestPass.findUnique({
-      where: { id: uuid },
+    const matches = await prisma.guestPass.findMany({
+      where: {
+        OR: [
+          { id: uuid },
+          { code: normalizeCode(uuid) },
+        ],
+      },
       include,
+      take: 1,
     });
+    [pass] = matches;
   }
 
   if (!pass && code) {
@@ -158,7 +196,7 @@ async function authenticateCaptivePortal(payload) {
   }
 
   if (!pass && roomNumber) {
-    pass = await prisma.guestPass.findFirst({
+    const candidates = await prisma.guestPass.findMany({
       where: {
         hotelId: hotelId || undefined,
         isRevoked: false,
@@ -166,19 +204,16 @@ async function authenticateCaptivePortal(payload) {
           { expiryAt: null },
           { expiryAt: { gt: now } },
         ],
-        room: {
-          OR: [
-            { name: { equals: roomNumber, mode: 'insensitive' } },
-            { type: { equals: roomNumber, mode: 'insensitive' } },
-          ],
-        },
-        clientName: clientName
-          ? { contains: clientName, mode: 'insensitive' }
-          : undefined,
+        roomId: { not: null },
       },
       include,
       orderBy: { createdAt: 'desc' },
+      take: 50,
     });
+    pass = candidates.find((candidate) => (
+      roomMatches(candidate.room, roomNumber)
+      && clientNameMatches(candidate.clientName, clientName)
+    )) || null;
   }
 
   if (!guestPassIsUsable(pass)) {
@@ -187,7 +222,17 @@ async function authenticateCaptivePortal(payload) {
     throw err;
   }
 
-  const radiusCode = await sendRadiusAccessRequest(pass.code, pass.code);
+  let radiusCode;
+  try {
+    radiusCode = SKIP_RADIUS_AUTH
+      ? RADIUS_CODE.ACCESS_ACCEPT
+      : await sendRadiusAccessRequest(pass.code, pass.code);
+  } catch (error) {
+    const err = new Error('Service RADIUS indisponible. Réessayez ou activez le mode test du portail captif.');
+    err.status = 503;
+    err.cause = error;
+    throw err;
+  }
   if (radiusCode !== RADIUS_CODE.ACCESS_ACCEPT) {
     const err = new Error('Authentification RADIUS refusée.');
     err.status = 401;

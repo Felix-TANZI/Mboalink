@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import type { ReactElement } from 'react';
 import { LoginPage } from '@/pages/auth';
 import { LoginMfa } from '@/pages/auth mfa';
 import { Home } from '@/pages/home';
@@ -9,13 +10,46 @@ import {
   HotelListPage,
   LoginByAddressPage,
   ManualLoginPage,
+  NetworkMap3DPage,
   DeviceManagerPage,
   RoomListPage,
   StatutLoginsPage,
+  UserManagerPage,
   WebsitesManagerPage,
   WifiCodePage,
 } from '@/pages/mboalink';
 import { routes } from './routes';
+import { getStoredUser } from '@/services/auth/session';
+
+type AppRole = 'ADMIN' | 'SUPPORT' | 'HOTEL_IT' | 'RECEPTIONIST' | 'CLIENT';
+
+function getRoleHome(role?: string) {
+  if (role === 'RECEPTIONIST') return routes.public.manualLogin;
+  if (role === 'ADMIN' || role === 'SUPPORT' || role === 'HOTEL_IT') return routes.public.dashboard;
+  return routes.public.home;
+}
+
+function ProtectedPage({
+  children,
+  allowedRoles,
+}: {
+  children: ReactElement;
+  allowedRoles?: AppRole[];
+}) {
+  const user = getStoredUser();
+  const location = useLocation();
+
+  if (!user) {
+    const redirectTo = `${location.pathname}${location.search}`;
+    return <Navigate to={`${routes.public.login}?redirect=${encodeURIComponent(redirectTo)}`} replace />;
+  }
+
+  if (allowedRoles?.length && !allowedRoles.includes(user.role as AppRole)) {
+    return <Navigate to={getRoleHome(user.role)} replace />;
+  }
+
+  return children;
+}
 
 // Importez vos autres pages quand elles seront prêtes
 // import { AdminLayout } from '@/pages/AdminLayout';
@@ -33,18 +67,20 @@ export const AppRouter = () => {
         <Route path={routes.public.mfa} element={<LoginMfa />} />
 
         {/* Pages MboaLink */}
-        <Route path={routes.public.home} element={<Home />} />
-        <Route path={routes.public.dashboard} element={<DashboardPage />} />
-        <Route path={routes.public.devices} element={<DeviceManagerPage />} />
-        <Route path={routes.public.wifiCode} element={<WifiCodePage />} />
-        <Route path={routes.public.loginByAddress} element={<LoginByAddressPage />} />
-        <Route path={routes.public.statusLogins} element={<StatutLoginsPage />} />
-        <Route path={routes.public.manualLogin} element={<ManualLoginPage />} />
-        <Route path={routes.public.websitesManager} element={<WebsitesManagerPage />} />
-        <Route path={routes.public.configCode} element={<ConfigCodePage />} />
-        <Route path={routes.public.hotels} element={<HotelListPage />} />
-        <Route path={routes.public.rooms} element={<RoomListPage />} />
-        <Route path={routes.public.configWifi} element={<ConfigWifiListPage />} />
+        <Route path={routes.public.home} element={<ProtectedPage><Home /></ProtectedPage>} />
+        <Route path={routes.public.dashboard} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><DashboardPage /></ProtectedPage>} />
+        <Route path={routes.public.networkMap} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><NetworkMap3DPage /></ProtectedPage>} />
+        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><DeviceManagerPage /></ProtectedPage>} />
+        <Route path={routes.public.wifiCode} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><WifiCodePage /></ProtectedPage>} />
+        <Route path={routes.public.loginByAddress} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT']}><LoginByAddressPage /></ProtectedPage>} />
+        <Route path={routes.public.statusLogins} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><StatutLoginsPage /></ProtectedPage>} />
+        <Route path={routes.public.manualLogin} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'RECEPTIONIST']}><ManualLoginPage /></ProtectedPage>} />
+        <Route path={routes.public.websitesManager} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><WebsitesManagerPage /></ProtectedPage>} />
+        <Route path={routes.public.configCode} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT']}><ConfigCodePage /></ProtectedPage>} />
+        <Route path={routes.public.hotels} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT']}><HotelListPage /></ProtectedPage>} />
+        <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><RoomListPage /></ProtectedPage>} />
+        <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><ConfigWifiListPage /></ProtectedPage>} />
+        <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><UserManagerPage /></ProtectedPage>} />
 
         {/* Routes protégées - à décommenter quand prêt */}
         {/* 

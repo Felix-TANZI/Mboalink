@@ -1,0 +1,435 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\geometry{margin=2.5cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue
+}
+
+\setlist[itemize]{leftmargin=1.2cm}
+\setlist[enumerate]{leftmargin=1.2cm}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.8em}{}
+
+\title{\textbf{Rapport d'état et de planification du projet Mboalink}}
+\author{NGONGA Junior \\ NZIKO Félix}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Objectif du rapport}
+
+Ce rapport a pour objectif de présenter l'état actuel de l'application Mboalink, les fonctionnalités déjà disponibles, les éléments restant à finaliser, ainsi que les décisions techniques à prendre avant une collaboration complète avec l'équipe chargée de FreeRADIUS.
+
+Le document doit servir de guide de décision pour déterminer :
+
+\begin{itemize}
+  \item si l'application est suffisamment avancée pour être considérée comme utilisable ;
+  \item si l'équipe Mboalink peut déjà travailler efficacement avec l'équipe FreeRADIUS ;
+  \item si l'abonnement Railway doit être maintenu temporairement ;
+  \item à quel moment il sera pertinent de passer à un déploiement plus professionnel.
+\end{itemize}
+
+\section{Résumé exécutif}
+
+L'application Mboalink dispose déjà d'une base importante : administration générale, gestion des hôtels, gestion des chambres, gestion des tickets Wi-Fi, portail captif, et première intégration avec FreeRADIUS. Cependant, plusieurs éléments restent à stabiliser avant de considérer l'application comme prête pour une exploitation réelle dans un hôtel.
+
+Sur la base de l'état actuel du projet et des remarques issues de la dernière réunion, l'application peut être estimée à environ \textbf{65\% d'avancement vers une version stable exploitable}. Ce pourcentage indique que la structure principale existe déjà, mais que les flux critiques doivent encore être consolidés, notamment :
+
+\begin{itemize}
+  \item la connexion client par nom et numéro de chambre ;
+  \item la connexion par UUID ou code Wi-Fi ;
+  \item la stabilité de l'intégration Radius ;
+  \item la page hôtel liée au portail captif ;
+  \item l'affichage fiable des images après déploiement ;
+  \item la clarification future des rôles utilisateurs.
+\end{itemize}
+
+À ce stade, il n'est pas encore recommandé de passer immédiatement à un déploiement professionnel complet. La recommandation est de \textbf{maintenir Railway temporairement} jusqu'à la finalisation des modifications demandées dans ce document. Une fois les fonctionnalités critiques stabilisées, l'équipe pourra préparer un déploiement plus professionnel, plus adapté à une utilisation en hôtel réel.
+
+\section{Contexte du projet Mboalink}
+
+Mboalink est une solution destinée à faciliter la gestion de l'accès Wi-Fi dans les hôtels. Elle vise à permettre à l'équipe Mboalink de configurer les hôtels, les chambres, les équipements, les tickets de connexion, et le portail captif présenté aux clients avant l'accès au réseau.
+
+L'application doit fonctionner en lien avec FreeRADIUS, qui aura la responsabilité technique de l'authentification réseau. Mboalink joue donc le rôle de couche applicative d'administration, tandis que FreeRADIUS agit comme couche d'autorisation et de contrôle d'accès Wi-Fi.
+
+\section{État actuel de l'application}
+
+\subsection{Fonctionnalités déjà présentes}
+
+Les éléments suivants sont déjà présents dans l'application :
+
+\begin{itemize}
+  \item interface d'administration Mboalink ;
+  \item gestion des hôtels ;
+  \item gestion des chambres ;
+  \item gestion des équipements associés aux hôtels et chambres ;
+  \item création de tickets ou codes Wi-Fi ;
+  \item gestion des durées, limites d'utilisation et débits ;
+  \item première intégration avec une base Radius ;
+  \item portail captif client ;
+  \item tableau de suivi des connexions ;
+  \item configuration Wi-Fi par hôtel ;
+  \item gestion des images côté interface.
+\end{itemize}
+
+\subsection{Fonctionnalités partiellement présentes}
+
+Certaines fonctionnalités existent mais nécessitent encore des corrections ou améliorations :
+
+\begin{itemize}
+  \item authentification client via ticket Wi-Fi ;
+  \item connexion par nom du client et numéro de chambre ;
+  \item liaison complète entre hôtel, chambre, client et ticket ;
+  \item affichage des images sur l'environnement déployé ;
+  \item page hôtel liée au portail captif ;
+  \item synchronisation fiable entre les tickets créés dans Mboalink et les informations consommées par Radius.
+\end{itemize}
+
+\subsection{Fonctionnalités non encore prioritaires}
+
+Certains éléments ont été évoqués mais ne doivent pas encore être développés immédiatement, car la logique métier reste à clarifier avec la direction Mboalink :
+
+\begin{itemize}
+  \item création complète des acteurs hôtel ;
+  \item rôles détaillés IT hôtel, réceptionniste, support IT ;
+  \item workflows de demande de permission entre acteurs ;
+  \item messagerie interne entre acteurs ;
+  \item traduction complète français-anglais ;
+  \item nettoyage automatique des données après plusieurs mois ou années ;
+  \item déploiement multi-instances Proxmox.
+\end{itemize}
+
+\section{Analyse par module}
+
+\subsection{Administration Mboalink}
+
+L'administration Mboalink constitue actuellement le coeur de l'application. Elle permet de gérer les principaux objets métiers nécessaires à la configuration de la solution.
+
+L'objectif immédiat est de concentrer le développement sur l'Admin Mboalink, sans encore ouvrir les workflows liés aux autres acteurs. Cette approche est préférable, car elle permet de stabiliser d'abord le noyau de la solution avant d'ajouter des niveaux d'accès plus complexes.
+
+\subsection{Gestion des hôtels}
+
+Le module de gestion des hôtels permet de créer et modifier les informations liées à un établissement. Les informations essentielles sont présentes : nom, ville, pays, adresse, contact, coordonnées GPS, description, équipements et photos.
+
+Les améliorations attendues sont :
+
+\begin{itemize}
+  \item fiabiliser l'affichage des images après déploiement ;
+  \item permettre l'affichage public de l'hôtel dans le portail captif ;
+  \item mieux exploiter les coordonnées GPS pour afficher une carte ou un plan de localisation.
+\end{itemize}
+
+\subsection{Gestion des chambres}
+
+Le module des chambres permet d'associer des chambres à un hôtel. Cette partie est importante pour permettre la connexion client par nom et numéro de chambre.
+
+Les points à stabiliser sont :
+
+\begin{itemize}
+  \item association correcte entre ticket, client et chambre ;
+  \item affichage clair des chambres dans l'administration ;
+  \item gestion fiable des équipements et photos de chambre.
+\end{itemize}
+
+\subsection{Gestion des tickets Wi-Fi}
+
+La gestion des tickets Wi-Fi est l'un des modules les plus critiques. Elle doit permettre de créer des accès temporaires ou contrôlés pour les clients.
+
+Les tickets doivent pouvoir être utilisés par :
+
+\begin{itemize}
+  \item code Wi-Fi ;
+  \item UUID ;
+  \item nom du client et numéro de chambre.
+\end{itemize}
+
+La priorité est de rendre ce flux fiable de bout en bout : création dans l'Admin Mboalink, synchronisation côté Radius, puis authentification réussie depuis le portail captif.
+
+\subsection{Portail captif}
+
+Le portail captif est la page que le client voit avant de se connecter au Wi-Fi de l'hôtel. Il ne doit pas seulement être un formulaire de connexion ; il doit aussi présenter l'hôtel.
+
+La version attendue doit afficher :
+
+\begin{itemize}
+  \item le nom de l'hôtel ;
+  \item une photo principale ;
+  \item la description de l'hôtel ;
+  \item l'adresse ;
+  \item les informations utiles ;
+  \item le formulaire de connexion Wi-Fi.
+\end{itemize}
+
+Ce portail doit être lié à l'hôtel concerné afin qu'un client voie les informations du bon établissement.
+
+\subsection{Intégration Radius}
+
+L'intégration Radius existe déjà mais doit être stabilisée. Le point critique signalé est que la création d'un ticket avec le nom et le numéro de chambre du client ne permettait pas encore une connexion fonctionnelle.
+
+Avant de travailler en profondeur avec l'équipe FreeRADIUS, il est nécessaire que Mboalink soit capable de produire des données propres et exploitables : tickets, chambres, clients, durées, limitations de débit et statut d'utilisation.
+
+\subsection{Gestion des images}
+
+Les images sont importantes pour la présentation des hôtels et des chambres. Un problème a été identifié : certaines images ne s'affichent plus sur le site déployé.
+
+Ce problème doit être corrigé avant toute démonstration sérieuse, car il impacte directement la crédibilité visuelle de l'application. Les images doivent être stockées ou référencées de manière persistante, et non à travers des liens temporaires qui disparaissent après déploiement.
+
+\section{Points critiques avant collaboration complète avec l'équipe FreeRADIUS}
+
+Avant d'impliquer fortement l'équipe chargée de FreeRADIUS, Mboalink doit atteindre un niveau minimum de stabilité applicative.
+
+\subsection{Conditions minimales à remplir}
+
+\begin{itemize}
+  \item création fiable d'un hôtel ;
+  \item création fiable des chambres ;
+  \item création fiable d'un ticket Wi-Fi ;
+  \item association ticket--client--chambre ;
+  \item authentification par code, UUID ou nom + chambre ;
+  \item affichage correct de la page hôtel sur le portail captif ;
+  \item données Radius propres et vérifiables.
+\end{itemize}
+
+\subsection{Ce qui doit être fait avec l'équipe FreeRADIUS}
+
+Une fois ces prérequis stabilisés, l'équipe FreeRADIUS pourra intervenir efficacement sur :
+
+\begin{itemize}
+  \item la validation de l'architecture Radius ;
+  \item la configuration des clients Radius ;
+  \item la vérification des attributs Radius ;
+  \item les règles d'acceptation ou de rejet ;
+  \item les limitations de session ;
+  \item les tests en conditions proches d'un hôtel réel.
+\end{itemize}
+
+\section{Gestion des utilisateurs et des rôles}
+
+\subsection{Position retenue}
+
+La création complète des utilisateurs et des rôles doit être considérée comme une \textbf{partie long terme} du projet. Elle ne doit pas être prioritaire tant que le noyau Admin Mboalink, le portail captif et l'intégration Radius ne sont pas stabilisés.
+
+Les rôles envisagés sont :
+
+\begin{itemize}
+  \item Admin Mboalink ;
+  \item Support IT Mboalink ;
+  \item IT de l'hôtel ;
+  \item Réceptionniste.
+\end{itemize}
+
+Cependant, leur logique exacte doit encore être clarifiée avec la direction Mboalink. Il faudra notamment préciser :
+
+\begin{itemize}
+  \item qui peut créer un hôtel ;
+  \item qui peut créer un utilisateur ;
+  \item qui peut modifier les informations d'un hôtel ;
+  \item quels droits possède le réceptionniste ;
+  \item quels droits possède l'IT de l'hôtel ;
+  \item quelles actions doivent nécessiter une validation de l'Admin Mboalink.
+\end{itemize}
+
+\subsection{Recommandation}
+
+Il est recommandé de ne pas faire de la création des utilisateurs un sujet prioritaire immédiat. Dans la phase actuelle, l'application doit d'abord stabiliser :
+
+\begin{itemize}
+  \item la gestion des hôtels ;
+  \item la gestion des chambres ;
+  \item les tickets Wi-Fi ;
+  \item le portail captif ;
+  \item l'authentification Radius.
+\end{itemize}
+
+Une fois ces éléments finalisés, une interface propre de gestion des utilisateurs et des rôles pourra être développée dans l'Admin Mboalink.
+
+\section{Déploiement actuel et décision d'infrastructure}
+
+\subsection{Utilisation actuelle de Railway}
+
+Railway est actuellement utile pour disposer rapidement d'une version déployée de l'application. Il permet de tester, montrer l'interface et vérifier certaines fonctionnalités sans mettre en place une infrastructure complexe.
+
+\subsection{Limites actuelles}
+
+Malgré son utilité, Railway ne doit pas encore être considéré comme l'infrastructure finale du projet. Mboalink aura probablement besoin d'une architecture plus professionnelle pour une exploitation réelle en hôtel, notamment à cause de :
+
+\begin{itemize}
+  \item l'intégration FreeRADIUS ;
+  \item les contraintes réseau ;
+  \item la gestion des logs ;
+  \item la sécurité ;
+  \item les sauvegardes ;
+  \item la séparation des services ;
+  \item les tests en environnement contrôlé.
+\end{itemize}
+
+\subsection{Décision recommandée}
+
+Étant donné que l'application est estimée à environ \textbf{65\% d'avancement vers une version stable}, il n'est pas encore recommandé de passer immédiatement à un déploiement professionnel complet.
+
+La recommandation est donc la suivante :
+
+\begin{quote}
+Railway doit être conservé temporairement jusqu'à la finalisation des modifications demandées dans ce document. Le passage vers un déploiement plus professionnel devra être préparé lorsque le flux Admin Mboalink -- Portail captif -- Radius sera stable et validé.
+\end{quote}
+
+\section{Plan de travail restant}
+
+\subsection{Tâches prioritaires}
+
+\begin{longtable}{|p{7cm}|p{4cm}|p{3cm}|}
+\hline
+\textbf{Tâche} & \textbf{Priorité} & \textbf{Estimation} \\
+\hline
+Corriger et valider la connexion par nom + chambre & Très haute & 2 à 4 jours \\
+\hline
+Ajouter et valider la connexion par UUID ou code Wi-Fi & Très haute & 2 à 3 jours \\
+\hline
+Finaliser la page hôtel liée au portail captif & Haute & 3 à 5 jours \\
+\hline
+Stabiliser l'affichage des images en déploiement & Haute & 2 à 4 jours \\
+\hline
+Vérifier la synchronisation des tickets avec Radius & Très haute & 4 à 7 jours \\
+\hline
+Faire des tests complets du flux client & Très haute & 3 à 5 jours \\
+\hline
+Créer les vues manquantes liées aux autres acteurs du système & Très haute & 5 à 8 jours \\
+\hline
+Tester les vues des acteurs IT hôtel, réceptionniste, support IT et Admin Mboalink & Très haute & 4 à 7 jours \\
+\hline
+\end{longtable}
+
+\subsection{Tâches secondaires}
+
+\begin{longtable}{|p{7cm}|p{4cm}|p{3cm}|}
+\hline
+\textbf{Tâche} & \textbf{Priorité} & \textbf{Estimation} \\
+\hline
+Améliorer la carte/localisation de l'hôtel & Moyenne & 3 à 5 jours \\
+\hline
+Charger des paramètres par défaut par hôtel & Moyenne & 3 à 5 jours \\
+\hline
+Redéfinir plus proprement les équipements hôtel/chambre & Moyenne & 2 à 4 jours \\
+\hline
+Améliorer les messages d'erreur du portail captif & Moyenne & 1 à 2 jours \\
+\hline
+\end{longtable}
+
+\subsection{Tâches long terme}
+
+\begin{itemize}
+  \item gestion complète des rôles ;
+  \item création des utilisateurs hôtel ;
+  \item workflows de validation par l'Admin Mboalink ;
+  \item messagerie interne ;
+  \item traduction français-anglais ;
+  \item nettoyage automatique des données ;
+  \item déploiement Proxmox ou infrastructure multi-services.
+\end{itemize}
+
+\section{Estimation globale du temps de développement}
+
+L'équipe de codage est constituée de :
+
+\begin{itemize}
+  \item NGONGA Junior ;
+  \item NZIKO Félix.
+\end{itemize}
+
+Pour atteindre une version stable utilisable en démonstration avancée et prête pour une collaboration efficace avec l'équipe FreeRADIUS, l'estimation réaliste est de :
+
+\begin{center}
+\textbf{3 à 5 semaines de travail}
+\end{center}
+
+Cette estimation suppose que les deux développeurs travaillent de manière régulière sur les priorités définies, avec des tests fréquents sur l'environnement déployé.
+
+La répartition approximative est la suivante :
+
+\begin{longtable}{|p{8cm}|p{4cm}|}
+\hline
+\textbf{Bloc de travail} & \textbf{Durée estimée} \\
+\hline
+Stabilisation tickets, chambres et clients & 1 semaine \\
+\hline
+Portail captif et page hôtel & 1 semaine \\
+\hline
+Intégration et tests Radius & 1 à 2 semaines \\
+\hline
+Création et test des vues manquantes liées aux autres acteurs & 1 à 2 semaines \\
+\hline
+Corrections UI, images, tests et validation & 1 semaine \\
+\hline
+\end{longtable}
+
+\section{Risques du projet}
+
+\subsection{Risques techniques}
+
+\begin{itemize}
+  \item instabilité du flux Radius si les données Mboalink ne sont pas propres ;
+  \item images non persistantes ou mal servies en production ;
+  \item difficulté de test local à cause du manque d'espace disque ;
+  \item différences entre l'environnement local et Railway ;
+  \item manque de tests automatisés.
+\end{itemize}
+
+\subsection{Risques liés à FreeRADIUS}
+
+\begin{itemize}
+  \item mauvaise séparation entre ce que Mboalink doit gérer et ce que Radius doit gérer ;
+  \item incompréhension des attributs Radius nécessaires ;
+  \item retard si l'application n'est pas encore capable de fournir des tickets fiables ;
+  \item complexité réseau lors du passage à un environnement réel.
+\end{itemize}
+
+\subsection{Risques liés au déploiement}
+
+\begin{itemize}
+  \item Railway peut être suffisant pour les tests mais limité pour une exploitation hôtelière réelle ;
+  \item le passage trop tôt à une infrastructure professionnelle pourrait coûter plus cher sans résoudre les bugs applicatifs ;
+  \item une migration prématurée pourrait ralentir l'équipe de développement.
+\end{itemize}
+
+\section{Recommandations finales}
+
+Les recommandations sont les suivantes :
+
+\begin{enumerate}
+  \item Continuer à concentrer le développement sur l'Admin Mboalink, le portail captif et Radius.
+  \item Reporter la gestion complète des utilisateurs et rôles à une phase long terme.
+  \item Maintenir Railway pour l'instant, car l'application n'est pas encore suffisamment stable pour justifier un déploiement professionnel complet.
+  \item Finaliser les corrections listées dans ce document avant de lancer une collaboration approfondie avec l'équipe FreeRADIUS.
+  \item Préparer progressivement une architecture plus professionnelle, mais seulement après validation du flux principal.
+\end{enumerate}
+
+\section{Conclusion}
+
+Mboalink possède déjà une base fonctionnelle solide, estimée à environ \textbf{65\% d'avancement vers une version stable}. L'application n'est cependant pas encore prête pour un déploiement professionnel définitif, car plusieurs éléments critiques doivent encore être corrigés ou validés.
+
+La priorité doit être donnée à la stabilisation du flux suivant :
+
+\begin{center}
+\textbf{Admin Mboalink $\rightarrow$ Ticket Wi-Fi $\rightarrow$ Portail captif $\rightarrow$ FreeRADIUS $\rightarrow$ Connexion client}
+\end{center}
+
+Railway doit donc être conservé temporairement jusqu'à la finalisation des modifications demandées. Le passage vers une infrastructure plus professionnelle sera pertinent uniquement lorsque le flux principal sera stable, testé et validé avec l'équipe FreeRADIUS.
+
+\end{document}

@@ -31,12 +31,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 168px;
 }
 
 .headerLogo {
-  height: 44px;
+  height: 48px;
   width: auto;
   object-fit: contain;
+  display: block;
 }
 
 .headerBrandName {

@@ -1,0 +1,37 @@
+\babel@toc {french}{}\relax 
+\contentsline {section}{\numberline {1}Objectif du rapport}{3}{section.1}%
+\contentsline {section}{\numberline {2}Résumé exécutif}{3}{section.2}%
+\contentsline {section}{\numberline {3}Contexte du projet Mboalink}{3}{section.3}%
+\contentsline {section}{\numberline {4}État actuel de l'application}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Fonctionnalités déjà présentes}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Fonctionnalités partiellement présentes}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Fonctionnalités non encore prioritaires}{4}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Analyse par module}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Administration Mboalink}{5}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Gestion des hôtels}{5}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Gestion des chambres}{5}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Gestion des tickets Wi-Fi}{5}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}Portail captif}{6}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Intégration Radius}{6}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}Gestion des images}{6}{subsection.5.7}%
+\contentsline {section}{\numberline {6}Points critiques avant collaboration complète avec l'équipe FreeRADIUS}{6}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Conditions minimales à remplir}{6}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Ce qui doit être fait avec l'équipe FreeRADIUS}{7}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Gestion des utilisateurs et des rôles}{7}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Position retenue}{7}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Recommandation}{7}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Déploiement actuel et décision d'infrastructure}{8}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Utilisation actuelle de Railway}{8}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Limites actuelles}{8}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Décision recommandée}{8}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Plan de travail restant}{8}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Tâches prioritaires}{8}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Tâches secondaires}{9}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Tâches long terme}{9}{subsection.9.3}%
+\contentsline {section}{\numberline {10}Estimation globale du temps de développement}{9}{section.10}%
+\contentsline {section}{\numberline {11}Risques du projet}{10}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Risques techniques}{10}{subsection.11.1}%
+\contentsline {subsection}{\numberline {11.2}Risques liés à FreeRADIUS}{10}{subsection.11.2}%
+\contentsline {subsection}{\numberline {11.3}Risques liés au déploiement}{10}{subsection.11.3}%
+\contentsline {section}{\numberline {12}Recommandations finales}{10}{section.12}%
+\contentsline {section}{\numberline {13}Conclusion}{11}{section.13}%

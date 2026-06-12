@@ -2,9 +2,38 @@ const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 const { syncRoomToRadius, removeRoomFromRadius } = require('../radius/radius.service');
 
-async function listRooms(query) {
+function scopedHotelId(queryHotelId, user) {
+  if (user?.role === 'RECEPTIONIST' || user?.role === 'HOTEL_IT') {
+    if (!user.hotelId) {
+      const err = new Error('Receptionist account is not linked to a hotel');
+      err.status = 403;
+      throw err;
+    }
+    return user.hotelId;
+  }
+
+  return queryHotelId || undefined;
+}
+
+function ensureCanUseHotel(hotelId, reqMeta) {
+  if (reqMeta.actorRole !== 'RECEPTIONIST' && reqMeta.actorRole !== 'HOTEL_IT') return;
+
+  if (!reqMeta.actorHotelId) {
+    const err = new Error('Hotel-scoped account is not linked to a hotel');
+    err.status = 403;
+    throw err;
+  }
+
+  if (hotelId !== reqMeta.actorHotelId) {
+    const err = new Error('Hotel-scoped account cannot manage another hotel');
+    err.status = 403;
+    throw err;
+  }
+}
+
+async function listRooms(query, user) {
   const where = {
-    hotelId: query.hotelId || undefined,
+    hotelId: scopedHotelId(query.hotelId, user),
     type: query.type ? { contains: query.type, mode: 'insensitive' } : undefined,
   };
 
@@ -26,6 +55,7 @@ async function listRooms(query) {
 }
 
 async function createRoom(hotelId, data, reqMeta) {
+  ensureCanUseHotel(hotelId, reqMeta);
   const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
   if (!hotel) {
     const err = new Error('Hotel not found');
@@ -66,6 +96,7 @@ async function updateRoom(roomId, data, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanUseHotel(existing.hotelId, reqMeta);
 
   const room = await prisma.room.update({
     where: { id: roomId },
@@ -97,6 +128,7 @@ async function deleteRoom(roomId, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanUseHotel(existing.hotelId, reqMeta);
 
   await prisma.room.delete({ where: { id: roomId } });
   await removeRoomFromRadius(existing);

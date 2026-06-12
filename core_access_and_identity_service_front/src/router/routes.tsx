@@ -3,6 +3,7 @@ export const routes = {
   public: {
     home: '/home',
     dashboard: '/dashboard',
+    networkMap: '/dashboard/network-map',
     login: '/login',
     mfa: '/mfa',
     register: '/register',
@@ -17,6 +18,7 @@ export const routes = {
     rooms: '/hotel-manager/rooms',
     configWifi: '/hotel-manager/config-wifi',
     devices: '/device-manager/devices',
+    users: '/admin/users',
   },
   protected: {
     dashboard: '/dashboard',

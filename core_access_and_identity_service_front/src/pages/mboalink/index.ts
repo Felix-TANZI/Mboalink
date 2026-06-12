@@ -8,4 +8,6 @@ export { default as HotelListPage } from './HotelList';
 export { default as RoomListPage } from './RoomList';
 export { default as ConfigWifiListPage } from './ConfigWifiList';
 export { default as DashboardPage } from './Dashboard';
+export { default as NetworkMap3DPage } from './NetworkMap3D';
 export { default as DeviceManagerPage } from './DeviceManager';
+export { default as UserManagerPage } from './UserManager';

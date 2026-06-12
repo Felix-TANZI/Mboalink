@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
+import { authService } from '@/services/auth/authService'
+import { ALL_HOTELS, canSelectHotelScope, getInitialHotelScope, hotelScopeToQuery } from '@/utils/hotelScope'
 import './StatutLogins.css'
 
 export default function StatutLogins() {
+  const currentUser = authService.getStoredUser()
+  const canChooseHotel = canSelectHotelScope(currentUser)
   const [searchQuery, setSearchQuery] = useState('')
   const [selected, setSelected] = useState<string[]>([])
+  const [hotels, setHotels] = useState<Array<Record<string, any>>>([])
+  const [hotelId, setHotelId] = useState('')
   const [logins, setLogins] = useState<Array<Record<string, any>>>([])
 
-  useEffect(() => {
-    mboalinkService.listLoginSessions()
-      .then((sessions) => setLogins(sessions.map((session) => ({
+  const mapSessions = (sessions: Array<Record<string, any>>) =>
+    sessions.map((session) => ({
         ...session,
         room: session.room?.name || session.room?.type || 'N/A',
         name: session.clientName || 'None Specified',
@@ -19,16 +24,37 @@ export default function StatutLogins() {
         duration: '-',
         start: session.startedAt ? new Date(session.startedAt).toLocaleString('fr-FR') : '-',
         end: session.endedAt ? new Date(session.endedAt).toLocaleString('fr-FR') : '-',
-        capDown: session.downloadCapKbps || 0,
-        capUp: session.uploadCapKbps || 0,
+        capDown: session.downloadCapKbps || session.capDownKbps || 0,
+        capUp: session.uploadCapKbps || session.capUpKbps || 0,
         currentDown: 0,
         currentUp: 0,
-        usageDown: session.usedDownMb || 0,
-        usageUp: session.usedUpMb || 0,
+        usageDown: session.usedDownMb || session.usageDownMb || 0,
+        usageUp: session.usedUpMb || session.usageUpMb || 0,
         type: session.guestPass?.code ? `Guest Pass (${session.guestPass.code})` : session.type,
-      }))))
+      }))
+
+  const loadSessions = async (scope: string) => {
+    const scopedHotelId = hotelScopeToQuery(scope)
+    const sessions = await mboalinkService.listLoginSessions(scopedHotelId ? { hotelId: scopedHotelId } : undefined)
+    setLogins(mapSessions(sessions))
+  }
+
+  useEffect(() => {
+    mboalinkService.listHotels()
+      .then(async (hotelList) => {
+        setHotels(hotelList)
+        const defaultId = getInitialHotelScope(currentUser, hotelList)
+        setHotelId(defaultId)
+        await loadSessions(defaultId)
+      })
       .catch((error) => alert((error as Error).message || 'Impossible de charger les sessions'))
   }, [])
+
+  useEffect(() => {
+    if (!hotelId) return
+    loadSessions(hotelId).catch((error) => alert((error as Error).message || 'Impossible de charger les sessions'))
+    setSelected([])
+  }, [hotelId])
 
   const stats = useMemo(() => {
     const total = logins.length
@@ -68,24 +94,7 @@ export default function StatutLogins() {
     if (confirm(`Remove ${selected.length} selected login(s)?`)) {
       mboalinkService.deleteLoginSessions(selected)
         .then(async () => {
-          const sessions = await mboalinkService.listLoginSessions()
-          setLogins(sessions.map((session) => ({
-            ...session,
-            room: session.room?.name || session.room?.type || 'N/A',
-            name: session.clientName || 'None Specified',
-            status: session.status === 'ONLINE' ? 'Online' : session.status === 'AWAY' ? 'Away' : 'Offline',
-            ipmac: `${session.ipAddress || '-'} [${session.macAddress || '-'}]`,
-            duration: '-',
-            start: session.startedAt ? new Date(session.startedAt).toLocaleString('fr-FR') : '-',
-            end: session.endedAt ? new Date(session.endedAt).toLocaleString('fr-FR') : '-',
-            capDown: session.downloadCapKbps || 0,
-            capUp: session.uploadCapKbps || 0,
-            currentDown: 0,
-            currentUp: 0,
-            usageDown: session.usedDownMb || 0,
-            usageUp: session.usedUpMb || 0,
-            type: session.guestPass?.code ? `Guest Pass (${session.guestPass.code})` : session.type,
-          })))
+          await loadSessions(hotelId)
           setSelected([])
         })
         .catch((error) => alert((error as Error).message || 'Suppression impossible'))
@@ -124,6 +133,18 @@ export default function StatutLogins() {
         </div>
 
         <div className="actionsBar">
+          {canChooseHotel && (
+            <select
+              className="filterSelect"
+              value={hotelId}
+              onChange={(e) => setHotelId(e.target.value)}
+            >
+              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              {hotels.map((hotel) => (
+                <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+              ))}
+            </select>
+          )}
           <input
             type="text"
             className="searchInput"

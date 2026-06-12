@@ -1,0 +1,76 @@
+name: MboaLink CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core_access_and_identity_service_back
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: core_access_and_identity_service_back/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend tests
+        run: npm test
+
+  frontend:
+    name: Admin frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: core_access_and_identity_service_front
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: core_access_and_identity_service_front/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+  captive-portal:
+    name: Captive portal build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: radius
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: radius/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build captive portal
+        run: npm run build

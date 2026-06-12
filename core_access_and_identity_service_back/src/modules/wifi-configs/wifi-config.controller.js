@@ -3,12 +3,12 @@ const { success } = require('../../utils/api-response');
 const { listWifiConfigs, getWifiConfigByHotelId, upsertWifiConfig } = require('./wifi-config.service');
 
 const getWifiConfigs = asyncHandler(async (req, res) => {
-  const configs = await listWifiConfigs(req.query);
+  const configs = await listWifiConfigs(req.query, req.user);
   res.json(success(configs));
 });
 
 const getWifiConfigByHotel = asyncHandler(async (req, res) => {
-  const config = await getWifiConfigByHotelId(req.params.hotelId);
+  const config = await getWifiConfigByHotelId(req.params.hotelId, req.user);
   res.json(success(config));
 });
 
@@ -17,6 +17,8 @@ const putWifiConfig = asyncHandler(async (req, res) => {
     requestId: req.context.requestId,
     actorUserId: req.user?.sub,
     actorName: req.user?.fullName,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
 
   res.json(success(config));

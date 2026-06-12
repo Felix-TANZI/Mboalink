@@ -21,9 +21,32 @@ async function uniqueWifiCode() {
   return `${randomWifiCode(8)}${Date.now().toString(36).slice(-2)}`;
 }
 
-async function listLoginSessions(query) {
+function scopedHotelId(queryHotelId, user) {
+  if (user?.role === 'RECEPTIONIST' || user?.role === 'HOTEL_IT') {
+    if (!user.hotelId) {
+      const err = new Error('Hotel-scoped account is not linked to a hotel');
+      err.status = 403;
+      throw err;
+    }
+    return user.hotelId;
+  }
+
+  return queryHotelId || undefined;
+}
+
+function ensureCanUseHotel(hotelId, reqMeta) {
+  if (reqMeta.actorRole !== 'RECEPTIONIST' && reqMeta.actorRole !== 'HOTEL_IT') return;
+
+  if (!reqMeta.actorHotelId || reqMeta.actorHotelId !== hotelId) {
+    const err = new Error('Hotel-scoped account cannot manage another hotel');
+    err.status = 403;
+    throw err;
+  }
+}
+
+async function listLoginSessions(query, user) {
   const where = {
-    hotelId: query.hotelId || undefined,
+    hotelId: scopedHotelId(query.hotelId, user),
     status:  query.status  || undefined,
     OR: query.search ? [
       { clientName: { contains: query.search, mode: 'insensitive' } },
@@ -46,6 +69,7 @@ async function listLoginSessions(query) {
 }
 
 async function createManualLogin(payload, reqMeta) {
+  ensureCanUseHotel(payload.hotelId, reqMeta);
   let room = null;
 
   if (payload.roomId) {
@@ -157,6 +181,7 @@ async function updateLoginSession(sessionId, payload, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanUseHotel(existing.hotelId, reqMeta);
 
   // Si on change la chambre, vérifier qu'elle appartient au même hôtel
   if (payload.roomId) {
@@ -208,6 +233,8 @@ async function updateLoginSession(sessionId, payload, reqMeta) {
 async function removeSessions(ids, reqMeta) {
   const sessions = await prisma.loginSession.findMany({ where: { id: { in: ids } } });
   if (sessions.length === 0) return { count: 0 };
+
+  sessions.forEach((session) => ensureCanUseHotel(session.hotelId, reqMeta));
 
   await prisma.loginSession.deleteMany({ where: { id: { in: ids } } });
 

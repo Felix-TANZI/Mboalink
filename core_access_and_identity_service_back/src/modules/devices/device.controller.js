@@ -3,17 +3,17 @@ const { success } = require('../../utils/api-response');
 const { listDevices, listDeviceMacAddresses, getDeviceByMac, createDevice, updateDevice, restartDevice, addMetric, listMetrics } = require('./device.service');
 
 const getDevices = asyncHandler(async (req, res) => {
-  const data = await listDevices(req.query);
+  const data = await listDevices(req.query, req.user);
   res.json(success(data));
 });
 
 const getDeviceMacAddresses = asyncHandler(async (req, res) => {
-  const data = await listDeviceMacAddresses(req.query);
+  const data = await listDeviceMacAddresses(req.query, req.user);
   res.json(success(data));
 });
 
 const getDeviceByMacAddress = asyncHandler(async (req, res) => {
-  const data = await getDeviceByMac(req.params.macAddress);
+  const data = await getDeviceByMac(req.params.macAddress, req.user);
   res.json(success(data));
 });
 
@@ -50,7 +50,7 @@ const postMetric = asyncHandler(async (req, res) => {
 });
 
 const getMetrics = asyncHandler(async (req, res) => {
-  const data = await listMetrics(req.params.deviceId, req.query);
+  const data = await listMetrics(req.params.deviceId, req.query, req.user);
   res.json(success(data));
 });
 

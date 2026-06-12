@@ -12,6 +12,7 @@ const deviceRoutes = require('../modules/devices/device.routes');
 const dashboardRoutes = require('../modules/dashboard/dashboard.routes');
 const auditLogRoutes = require('../modules/audit-logs/audit-log.routes');
 const captivePortalRoutes = require('../modules/captive-portal/captive-portal.routes');
+const userRoutes = require('../modules/users/user.routes');
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use('/devices', deviceRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/captive', captivePortalRoutes);
+router.use('/users', userRoutes);
 
 module.exports = router;
