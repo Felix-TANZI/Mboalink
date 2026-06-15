@@ -213,6 +213,46 @@ export interface UserEntity {
   } | null;
 }
 
+export type NotificationPriority = "INFO" | "WARNING" | "URGENT";
+
+export interface NotificationRecipientEntity {
+  id: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  hotelId?: string | null;
+  hotel?: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+export interface NotificationEntity {
+  id: string;
+  title: string;
+  message: string;
+  priority: NotificationPriority;
+  category?: string | null;
+  hotelId?: string | null;
+  createdAt: string;
+  sender?: {
+    id: string;
+    fullName: string;
+    email: string;
+    role: UserRole;
+  } | null;
+  hotel?: {
+    id: string;
+    name: string;
+  } | null;
+  recipients: Array<{
+    id: string;
+    userId: string;
+    readAt?: string | null;
+    user?: NotificationRecipientEntity;
+  }>;
+}
+
 export interface DashboardOverview {
   hotels: number;
   rooms: number;
@@ -486,6 +526,30 @@ export const mboalinkService = {
   },
   deactivateUser(userId: string) {
     return authedRequest<UserEntity>(`/users/${userId}/deactivate`, {
+      method: "PATCH",
+    });
+  },
+
+  listNotificationRecipients() {
+    return authedRequest<NotificationRecipientEntity[]>("/notifications/recipients");
+  },
+  listNotificationsInbox(query?: { unreadOnly?: boolean; limit?: number }) {
+    return authedRequest<NotificationEntity[]>("/notifications/inbox", { query });
+  },
+  listSentNotifications() {
+    return authedRequest<NotificationEntity[]>("/notifications/sent");
+  },
+  getUnreadNotificationCount() {
+    return authedRequest<{ count: number }>("/notifications/unread-count");
+  },
+  createNotification(payload: Record<string, unknown>) {
+    return authedRequest<NotificationEntity>("/notifications", {
+      method: "POST",
+      body: payload,
+    });
+  },
+  markNotificationRead(notificationId: string) {
+    return authedRequest<Record<string, unknown>>(`/notifications/${notificationId}/read`, {
       method: "PATCH",
     });
   },

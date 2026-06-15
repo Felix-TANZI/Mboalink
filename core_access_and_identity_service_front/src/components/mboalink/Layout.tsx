@@ -25,6 +25,7 @@ const pageRoutes: Record<string, string> = {
   "config-wifi": routes.public.configWifi,
   devices: routes.public.devices,
   users: routes.public.users,
+  notifications: routes.public.notifications,
 };
 
 export default function Layout({
@@ -41,12 +42,12 @@ export default function Layout({
   const isHotelIt = user?.role === "HOTEL_IT";
 
   const mainPages = isReceptionist
-    ? ["LOGINS"]
+    ? ["LOGINS", "NOTIFICATIONS"]
     : isHotelIt
-      ? ["DASHBOARD", "LOGINS", "HOTEL MANAGER", "DEVICE MANAGER"]
+      ? ["DASHBOARD", "LOGINS", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"]
       : user?.role === "ADMIN"
-        ? ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "ADMIN"]
-        : ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER"];
+        ? ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS", "ADMIN"]
+        : ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"];
 
   const subPages: Record<string, { label: string; page: string }[]> = {
     LOGINS: isReceptionist
@@ -80,6 +81,7 @@ export default function Layout({
           { label: "Config WiFi", page: "config-wifi" },
         ],
     "DEVICE MANAGER": [{ label: "Devices", page: "devices" }],
+    NOTIFICATIONS: [{ label: "Messages", page: "notifications" }],
     ADMIN: [{ label: "Users", page: "users" }],
   };
 
@@ -88,6 +90,7 @@ export default function Layout({
     "HOTEL MANAGER": isHotelIt ? "rooms" : "hotels",
     DASHBOARD: "dashboard",
     "DEVICE MANAGER": "devices",
+    NOTIFICATIONS: "notifications",
     ADMIN: "users",
   };
 

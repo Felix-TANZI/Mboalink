@@ -61,6 +61,12 @@ enum AuditSeverity {
   ERROR
 }
 
+enum NotificationPriority {
+  INFO
+  WARNING
+  URGENT
+}
+
 model User {
   id            String      @id @default(cuid())
   hotelId       String?
@@ -78,6 +84,8 @@ model User {
   auditLogs     AuditLog[]
   guestPasses   GuestPass[]    @relation("GuestPassCreator")
   hotel         Hotel?         @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+  sentNotifications     Notification[]          @relation("NotificationSender")
+  receivedNotifications NotificationRecipient[] @relation("NotificationRecipientUser")
 
   @@index([hotelId])
 }
@@ -121,6 +129,7 @@ model Hotel {
   loginSessions    LoginSession[]
   alerts           Alert[]
   auditLogs        AuditLog[]
+  notifications    Notification[]
 }
 
 model Room {
@@ -330,6 +339,39 @@ model Alert {
   resolvedAt DateTime?
 
   hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String               @id @default(cuid())
+  senderId  String?
+  hotelId   String?
+  title     String
+  message   String
+  priority  NotificationPriority @default(INFO)
+  category  String?
+  createdAt DateTime             @default(now())
+
+  sender     User?                   @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+  hotel      Hotel?                  @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+  recipients NotificationRecipient[]
+
+  @@index([senderId, createdAt])
+  @@index([hotelId, createdAt])
+}
+
+model NotificationRecipient {
+  id             String    @id @default(cuid())
+  notificationId String
+  userId         String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation("NotificationRecipientUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
 }
 
 model AuditLog {

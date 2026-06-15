@@ -11,3 +11,4 @@ export { default as DashboardPage } from './Dashboard';
 export { default as NetworkMap3DPage } from './NetworkMap3D';
 export { default as DeviceManagerPage } from './DeviceManager';
 export { default as UserManagerPage } from './UserManager';
+export { default as NotificationsPage } from './Notifications';

@@ -11,6 +11,7 @@ import {
   LoginByAddressPage,
   ManualLoginPage,
   NetworkMap3DPage,
+  NotificationsPage,
   DeviceManagerPage,
   RoomListPage,
   StatutLoginsPage,
@@ -81,6 +82,7 @@ export const AppRouter = () => {
         <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><RoomListPage /></ProtectedPage>} />
         <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><ConfigWifiListPage /></ProtectedPage>} />
         <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><UserManagerPage /></ProtectedPage>} />
+        <Route path={routes.public.notifications} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT', 'RECEPTIONIST']}><NotificationsPage /></ProtectedPage>} />
 
         {/* Routes protégées - à décommenter quand prêt */}
         {/* 
