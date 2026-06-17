@@ -25,7 +25,7 @@ function signAccessToken(user) {
 
 function signRefreshToken(user) {
   return jwt.sign(
-    { sub: user.id, type: 'refresh' },
+    { sub: user.id, type: 'refresh', jti: crypto.randomUUID() },
     env.jwtRefreshSecret,
     { expiresIn: env.refreshTokenTtl },
   );
