@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const pinoHttp = require('pino-http');
 
+const env = require('./config/env');
 const logger = require('./config/logger');
 const requestContext = require('./middlewares/request-context');
 const notFound = require('./middlewares/not-found');
@@ -11,9 +12,19 @@ const apiRoutes = require('./routes');
 const { setupSwagger } = require('./config/swagger');
 
 const app = express();
+const isProduction = env.nodeEnv === 'production';
 
 app.set('etag', false);
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      'upgrade-insecure-requests': isProduction ? [] : null,
+    },
+  },
+  hsts: isProduction,
+  crossOriginOpenerPolicy: isProduction,
+  originAgentCluster: isProduction,
+}));
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(requestContext);
