@@ -61,8 +61,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
     const response = await fetch(url, {
       method: options.method || 'GET',
+      cache: 'no-store',
       headers: {
         ...httpConfig.headers,
+        'Cache-Control': 'no-store',
+        Pragma: 'no-cache',
         ...(options.authToken ? { Authorization: `Bearer ${options.authToken}` } : {}),
         ...options.headers,
       },
