@@ -5,10 +5,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${APP_HOST_PORT:-13000}:3000"
+    restart: unless-stopped
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/mboalink_local?schema=public}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - ACCESS_TOKEN_TTL=${ACCESS_TOKEN_TTL}
@@ -16,15 +17,17 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
       - RADIUS_HOST=freeradius
       - RADIUS_PORT=1812
-      - RADIUS_SECRET=testing123
+      - RADIUS_SECRET=${RADIUS_SECRET:-testing123}
       - CAPTIVE_PORTAL_SKIP_RADIUS=${CAPTIVE_PORTAL_SKIP_RADIUS:-true}
     volumes:
       - .:/app
       - /app/node_modules
     command: ["/bin/sh", "-lc", "npm run prisma:generate && npm run prisma:push && npm run seed:admin && npm run verify:startup && npm run dev"]
     depends_on:
-      - postgres
-      - freeradius
+      postgres:
+        condition: service_healthy
+      freeradius:
+        condition: service_started
 
   freeradius:
     build:
@@ -33,25 +36,32 @@ services:
     image: mboalink_freeradius:latest
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=mboalink_local
-      - DB_USER=postgres
-      - DB_PASS=postgres
+      - DB_NAME=${POSTGRES_DB:-mboalink_local}
+      - DB_USER=${POSTGRES_USER:-postgres}
+      - DB_PASS=${POSTGRES_PASSWORD:-postgres}
       - RADIUS_SECRET=${RADIUS_SECRET:-testing123}
 
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     ports:
       - "${POSTGRES_HOST_PORT:-54320}:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=mboalink_local
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-mboalink_local}
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-mboalink_local}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
 volumes:
   pg_data:
