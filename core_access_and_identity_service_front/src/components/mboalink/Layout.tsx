@@ -24,6 +24,7 @@ const pageRoutes: Record<string, string> = {
   rooms: routes.public.rooms,
   "config-wifi": routes.public.configWifi,
   devices: routes.public.devices,
+  "admin-mboa": routes.public.adminMboa,
   users: routes.public.users,
   notifications: routes.public.notifications,
 };
@@ -40,14 +41,18 @@ export default function Layout({
   const avatarLetter = displayName.charAt(0).toUpperCase();
   const isReceptionist = user?.role === "RECEPTIONIST";
   const isHotelIt = user?.role === "HOTEL_IT";
+  const isAdmin = user?.role === "ADMIN";
+  const isSupport = user?.role === "SUPPORT";
 
   const mainPages = isReceptionist
     ? ["LOGINS", "NOTIFICATIONS"]
     : isHotelIt
       ? ["DASHBOARD", "LOGINS", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"]
-      : user?.role === "ADMIN"
-        ? ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS", "ADMIN"]
-        : ["LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"];
+      : isAdmin
+        ? ["ADMINISTRATION", "LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"]
+        : isSupport
+          ? ["LOGINS", "DASHBOARD", "NOTIFICATIONS"]
+          : ["LOGINS", "DASHBOARD", "NOTIFICATIONS"];
 
   const subPages: Record<string, { label: string; page: string }[]> = {
     LOGINS: isReceptionist
@@ -82,7 +87,7 @@ export default function Layout({
         ],
     "DEVICE MANAGER": [{ label: "Devices", page: "devices" }],
     NOTIFICATIONS: [{ label: "Messages", page: "notifications" }],
-    ADMIN: [{ label: "Users", page: "users" }],
+    ADMINISTRATION: [{ label: "Super Admin", page: "admin-mboa" }],
   };
 
   const defaultSubPages: Record<string, string> = {
@@ -91,7 +96,7 @@ export default function Layout({
     DASHBOARD: "dashboard",
     "DEVICE MANAGER": "devices",
     NOTIFICATIONS: "notifications",
-    ADMIN: "users",
+    ADMINISTRATION: "admin-mboa",
   };
 
   const handleMainPageClick = (page: string) => {

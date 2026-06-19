@@ -10,12 +10,12 @@ import {
   HotelListPage,
   LoginByAddressPage,
   ManualLoginPage,
+  MboaAdminDashboardPage,
   NetworkMap3DPage,
   NotificationsPage,
   DeviceManagerPage,
   RoomListPage,
   StatutLoginsPage,
-  UserManagerPage,
   WebsitesManagerPage,
   WifiCodePage,
 } from '@/pages/mboalink';
@@ -26,6 +26,7 @@ type AppRole = 'ADMIN' | 'SUPPORT' | 'HOTEL_IT' | 'RECEPTIONIST' | 'CLIENT';
 
 function getRoleHome(role?: string) {
   if (role === 'RECEPTIONIST') return routes.public.manualLogin;
+  if (role === 'ADMIN') return routes.public.adminMboa;
   if (role === 'ADMIN' || role === 'SUPPORT' || role === 'HOTEL_IT') return routes.public.dashboard;
   return routes.public.home;
 }
@@ -71,17 +72,18 @@ export const AppRouter = () => {
         <Route path={routes.public.home} element={<ProtectedPage><Home /></ProtectedPage>} />
         <Route path={routes.public.dashboard} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><DashboardPage /></ProtectedPage>} />
         <Route path={routes.public.networkMap} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><NetworkMap3DPage /></ProtectedPage>} />
-        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><DeviceManagerPage /></ProtectedPage>} />
+        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['ADMIN', 'HOTEL_IT']}><DeviceManagerPage /></ProtectedPage>} />
         <Route path={routes.public.wifiCode} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><WifiCodePage /></ProtectedPage>} />
         <Route path={routes.public.loginByAddress} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT']}><LoginByAddressPage /></ProtectedPage>} />
         <Route path={routes.public.statusLogins} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><StatutLoginsPage /></ProtectedPage>} />
         <Route path={routes.public.manualLogin} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'RECEPTIONIST']}><ManualLoginPage /></ProtectedPage>} />
         <Route path={routes.public.websitesManager} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><WebsitesManagerPage /></ProtectedPage>} />
         <Route path={routes.public.configCode} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT']}><ConfigCodePage /></ProtectedPage>} />
-        <Route path={routes.public.hotels} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT']}><HotelListPage /></ProtectedPage>} />
-        <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><RoomListPage /></ProtectedPage>} />
-        <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT']}><ConfigWifiListPage /></ProtectedPage>} />
-        <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><UserManagerPage /></ProtectedPage>} />
+        <Route path={routes.public.hotels} element={<ProtectedPage allowedRoles={['ADMIN']}><HotelListPage /></ProtectedPage>} />
+        <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['ADMIN', 'HOTEL_IT']}><RoomListPage /></ProtectedPage>} />
+        <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['ADMIN', 'HOTEL_IT']}><ConfigWifiListPage /></ProtectedPage>} />
+        <Route path={routes.public.adminMboa} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
+        <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
         <Route path={routes.public.notifications} element={<ProtectedPage allowedRoles={['ADMIN', 'SUPPORT', 'HOTEL_IT', 'RECEPTIONIST']}><NotificationsPage /></ProtectedPage>} />
 
         {/* Routes protégées - à décommenter quand prêt */}

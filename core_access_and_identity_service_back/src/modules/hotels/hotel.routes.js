@@ -8,8 +8,8 @@ const router = Router();
 
 router.get('/', requireAuth, getHotels);
 router.get('/:hotelId', requireAuth, getHotel);
-router.post('/', requireAuth, requireRole('ADMIN', 'SUPPORT'), validate(createHotelSchema), postHotel);
-router.patch('/:hotelId', requireAuth, requireRole('ADMIN', 'SUPPORT', 'HOTEL_IT'), validate(updateHotelSchema), patchHotel);
+router.post('/', requireAuth, requireRole('ADMIN'), validate(createHotelSchema), postHotel);
+router.patch('/:hotelId', requireAuth, requireRole('ADMIN', 'HOTEL_IT'), validate(updateHotelSchema), patchHotel);
 router.delete('/:hotelId', requireAuth, requireRole('ADMIN'), removeHotel);
 
 module.exports = router;

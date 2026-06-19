@@ -1,0 +1,553 @@
+.mboaAdminShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  background: #eef3f8;
+  color: #172033;
+}
+
+.mboaAdminSidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 18px;
+  background: linear-gradient(180deg, #111b2d 0%, #16233a 100%);
+  color: #d7e0ee;
+  box-shadow: 12px 0 34px rgba(16, 31, 52, 0.12);
+}
+
+.mboaAdminBrand {
+  display: flex;
+  align-items: center;
+  min-height: 66px;
+  margin-bottom: 18px;
+}
+
+.mboaAdminBrand img {
+  width: 172px;
+  height: auto;
+  object-fit: contain;
+}
+
+.mboaAdminNav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mboaAdminNav span {
+  margin: 18px 12px 5px;
+  color: #7f90aa;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mboaAdminNav a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #d7e0ee;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.mboaAdminNav a:hover,
+.mboaAdminNav a.active {
+  background: #f4c542;
+  color: #132136;
+  transform: translateX(2px);
+}
+
+.mboaAdminFooter {
+  margin-top: auto;
+  padding: 18px 12px 0;
+  color: #8797b0;
+  font-size: 0.82rem;
+}
+
+.mboaAdminMain {
+  min-width: 0;
+  padding: 26px;
+}
+
+.mboaAdminTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.mboaAdminTopbar h1 {
+  margin: 0;
+  color: #152033;
+  font-size: clamp(1.55rem, 2vw, 2.15rem);
+  line-height: 1.15;
+}
+
+.mboaAdminTopbar p {
+  margin: 7px 0 0;
+  color: #69788e;
+  font-size: 0.95rem;
+}
+
+.mboaAdminTopActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.mboaAdminSearch {
+  width: min(340px, 28vw);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #728096;
+}
+
+.mboaAdminSearch input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #172033;
+  background: transparent;
+  font: inherit;
+}
+
+.mboaAdminIconButton {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #274466;
+}
+
+.mboaAdminIconButton span {
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #f4c542;
+  color: #12223a;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.mboaAdminProfile {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 6px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.mboaAdminAvatar,
+.mboaUserCell span {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #1d4f8f;
+  color: #fff;
+  font-weight: 800;
+}
+
+.mboaAdminProfile strong,
+.mboaAdminProfile small {
+  display: block;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mboaAdminProfile small {
+  color: #728096;
+  font-size: 0.78rem;
+}
+
+.mboaAdminProfile button,
+.mboaRowActions button {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: #edf4fd;
+  color: #1d4f8f;
+  cursor: pointer;
+}
+
+.mboaAdminStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.mboaAdminStats article,
+.mboaAdminDataPanel,
+.mboaAdminFormPanel {
+  border: 1px solid #dce5ef;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(24, 40, 67, 0.08);
+}
+
+.mboaAdminStats article {
+  min-height: 116px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 18px;
+}
+
+.mboaAdminStats article svg {
+  color: #1d4f8f;
+}
+
+.mboaAdminStats strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.mboaAdminStats span {
+  color: #69788e;
+  font-weight: 700;
+}
+
+.mboaAdminSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 360px);
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 22px;
+}
+
+.mboaAdminDataPanel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mboaPanelHeader {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5edf5;
+}
+
+.mboaPanelHeader h2,
+.mboaAdminFormPanel h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 1.04rem;
+}
+
+.mboaPanelHeader p {
+  margin: 4px 0 0;
+  color: #708096;
+  font-size: 0.9rem;
+}
+
+.mboaPanelHeader button,
+.mboaPrimaryButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 8px;
+  background: #1d4f8f;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mboaPanelFilters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mboaPanelFilters select {
+  min-height: 40px;
+  border: 1px solid #d7e1ed;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+.mboaAdminTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.mboaAdminTable th {
+  padding: 13px 16px;
+  background: #f6f9fc;
+  color: #6d7b90;
+  font-size: 0.78rem;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.mboaAdminTable td {
+  padding: 14px 16px;
+  border-top: 1px solid #edf2f7;
+  color: #263348;
+  vertical-align: middle;
+}
+
+.mboaUserCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mboaUserCell span {
+  width: 34px;
+  height: 34px;
+  background: #e8f0fb;
+  color: #1d4f8f;
+  font-size: 0.78rem;
+}
+
+.mboaRoleBadge,
+.mboaStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.mboaRoleBadge {
+  background: #eef4ff;
+  color: #1d4f8f;
+}
+
+.role-admin {
+  background: #fff6d7;
+  color: #7a5600;
+}
+
+.role-support {
+  background: #eaf7ff;
+  color: #0d5b83;
+}
+
+.mboaStatusBadge.active,
+.mboaStatusBadge.online {
+  background: #e7f8ef;
+  color: #167245;
+}
+
+.mboaStatusBadge.inactive,
+.mboaStatusBadge.offline {
+  background: #f2f4f7;
+  color: #69788e;
+}
+
+.mboaStatusBadge.unstable {
+  background: #fff6d7;
+  color: #7a5600;
+}
+
+.mboaRowActions {
+  display: flex;
+  gap: 8px;
+}
+
+.mboaRowActions button.danger {
+  background: #fff1e7;
+  color: #b95000;
+}
+
+.mboaPanelFooter {
+  padding: 14px 18px;
+  border-top: 1px solid #e5edf5;
+  color: #728096;
+  font-size: 0.86rem;
+}
+
+.mboaAdminFormPanel {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.mboaAdminFormPanel label {
+  display: grid;
+  gap: 7px;
+  color: #42516a;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.mboaAdminFormPanel input,
+.mboaAdminFormPanel select,
+.mboaAdminFormPanel textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d7e1ed;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #172033;
+  font: inherit;
+  background: #fff;
+}
+
+.mboaAdminFormPanel textarea {
+  min-height: 86px;
+  padding-top: 10px;
+  resize: vertical;
+}
+
+.mboaFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mboaPrimaryButton {
+  width: 100%;
+  margin-top: 4px;
+  background: #f4c542;
+  color: #142238;
+}
+
+.mboaPrimaryButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.mboaLoading {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #172033;
+  color: #fff;
+  box-shadow: 0 18px 38px rgba(16, 31, 52, 0.22);
+}
+
+@media (max-width: 1180px) {
+  .mboaAdminShell {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+
+  .mboaAdminBrand img {
+    width: 52px;
+  }
+
+  .mboaAdminNav a {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .mboaAdminNav a,
+  .mboaAdminFooter,
+  .mboaAdminNav span {
+    font-size: 0;
+  }
+
+  .mboaAdminNav svg {
+    flex: 0 0 auto;
+  }
+
+  .mboaAdminStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mboaAdminSection {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .mboaAdminShell {
+    display: block;
+  }
+
+  .mboaAdminSidebar {
+    position: static;
+    height: auto;
+  }
+
+  .mboaAdminMain {
+    padding: 18px;
+  }
+
+  .mboaAdminTopbar,
+  .mboaAdminTopActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mboaAdminSearch {
+    width: 100%;
+  }
+
+  .mboaAdminStats {
+    grid-template-columns: 1fr;
+  }
+
+  .mboaAdminTable {
+    min-width: 760px;
+  }
+
+  .mboaAdminDataPanel {
+    overflow-x: auto;
+  }
+
+  .mboaFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
