@@ -39,10 +39,11 @@ export default function Layout({
   const user = authService.getStoredUser();
   const displayName = user?.name || user?.email || "Utilisateur";
   const avatarLetter = displayName.charAt(0).toUpperCase();
-  const isReceptionist = user?.role === "RECEPTIONIST";
-  const isHotelIt = user?.role === "HOTEL_IT";
-  const isAdmin = user?.role === "ADMIN";
-  const isSupport = user?.role === "SUPPORT";
+  const role = String(user?.role || "").trim().toUpperCase();
+  const isReceptionist = role === "RECEPTIONIST";
+  const isHotelIt = role === "HOTEL_IT";
+  const isAdmin = role === "ADMIN";
+  const isSupport = role === "SUPPORT" || role.includes("SUPPORT");
 
   const mainPages = isReceptionist
     ? ["LOGINS", "NOTIFICATIONS"]
@@ -99,6 +100,8 @@ export default function Layout({
     ADMINISTRATION: "admin-mboa",
   };
 
+  const canSeeActivePage = mainPages.includes(activePage);
+
   const handleMainPageClick = (page: string) => {
     const defaultPage = defaultSubPages[page];
     if (defaultPage && pageRoutes[defaultPage]) {
@@ -153,7 +156,7 @@ export default function Layout({
         </div>
       </header>
 
-      {subPages[activePage]?.length > 0 && (
+      {canSeeActivePage && subPages[activePage]?.length > 0 && (
         <nav className="subNav" aria-label="Sub navigation">
           <div className="subNavInner">
             {subPages[activePage].map((item) => (
