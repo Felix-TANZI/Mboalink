@@ -27,12 +27,16 @@ export default function LoginPage() {
         navigate(routes.public.mfa, { state: { email: result.email } })
       } else {
         const redirect = new URLSearchParams(location.search).get('redirect')
-        const target = result.user?.role === 'RECEPTIONIST'
+        const role = result.user?.role
+        const target = role === 'ADMIN'
+          ? routes.public.adminMboa
+          : role === 'RECEPTIONIST'
           ? routes.public.manualLogin
-          : ['ADMIN', 'SUPPORT', 'HOTEL_IT'].includes(result.user?.role)
+          : ['SUPPORT', 'HOTEL_IT'].includes(role)
             ? routes.public.dashboard
             : routes.public.home
-        navigate(redirect?.startsWith('/') && redirect !== routes.public.login ? redirect : target, { replace: true })
+        const canUseRedirect = role !== 'ADMIN' && redirect?.startsWith('/') && redirect !== routes.public.login
+        navigate(canUseRedirect ? redirect : target, { replace: true })
       }
     } catch (err) {
       setError(err?.message || 'Identifiants incorrects')

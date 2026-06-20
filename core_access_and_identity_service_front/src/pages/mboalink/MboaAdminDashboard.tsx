@@ -355,9 +355,9 @@ export default function MboaAdminDashboard() {
           <a href="#users"><Users size={18} />Utilisateurs</a>
           <a href="#hotels"><Hotel size={18} />Hôtels</a>
           <a href="#devices"><Network size={18} />Équipements réseau</a>
-          <a href={routes.public.wifiCode}><Wifi size={18} />Codes WiFi</a>
-          <a href={routes.public.statusLogins}><Plug size={18} />Connexions</a>
-          <a href={routes.public.notifications}><Bell size={18} />Notifications</a>
+          <a href="#codes"><Wifi size={18} />Codes WiFi</a>
+          <a href="#connections"><Plug size={18} />Connexions</a>
+          <a href="#admin-notifications"><Bell size={18} />Notifications</a>
           <a href="#reports"><FileClock size={18} />Rapports</a>
           <a href="#settings"><Settings size={18} />Paramètres</a>
           <span>Système</span>
