@@ -70,6 +70,8 @@ const defaultDeviceForm = {
   floor: '',
 }
 
+type ActiveForm = 'user' | 'hotel' | 'device' | null
+
 function formatDate(value?: string | null) {
   if (!value) return 'Jamais'
   return new Date(value).toLocaleString('fr-FR', {
@@ -107,6 +109,7 @@ export default function MboaAdminDashboard() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingHotelId, setEditingHotelId] = useState<string | null>(null)
   const [editingDeviceId, setEditingDeviceId] = useState<string | null>(null)
+  const [activeForm, setActiveForm] = useState<ActiveForm>(null)
 
   const loadData = async () => {
     try {
@@ -185,15 +188,28 @@ export default function MboaAdminDashboard() {
   const resetUserForm = () => {
     setEditingUserId(null)
     setUserForm(defaultUserForm)
+    setActiveForm('user')
   }
 
   const resetHotelForm = () => {
     setEditingHotelId(null)
     setHotelForm(defaultHotelForm)
+    setActiveForm('hotel')
   }
 
   const resetDeviceForm = () => {
     setEditingDeviceId(null)
+    setDeviceForm(defaultDeviceForm)
+    setActiveForm('device')
+  }
+
+  const closeForm = () => {
+    setActiveForm(null)
+    setEditingUserId(null)
+    setEditingHotelId(null)
+    setEditingDeviceId(null)
+    setUserForm(defaultUserForm)
+    setHotelForm(defaultHotelForm)
     setDeviceForm(defaultDeviceForm)
   }
 
@@ -223,7 +239,7 @@ export default function MboaAdminDashboard() {
       } else {
         await mboalinkService.createUser(payload)
       }
-      resetUserForm()
+      closeForm()
       await loadData()
     } catch (error) {
       alert((error as Error).message || 'Enregistrement utilisateur impossible')
@@ -247,7 +263,7 @@ export default function MboaAdminDashboard() {
       } else {
         await mboalinkService.createHotel(payload)
       }
-      resetHotelForm()
+      closeForm()
       await loadData()
     } catch (error) {
       alert((error as Error).message || 'Enregistrement hôtel impossible')
@@ -278,7 +294,7 @@ export default function MboaAdminDashboard() {
       } else {
         await mboalinkService.createDevice(payload)
       }
-      resetDeviceForm()
+      closeForm()
       await loadData()
     } catch (error) {
       alert((error as Error).message || 'Enregistrement équipement impossible')
@@ -288,6 +304,7 @@ export default function MboaAdminDashboard() {
   }
 
   const editUser = (user: UserEntity) => {
+    setActiveForm('user')
     setEditingUserId(user.id)
     setUserForm({
       fullName: user.fullName,
@@ -299,6 +316,7 @@ export default function MboaAdminDashboard() {
   }
 
   const editHotel = (hotel: HotelEntity) => {
+    setActiveForm('hotel')
     setEditingHotelId(hotel.id)
     setHotelForm({
       name: hotel.name,
@@ -310,6 +328,7 @@ export default function MboaAdminDashboard() {
   }
 
   const editDevice = (device: DeviceEntity) => {
+    setActiveForm('device')
     setEditingDeviceId(device.id)
     setDeviceForm({
       hotelId: device.hotelId,
@@ -404,7 +423,7 @@ export default function MboaAdminDashboard() {
           <article><Wifi size={20} /><strong>{stats.onlineDevices}</strong><span>Équipements en ligne</span></article>
         </section>
 
-        <section id="users" className="mboaAdminSection">
+        <section id="users" className={`mboaAdminSection ${activeForm === 'user' ? 'hasForm' : ''}`}>
           <div className="mboaAdminDataPanel">
             <PanelHeader
               title="Gestion des utilisateurs"
@@ -439,8 +458,12 @@ export default function MboaAdminDashboard() {
             <PanelFooter count={filteredUsers.length} label="utilisateur" />
           </div>
 
+          {activeForm === 'user' && (
           <form className="mboaAdminFormPanel" onSubmit={submitUser}>
-            <h2>{editingUserId ? 'Modifier utilisateur' : 'Nouvel utilisateur'}</h2>
+            <div className="mboaFormHeader">
+              <h2>{editingUserId ? 'Modifier utilisateur' : 'Nouvel utilisateur'}</h2>
+              <button type="button" onClick={closeForm}>Fermer</button>
+            </div>
             <label>Nom complet<input value={userForm.fullName} onChange={(event) => setUserForm((prev) => ({ ...prev, fullName: event.target.value }))} required /></label>
             <label>Email<input type="email" value={userForm.email} onChange={(event) => setUserForm((prev) => ({ ...prev, email: event.target.value }))} required /></label>
             <label>Rôle<select value={userForm.role} onChange={(event) => handleUserRoleChange(event.target.value as UserRole)}>
@@ -455,9 +478,10 @@ export default function MboaAdminDashboard() {
             <label>Mot de passe<input type="password" value={userForm.password} onChange={(event) => setUserForm((prev) => ({ ...prev, password: event.target.value }))} required={!editingUserId} /></label>
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />{editingUserId ? "Enregistrer l'utilisateur" : "Créer l'utilisateur"}</button>
           </form>
+          )}
         </section>
 
-        <section id="hotels" className="mboaAdminSection">
+        <section id="hotels" className={`mboaAdminSection ${activeForm === 'hotel' ? 'hasForm' : ''}`}>
           <div className="mboaAdminDataPanel">
             <PanelHeader title="Gestion des hôtels" subtitle="Liste de tous les hôtels enregistrés" actionLabel="Nouvel hôtel" onAction={resetHotelForm} />
             <table className="mboaAdminTable">
@@ -478,8 +502,12 @@ export default function MboaAdminDashboard() {
             <PanelFooter count={filteredHotels.length} label="hôtel" />
           </div>
 
+          {activeForm === 'hotel' && (
           <form className="mboaAdminFormPanel" onSubmit={submitHotel}>
-            <h2>{editingHotelId ? 'Modifier hôtel' : 'Nouvel hôtel'}</h2>
+            <div className="mboaFormHeader">
+              <h2>{editingHotelId ? 'Modifier hôtel' : 'Nouvel hôtel'}</h2>
+              <button type="button" onClick={closeForm}>Fermer</button>
+            </div>
             <label>Nom de l'hôtel<input value={hotelForm.name} onChange={(event) => setHotelForm((prev) => ({ ...prev, name: event.target.value }))} required /></label>
             <div className="mboaFormGrid">
               <label>Ville<input value={hotelForm.city} onChange={(event) => setHotelForm((prev) => ({ ...prev, city: event.target.value }))} required /></label>
@@ -489,9 +517,10 @@ export default function MboaAdminDashboard() {
             <label>Description<textarea value={hotelForm.description} onChange={(event) => setHotelForm((prev) => ({ ...prev, description: event.target.value }))} /></label>
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />{editingHotelId ? "Enregistrer l'hôtel" : "Créer l'hôtel"}</button>
           </form>
+          )}
         </section>
 
-        <section id="devices" className="mboaAdminSection">
+        <section id="devices" className={`mboaAdminSection ${activeForm === 'device' ? 'hasForm' : ''}`}>
           <div className="mboaAdminDataPanel">
             <div className="mboaPanelHeader">
               <div><h2>Gestion des équipements réseau</h2><p>Routeurs, switchs, points d'accès et contrôleurs par hôtel</p></div>
@@ -528,8 +557,12 @@ export default function MboaAdminDashboard() {
             <PanelFooter count={filteredDevices.length} label="équipement" />
           </div>
 
+          {activeForm === 'device' && (
           <form className="mboaAdminFormPanel" onSubmit={submitDevice}>
-            <h2>{editingDeviceId ? 'Modifier équipement réseau' : 'Nouvel équipement réseau'}</h2>
+            <div className="mboaFormHeader">
+              <h2>{editingDeviceId ? 'Modifier équipement réseau' : 'Nouvel équipement réseau'}</h2>
+              <button type="button" onClick={closeForm}>Fermer</button>
+            </div>
             <label>Hôtel<select value={deviceForm.hotelId} onChange={(event) => setDeviceForm((prev) => ({ ...prev, hotelId: event.target.value }))} required>
               <option value="">Sélectionner un hôtel</option>
               {hotels.map((hotel) => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}
@@ -543,6 +576,71 @@ export default function MboaAdminDashboard() {
             </div>
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />{editingDeviceId ? "Enregistrer l'équipement" : "Créer l'équipement"}</button>
           </form>
+          )}
+        </section>
+
+        <section id="codes" className="mboaAdminUtilitySection">
+          <PanelHeader title="Codes WiFi" subtitle="Pilotage global des accès clients par hôtel" actionLabel="Voir les codes" onAction={() => setHotelFilter('all')} />
+          <div className="mboaUtilityGrid">
+            <UtilityCard icon={<KeyRound size={18} />} title="Codes actifs" value={`${stats.users}`} detail="Les codes restent administrés depuis les hôtels concernés." />
+            <UtilityCard icon={<Hotel size={18} />} title="Filtrage hôtel" value={hotels.length ? 'Disponible' : 'À configurer'} detail="Le super admin conserve la vue globale et peut filtrer par hôtel." />
+            <UtilityCard icon={<ShieldCheck size={18} />} title="Contrôle" value="Admin" detail="Création, révocation et suivi seront consolidés ici." />
+          </div>
+        </section>
+
+        <section id="connections" className="mboaAdminUtilitySection">
+          <PanelHeader title="Connexions" subtitle="Suivi administrateur des clients connectés, hors ligne ou expirés" actionLabel="Actualiser" onAction={loadData} />
+          <div className="mboaUtilityGrid">
+            <UtilityCard icon={<Plug size={18} />} title="Équipements en ligne" value={String(stats.onlineDevices)} detail="Indicateur réseau disponible depuis les équipements remontés." />
+            <UtilityCard icon={<Wifi size={18} />} title="Hôtels couverts" value={String(stats.hotels)} detail="Les connexions seront filtrables par hôtel dans cette section." />
+            <UtilityCard icon={<FileClock size={18} />} title="Historique" value="Prévu" detail="Journal des sessions et expirations à consolider côté API." />
+          </div>
+        </section>
+
+        <section id="admin-notifications" className="mboaAdminUtilitySection">
+          <PanelHeader title="Notifications" subtitle="Messages système envoyés aux acteurs MboaLink" actionLabel="Nouveau message" onAction={() => alert('Le formulaire de notification admin sera branché ici.')} />
+          <div className="mboaUtilityGrid">
+            <UtilityCard icon={<Bell size={18} />} title="Canaux" value="Plateforme" detail="Admin vers support, IT hôtel et réception selon les règles définies." />
+            <UtilityCard icon={<UserRound size={18} />} title="Destinataires" value={String(users.length)} detail="Tous les acteurs actifs peuvent être ciblés selon leur rôle." />
+            <UtilityCard icon={<Hotel size={18} />} title="Ciblage hôtel" value="Oui" detail="Les annonces peuvent être préparées pour un hôtel précis." />
+          </div>
+        </section>
+
+        <section id="reports" className="mboaAdminUtilitySection">
+          <PanelHeader title="Rapports" subtitle="Vue de synthèse pour suivre l'exploitation MboaLink" actionLabel="Exporter" onAction={() => alert('Export des rapports à brancher côté backend.')} />
+          <div className="mboaUtilityGrid">
+            <UtilityCard icon={<Users size={18} />} title="Utilisateurs" value={String(stats.users)} detail="Volume total d'acteurs enregistrés." />
+            <UtilityCard icon={<Building2 size={18} />} title="Hôtels" value={String(stats.hotels)} detail="Hôtels actifs dans la plateforme." />
+            <UtilityCard icon={<Network size={18} />} title="Réseau" value={String(stats.devices)} detail="Équipements déclarés dans MboaLink." />
+          </div>
+        </section>
+
+        <section id="settings" className="mboaAdminUtilitySection">
+          <PanelHeader title="Paramètres" subtitle="Configuration globale de la plateforme" actionLabel="Enregistrer" onAction={() => alert('Paramètres globaux à connecter à une API dédiée.')} />
+          <div className="mboaUtilityGrid">
+            <UtilityCard icon={<Settings size={18} />} title="Environnement" value="Production" detail="Paramètres applicatifs et valeurs de déploiement." />
+            <UtilityCard icon={<Database size={18} />} title="Base de données" value="PostgreSQL" detail="Postgres stabilisé avec initialisation durable du mot de passe." />
+            <UtilityCard icon={<ShieldCheck size={18} />} title="Sécurité" value="Rôles" detail="Accès séparés entre admin, support, IT hôtel et réception." />
+          </div>
+        </section>
+
+        <section id="roles" className="mboaAdminUtilitySection">
+          <PanelHeader title="Rôles & Permissions" subtitle="Résumé des droits principaux" actionLabel="Synchroniser" onAction={loadData} />
+          <div className="mboaPermissionList">
+            <PermissionRow role="ADMIN" description="Super admin MboaLink, gestion complète depuis cette interface." />
+            <PermissionRow role="SUPPORT" description="Vue opérationnelle sans Hotel Manager ni Device Manager." />
+            <PermissionRow role="HOTEL_IT" description="Gestion technique limitée à son hôtel." />
+            <PermissionRow role="RECEPTIONIST" description="Accès limité à Manual Login pour son hôtel." />
+          </div>
+        </section>
+
+        <section id="integrations" className="mboaAdminUtilitySection">
+          <PanelHeader title="Intégrations" subtitle="Services connectés à MboaLink" actionLabel="Tester" onAction={() => alert('Tests d’intégration à connecter aux endpoints de santé.')} />
+          <div className="mboaUtilityGrid">
+            <UtilityCard icon={<Database size={18} />} title="Swagger API" value="Disponible" detail="Documentation backend accessible via /api-docs." />
+            <UtilityCard icon={<Wifi size={18} />} title="FreeRADIUS" value="En cours" detail="Intégration réseau à stabiliser avec l'équipe radius." />
+            <UtilityCard icon={<Plug size={18} />} title="Portail captif" value="Actif" detail="Authentification client par UUID, code WiFi, nom et chambre." />
+          </div>
         </section>
 
         {isLoading && <div className="mboaLoading">Chargement de l'administration...</div>}
@@ -578,6 +676,26 @@ function RowActions({ onEdit, onDelete, deleteTitle = 'Supprimer' }: { onEdit: (
     <div className="mboaRowActions">
       <button type="button" onClick={onEdit} title="Modifier"><Pencil size={15} /></button>
       <button type="button" onClick={onDelete} title={deleteTitle} className="danger"><Trash2 size={15} /></button>
+    </div>
+  )
+}
+
+function UtilityCard({ icon, title, value, detail }: { icon: React.ReactNode; title: string; value: string; detail: string }) {
+  return (
+    <article className="mboaUtilityCard">
+      <span>{icon}</span>
+      <strong>{value}</strong>
+      <h3>{title}</h3>
+      <p>{detail}</p>
+    </article>
+  )
+}
+
+function PermissionRow({ role, description }: { role: string; description: string }) {
+  return (
+    <div className="mboaPermissionRow">
+      <strong>{role}</strong>
+      <span>{description}</span>
     </div>
   )
 }

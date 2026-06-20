@@ -255,10 +255,14 @@
 
 .mboaAdminSection {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(310px, 360px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
   margin-bottom: 22px;
+}
+
+.mboaAdminSection.hasForm {
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 360px);
 }
 
 .mboaAdminDataPanel {
@@ -420,6 +424,25 @@
   display: grid;
   gap: 14px;
   padding: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+.mboaFormHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mboaFormHeader button {
+  min-height: 32px;
+  border: 1px solid #d7e1ed;
+  border-radius: 8px;
+  background: #fff;
+  color: #526277;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .mboaAdminFormPanel label {
@@ -478,6 +501,89 @@
   box-shadow: 0 18px 38px rgba(16, 31, 52, 0.22);
 }
 
+.mboaAdminUtilitySection {
+  margin-bottom: 22px;
+  border: 1px solid #dce5ef;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(24, 40, 67, 0.08);
+  overflow: hidden;
+}
+
+.mboaUtilityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+.mboaUtilityCard {
+  min-height: 150px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid #e4ebf4;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.mboaUtilityCard span {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #e8f0fb;
+  color: #1d4f8f;
+}
+
+.mboaUtilityCard strong {
+  color: #172033;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.mboaUtilityCard h3 {
+  margin: 0;
+  color: #20314a;
+  font-size: 0.96rem;
+}
+
+.mboaUtilityCard p {
+  margin: 0;
+  color: #69788e;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.mboaPermissionList {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.mboaPermissionRow {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-height: 54px;
+  padding: 12px 14px;
+  border: 1px solid #e4ebf4;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.mboaPermissionRow strong {
+  color: #1d4f8f;
+}
+
+.mboaPermissionRow span {
+  color: #526277;
+}
+
 @media (max-width: 1180px) {
   .mboaAdminShell {
     grid-template-columns: 86px minmax(0, 1fr);
@@ -507,6 +613,18 @@
   }
 
   .mboaAdminSection {
+    grid-template-columns: 1fr;
+  }
+
+  .mboaAdminSection.hasForm {
+    grid-template-columns: 1fr;
+  }
+
+  .mboaAdminFormPanel {
+    position: static;
+  }
+
+  .mboaUtilityGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -548,6 +666,10 @@
   }
 
   .mboaFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mboaPermissionRow {
     grid-template-columns: 1fr;
   }
 }
