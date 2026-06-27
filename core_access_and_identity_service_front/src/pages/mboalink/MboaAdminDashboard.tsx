@@ -35,6 +35,7 @@ import {
   type UserRole,
 } from '@/services/mboalinkService'
 import mboalinkLogo from '@/assets/images/mboalink-logo-navbar.png'
+import mboalinkReportLogo from '@/assets/images/Logo Mboalink-02 1.png'
 import './MboaAdminDashboard.css'
 import './Notifications.css'
 
@@ -507,7 +508,7 @@ export default function MboaAdminDashboard() {
     const activeHotels = hotels.filter((hotel) => hotel.status === 'ACTIVE').length
     const onlineDevices = devices.filter((device) => device.status === 'ONLINE').length
     const inactiveUsers = users.filter((user) => !user.isActive).length
-    const logoUrl = new URL(mboalinkLogo, window.location.origin).href
+    const logoUrl = new URL(mboalinkReportLogo, window.location.origin).href
 
     const userRows = users.slice(0, 12).map((user) => `
       <tr>
@@ -576,12 +577,12 @@ export default function MboaAdminDashboard() {
       margin-bottom: 28px;
     }
     .brand img {
-      width: 166px;
+      width: 220px;
       height: auto;
       object-fit: contain;
-      padding: 8px 10px;
+      padding: 0;
       border-radius: 8px;
-      background: rgba(255,255,255,0.96);
+      background: transparent;
     }
     .brand span {
       display: block;
