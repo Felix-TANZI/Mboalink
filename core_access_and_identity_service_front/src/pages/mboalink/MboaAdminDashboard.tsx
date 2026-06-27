@@ -824,22 +824,41 @@ export default function MboaAdminDashboard() {
       <span>Document généré automatiquement depuis l'administration MboaLink</span>
     </footer>
   </main>
-  <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => window.print(), 400);
-    });
-  </script>
 </body>
 </html>`
 
-    const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=900')
-    if (!printWindow) {
-      alert('Impossible d’ouvrir la fenêtre PDF. Autorisez les popups pour MboaLink.')
+    const previousFrame = document.getElementById('mboalink-report-print-frame')
+    previousFrame?.remove()
+
+    const printFrame = document.createElement('iframe')
+    printFrame.id = 'mboalink-report-print-frame'
+    printFrame.title = 'Rapport MboaLink PDF'
+    printFrame.style.position = 'fixed'
+    printFrame.style.right = '0'
+    printFrame.style.bottom = '0'
+    printFrame.style.width = '0'
+    printFrame.style.height = '0'
+    printFrame.style.border = '0'
+    printFrame.style.opacity = '0'
+    document.body.appendChild(printFrame)
+
+    const frameWindow = printFrame.contentWindow
+    const frameDocument = frameWindow?.document
+    if (!frameWindow || !frameDocument) {
+      printFrame.remove()
+      alert('Impossible de préparer le PDF. Réessayez depuis le navigateur.')
       return
     }
-    printWindow.document.open()
-    printWindow.document.write(html)
-    printWindow.document.close()
+
+    frameDocument.open()
+    frameDocument.write(html)
+    frameDocument.close()
+
+    setTimeout(() => {
+      frameWindow.focus()
+      frameWindow.print()
+      setTimeout(() => printFrame.remove(), 1200)
+    }, 500)
   }
 
   return (
