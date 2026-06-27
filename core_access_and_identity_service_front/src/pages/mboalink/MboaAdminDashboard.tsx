@@ -121,6 +121,15 @@ function initials(value: string) {
     .join('') || 'ML'
 }
 
+function escapeHtml(value?: string | number | null) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}
+
 export default function MboaAdminDashboard() {
   const navigate = useNavigate()
   const currentUser = authService.getStoredUser()
@@ -484,6 +493,353 @@ export default function MboaAdminDashboard() {
     } catch (error) {
       alert((error as Error).message || 'Action impossible')
     }
+  }
+
+  const exportAdminReport = () => {
+    const generatedAt = new Date().toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    const adminName = currentUser?.fullName || currentUser?.email || 'Administrateur MboaLink'
+    const activeHotels = hotels.filter((hotel) => hotel.status === 'ACTIVE').length
+    const onlineDevices = devices.filter((device) => device.status === 'ONLINE').length
+    const inactiveUsers = users.filter((user) => !user.isActive).length
+    const logoUrl = new URL(mboalinkLogo, window.location.origin).href
+
+    const userRows = users.slice(0, 12).map((user) => `
+      <tr>
+        <td>${escapeHtml(user.fullName)}</td>
+        <td>${escapeHtml(user.email)}</td>
+        <td>${escapeHtml(roleLabels[user.role])}</td>
+        <td>${escapeHtml(user.hotel?.name || 'Plateforme')}</td>
+        <td><span class="pill ${user.isActive ? 'ok' : 'muted'}">${user.isActive ? 'Actif' : 'Inactif'}</span></td>
+      </tr>
+    `).join('')
+
+    const hotelRows = hotels.slice(0, 10).map((hotel) => `
+      <tr>
+        <td>${escapeHtml(hotel.name)}</td>
+        <td>${escapeHtml(hotel.city)}</td>
+        <td>${escapeHtml(hotel.address)}</td>
+        <td><span class="pill ${hotel.status === 'ACTIVE' ? 'ok' : 'warn'}">${escapeHtml(hotel.status)}</span></td>
+      </tr>
+    `).join('')
+
+    const deviceRows = devices.slice(0, 12).map((device) => `
+      <tr>
+        <td>${escapeHtml(device.model || device.serialNumber || device.macAddress)}</td>
+        <td>${escapeHtml(device.hotel?.name || '-')}</td>
+        <td>${escapeHtml(device.localIp || '-')}</td>
+        <td>${escapeHtml(device.zone || '-')}</td>
+        <td><span class="pill ${device.status === 'ONLINE' ? 'ok' : device.status === 'UNSTABLE' ? 'warn' : 'muted'}">${escapeHtml(device.status)}</span></td>
+      </tr>
+    `).join('')
+
+    const html = `<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Rapport MboaLink</title>
+  <style>
+    @page { size: A4; margin: 14mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #172033;
+      background: #eef3f8;
+      font-family: Inter, Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .report {
+      max-width: 980px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #dce5ef;
+      box-shadow: 0 22px 60px rgba(24, 40, 67, 0.14);
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      padding: 30px 34px;
+      background: linear-gradient(135deg, #12213a 0%, #1d4f8f 68%, #f4c542 220%);
+      color: #fff;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .brand img {
+      width: 166px;
+      height: auto;
+      object-fit: contain;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.96);
+    }
+    .brand span {
+      display: block;
+      color: #f4c542;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    h1 {
+      margin: 0;
+      max-width: 620px;
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .hero p {
+      margin: 12px 0 0;
+      max-width: 620px;
+      color: #dce9fb;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .stamp {
+      min-width: 180px;
+      align-self: end;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+    }
+    .stamp strong, .stamp span { display: block; }
+    .stamp strong { color: #f4c542; font-size: 13px; margin-bottom: 6px; }
+    .stamp span { color: #fff; font-size: 12px; line-height: 1.45; }
+    .content { padding: 26px 34px 34px; }
+    .sectionTitle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 0 0 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e5edf5;
+    }
+    .sectionTitle h2 {
+      margin: 0;
+      color: #1d4f8f;
+      font-size: 18px;
+    }
+    .sectionTitle span {
+      color: #6d7b90;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+    .kpi {
+      min-height: 108px;
+      padding: 16px;
+      border: 1px solid #dce5ef;
+      border-radius: 8px;
+      background: #f8fbff;
+    }
+    .kpi strong {
+      display: block;
+      color: #1d4f8f;
+      font-size: 30px;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .kpi span {
+      color: #526277;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .box {
+      padding: 18px;
+      border: 1px solid #dce5ef;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .box h3 { margin: 0 0 10px; color: #172033; font-size: 15px; }
+    .box p, .box li {
+      color: #526277;
+      font-size: 12.5px;
+      line-height: 1.55;
+    }
+    .box p { margin: 0; }
+    .box ul { margin: 0; padding-left: 18px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      border: 1px solid #e5edf5;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th {
+      padding: 11px 12px;
+      background: #1d4f8f;
+      color: #fff;
+      font-size: 11px;
+      text-align: left;
+      text-transform: uppercase;
+    }
+    td {
+      padding: 11px 12px;
+      border-top: 1px solid #edf2f7;
+      color: #263348;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    tr:nth-child(even) td { background: #f8fbff; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .pill.ok { background: #e7f8ef; color: #167245; }
+    .pill.warn { background: #fff6d7; color: #7a5600; }
+    .pill.muted { background: #f2f4f7; color: #69788e; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px 34px;
+      border-top: 1px solid #dce5ef;
+      background: #f8fbff;
+      color: #6d7b90;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    @media print {
+      body { background: #fff; }
+      .report { box-shadow: none; border: 0; }
+      .noPrint { display: none; }
+      table, .box, .kpi { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="report">
+    <section class="hero">
+      <div>
+        <div class="brand">
+          <img src="${logoUrl}" alt="MboaLink" />
+          <span>Rapport administrateur</span>
+        </div>
+        <h1>État de la plateforme MboaLink</h1>
+        <p>Vue de synthèse générée depuis l'espace super admin MboaLink. Ce document regroupe les indicateurs utilisateurs, hôtels, équipements réseau et intégrations utiles au suivi opérationnel.</p>
+      </div>
+      <aside class="stamp">
+        <strong>Généré le</strong>
+        <span>${escapeHtml(generatedAt)}</span>
+        <strong style="margin-top:12px;">Par</strong>
+        <span>${escapeHtml(adminName)}</span>
+      </aside>
+    </section>
+
+    <section class="content">
+      <div class="sectionTitle">
+        <h2>Indicateurs clés</h2>
+        <span>MboaLink Admin</span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><strong>${stats.users}</strong><span>Utilisateurs</span></div>
+        <div class="kpi"><strong>${activeHotels}/${stats.hotels}</strong><span>Hôtels actifs</span></div>
+        <div class="kpi"><strong>${onlineDevices}/${stats.devices}</strong><span>Équipements en ligne</span></div>
+        <div class="kpi"><strong>${unreadCount}</strong><span>Notifications non lues</span></div>
+      </div>
+
+      <div class="summary">
+        <div class="box">
+          <h3>Résumé exécutif</h3>
+          <p>MboaLink dispose actuellement de ${stats.users} utilisateur(s), ${stats.hotels} hôtel(s) et ${stats.devices} équipement(s) réseau déclaré(s). Les modules administrateur, notifications internes, équipements réseau et portail captif sont centralisés dans l'espace super admin.</p>
+        </div>
+        <div class="box">
+          <h3>Points d'attention</h3>
+          <ul>
+            <li>${inactiveUsers} utilisateur(s) inactif(s) à vérifier.</li>
+            <li>${stats.devices - onlineDevices} équipement(s) hors ligne ou instable(s).</li>
+            <li>FreeRADIUS et portail captif à surveiller lors des tests réseau.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sectionTitle"><h2>Utilisateurs</h2><span>${users.length} entrée(s)</span></div>
+      <table>
+        <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Hôtel</th><th>Statut</th></tr></thead>
+        <tbody>${userRows || '<tr><td colspan="5">Aucun utilisateur enregistré.</td></tr>'}</tbody>
+      </table>
+
+      <div class="sectionTitle"><h2>Hôtels</h2><span>${hotels.length} entrée(s)</span></div>
+      <table>
+        <thead><tr><th>Nom</th><th>Ville</th><th>Adresse</th><th>Statut</th></tr></thead>
+        <tbody>${hotelRows || '<tr><td colspan="4">Aucun hôtel enregistré.</td></tr>'}</tbody>
+      </table>
+
+      <div class="sectionTitle"><h2>Équipements réseau</h2><span>${devices.length} entrée(s)</span></div>
+      <table>
+        <thead><tr><th>Équipement</th><th>Hôtel</th><th>IP locale</th><th>Zone</th><th>Statut</th></tr></thead>
+        <tbody>${deviceRows || '<tr><td colspan="5">Aucun équipement enregistré.</td></tr>'}</tbody>
+      </table>
+
+      <div class="sectionTitle"><h2>Intégrations</h2><span>Suivi technique</span></div>
+      <div class="summary">
+        <div class="box">
+          <h3>Services connectés</h3>
+          <ul>
+            <li>Swagger API : documentation backend disponible.</li>
+            <li>Portail captif : authentification par UUID, code WiFi, nom et chambre.</li>
+            <li>FreeRADIUS : intégration réseau en cours de stabilisation.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>Décision exploitation</h3>
+          <p>Ce rapport peut servir de support de suivi avant la validation d'un déploiement plus professionnel ou l'association complète avec l'équipe réseau FreeRADIUS.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>MboaLink © 2026</span>
+      <span>Document généré automatiquement depuis l'administration MboaLink</span>
+    </footer>
+  </main>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 400);
+    });
+  </script>
+</body>
+</html>`
+
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=900')
+    if (!printWindow) {
+      alert('Impossible d’ouvrir la fenêtre PDF. Autorisez les popups pour MboaLink.')
+      return
+    }
+    printWindow.document.open()
+    printWindow.document.write(html)
+    printWindow.document.close()
   }
 
   return (
@@ -937,7 +1293,7 @@ export default function MboaAdminDashboard() {
         </section>
 
         <section id="reports" className="mboaAdminUtilitySection">
-          <PanelHeader title="Rapports" subtitle="Vue de synthèse pour suivre l'exploitation MboaLink" actionLabel="Exporter" onAction={() => alert('Export des rapports à brancher côté backend.')} />
+          <PanelHeader title="Rapports" subtitle="Vue de synthèse pour suivre l'exploitation MboaLink" actionLabel="Exporter" onAction={exportAdminReport} />
           <div className="mboaUtilityGrid">
             <UtilityCard icon={<Users size={18} />} title="Utilisateurs" value={String(stats.users)} detail="Volume total d'acteurs enregistrés." />
             <UtilityCard icon={<Building2 size={18} />} title="Hôtels" value={String(stats.hotels)} detail="Hôtels actifs dans la plateforme." />
