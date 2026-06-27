@@ -510,6 +510,31 @@
   overflow: hidden;
 }
 
+.mboaNotificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5edf5;
+}
+
+.mboaNotificationHeader h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 1.04rem;
+}
+
+.mboaNotificationHeader p {
+  margin: 4px 0 0;
+  color: #708096;
+  font-size: 0.9rem;
+}
+
+.mboaAdminNotificationsGrid {
+  padding: 18px;
+}
+
 .mboaUtilityGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

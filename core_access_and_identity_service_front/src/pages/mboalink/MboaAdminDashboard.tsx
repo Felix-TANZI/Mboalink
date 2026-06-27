@@ -28,11 +28,15 @@ import {
   mboalinkService,
   type DeviceEntity,
   type HotelEntity,
+  type NotificationEntity,
+  type NotificationPriority,
+  type NotificationRecipientEntity,
   type UserEntity,
   type UserRole,
 } from '@/services/mboalinkService'
 import mboalinkLogo from '@/assets/images/mboalink-logo-navbar.png'
 import './MboaAdminDashboard.css'
+import './Notifications.css'
 
 const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Administrateur',
@@ -43,6 +47,20 @@ const roleLabels: Record<UserRole, string> = {
 }
 
 const hotelScopedRoles: UserRole[] = ['HOTEL_IT', 'RECEPTIONIST']
+type TargetMode = 'ALL' | 'HOTEL' | 'ROLE' | 'USERS'
+
+const notificationRoleLabels: Record<string, string> = {
+  ADMIN: 'Admins MboaLink',
+  SUPPORT: 'Support IT MboaLink',
+  HOTEL_IT: 'IT hôtel',
+  RECEPTIONIST: 'Réceptionnistes',
+}
+
+const priorityLabels: Record<NotificationPriority, string> = {
+  INFO: 'Information',
+  WARNING: 'Attention',
+  URGENT: 'Urgent',
+}
 
 const defaultUserForm = {
   fullName: '',
@@ -68,6 +86,17 @@ const defaultDeviceForm = {
   localIp: '',
   zone: '',
   floor: '',
+}
+
+const defaultNotificationForm = {
+  title: '',
+  message: '',
+  priority: 'INFO' as NotificationPriority,
+  category: '',
+  targetMode: 'ALL' as TargetMode,
+  hotelId: '',
+  role: 'SUPPORT' as UserRole,
+  userIds: [] as string[],
 }
 
 type ActiveForm = 'user' | 'hotel' | 'device' | null
@@ -110,17 +139,37 @@ export default function MboaAdminDashboard() {
   const [editingHotelId, setEditingHotelId] = useState<string | null>(null)
   const [editingDeviceId, setEditingDeviceId] = useState<string | null>(null)
   const [activeForm, setActiveForm] = useState<ActiveForm>(null)
+  const [activeNotificationTab, setActiveNotificationTab] = useState<'inbox' | 'sent'>('inbox')
+  const [inbox, setInbox] = useState<NotificationEntity[]>([])
+  const [sent, setSent] = useState<NotificationEntity[]>([])
+  const [recipients, setRecipients] = useState<NotificationRecipientEntity[]>([])
+  const [notificationForm, setNotificationForm] = useState(defaultNotificationForm)
+  const [notificationSearch, setNotificationSearch] = useState('')
+  const [isSendingNotification, setIsSendingNotification] = useState(false)
 
   const loadData = async () => {
     try {
-      const [userList, hotelList, deviceList] = await Promise.all([
+      const [
+        userList,
+        hotelList,
+        deviceList,
+        inboxList,
+        sentList,
+        recipientList,
+      ] = await Promise.all([
         mboalinkService.listUsers(),
         mboalinkService.listHotels(),
         mboalinkService.listDevices(),
+        mboalinkService.listNotificationsInbox(),
+        mboalinkService.listSentNotifications(),
+        mboalinkService.listNotificationRecipients(),
       ])
       setUsers(userList)
       setHotels(hotelList)
       setDevices(deviceList)
+      setInbox(inboxList)
+      setSent(sentList)
+      setRecipients(recipientList)
     } catch (error) {
       alert((error as Error).message || 'Chargement impossible')
     } finally {
@@ -171,6 +220,21 @@ export default function MboaAdminDashboard() {
       onlineDevices,
     }
   }, [users, hotels, devices])
+
+  const filteredInbox = useMemo(() => {
+    const q = notificationSearch.trim().toLowerCase()
+    if (!q) return inbox
+    return inbox.filter((notification) =>
+      `${notification.title} ${notification.message} ${notification.sender?.fullName || ''} ${notification.hotel?.name || ''}`
+        .toLowerCase()
+        .includes(q),
+    )
+  }, [inbox, notificationSearch])
+
+  const unreadCount = useMemo(
+    () => inbox.filter((notification) => !notification.recipients?.[0]?.readAt).length,
+    [inbox],
+  )
 
   const handleLogout = async () => {
     await authService.logout()
@@ -358,6 +422,67 @@ export default function MboaAdminDashboard() {
       await loadData()
     } catch (error) {
       alert((error as Error).message || 'Suppression impossible')
+    }
+  }
+
+  const handleNotificationRecipientToggle = (userId: string) => {
+    setNotificationForm((prev) => ({
+      ...prev,
+      userIds: prev.userIds.includes(userId)
+        ? prev.userIds.filter((id) => id !== userId)
+        : [...prev.userIds, userId],
+    }))
+  }
+
+  const handleNotificationTargetModeChange = (targetMode: TargetMode) => {
+    setNotificationForm((prev) => ({
+      ...prev,
+      targetMode,
+      userIds: [],
+    }))
+  }
+
+  const submitNotification = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    if (notificationForm.targetMode === 'HOTEL' && !notificationForm.hotelId) {
+      alert('Sélectionnez un hôtel.')
+      return
+    }
+    if (notificationForm.targetMode === 'USERS' && notificationForm.userIds.length === 0) {
+      alert('Sélectionnez au moins un destinataire.')
+      return
+    }
+
+    try {
+      setIsSendingNotification(true)
+      await mboalinkService.createNotification({
+        title: notificationForm.title,
+        message: notificationForm.message,
+        priority: notificationForm.priority,
+        category: notificationForm.category,
+        targetMode: notificationForm.targetMode,
+        hotelId: notificationForm.hotelId,
+        role: notificationForm.role,
+        userIds: notificationForm.userIds,
+      })
+      setNotificationForm(defaultNotificationForm)
+      await loadData()
+      setActiveNotificationTab('sent')
+    } catch (error) {
+      alert((error as Error).message || 'Envoi impossible')
+    } finally {
+      setIsSendingNotification(false)
+    }
+  }
+
+  const markNotificationAsRead = async (notification: NotificationEntity) => {
+    if (notification.recipients?.[0]?.readAt) return
+    try {
+      await mboalinkService.markNotificationRead(notification.id)
+      await loadData()
+    } catch (error) {
+      alert((error as Error).message || 'Action impossible')
     }
   }
 
@@ -598,11 +723,216 @@ export default function MboaAdminDashboard() {
         </section>
 
         <section id="admin-notifications" className="mboaAdminUtilitySection">
-          <PanelHeader title="Notifications" subtitle="Messages système envoyés aux acteurs MboaLink" actionLabel="Nouveau message" onAction={() => alert('Le formulaire de notification admin sera branché ici.')} />
-          <div className="mboaUtilityGrid">
-            <UtilityCard icon={<Bell size={18} />} title="Canaux" value="Plateforme" detail="Admin vers support, IT hôtel et réception selon les règles définies." />
-            <UtilityCard icon={<UserRound size={18} />} title="Destinataires" value={String(users.length)} detail="Tous les acteurs actifs peuvent être ciblés selon leur rôle." />
-            <UtilityCard icon={<Hotel size={18} />} title="Ciblage hôtel" value="Oui" detail="Les annonces peuvent être préparées pour un hôtel précis." />
+          <div className="mboaNotificationHeader">
+            <div>
+              <h2>Notifications internes</h2>
+              <p>Messages de service, maintenances, consignes et alertes internes MboaLink.</p>
+            </div>
+            <div className="notificationCounter">
+              <strong>{unreadCount}</strong>
+              <span>non lue{unreadCount !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+
+          <div className="notificationsGrid mboaAdminNotificationsGrid">
+            <form className="notificationComposer" onSubmit={submitNotification}>
+              <h2>Nouveau message</h2>
+
+              <label>
+                Titre
+                <input
+                  value={notificationForm.title}
+                  onChange={(event) => setNotificationForm((prev) => ({ ...prev, title: event.target.value }))}
+                  required
+                  maxLength={140}
+                  placeholder="Ex : Maintenance programmée"
+                />
+              </label>
+
+              <label>
+                Message
+                <textarea
+                  value={notificationForm.message}
+                  onChange={(event) => setNotificationForm((prev) => ({ ...prev, message: event.target.value }))}
+                  required
+                  maxLength={4000}
+                  rows={6}
+                  placeholder="Détaillez la consigne ou l'incident..."
+                />
+              </label>
+
+              <div className="notificationFormRow">
+                <label>
+                  Priorité
+                  <select
+                    value={notificationForm.priority}
+                    onChange={(event) => setNotificationForm((prev) => ({ ...prev, priority: event.target.value as NotificationPriority }))}
+                  >
+                    {Object.entries(priorityLabels).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Catégorie
+                  <input
+                    value={notificationForm.category}
+                    onChange={(event) => setNotificationForm((prev) => ({ ...prev, category: event.target.value }))}
+                    placeholder="Maintenance, incident..."
+                  />
+                </label>
+              </div>
+
+              <label>
+                Destinataires
+                <select
+                  value={notificationForm.targetMode}
+                  onChange={(event) => handleNotificationTargetModeChange(event.target.value as TargetMode)}
+                >
+                  <option value="ALL">Tous les acteurs</option>
+                  <option value="HOTEL">Acteurs d'un hôtel</option>
+                  <option value="ROLE">Un rôle précis</option>
+                  <option value="USERS">Utilisateurs précis</option>
+                </select>
+              </label>
+
+              {notificationForm.targetMode === 'HOTEL' && (
+                <label>
+                  Hôtel
+                  <select
+                    value={notificationForm.hotelId}
+                    onChange={(event) => setNotificationForm((prev) => ({ ...prev, hotelId: event.target.value }))}
+                    required
+                  >
+                    <option value="">Sélectionner un hôtel</option>
+                    {hotels.map((hotel) => (
+                      <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {notificationForm.targetMode === 'ROLE' && (
+                <label>
+                  Rôle
+                  <select
+                    value={notificationForm.role}
+                    onChange={(event) => setNotificationForm((prev) => ({ ...prev, role: event.target.value as UserRole }))}
+                  >
+                    {Object.entries(notificationRoleLabels).map(([role, label]) => (
+                      <option key={role} value={role}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {notificationForm.targetMode === 'USERS' && (
+                <div className="recipientPicker">
+                  {recipients.map((recipient) => (
+                    <label key={recipient.id} className="recipientOption">
+                      <input
+                        type="checkbox"
+                        checked={notificationForm.userIds.includes(recipient.id)}
+                        onChange={() => handleNotificationRecipientToggle(recipient.id)}
+                      />
+                      <span>
+                        <strong>{recipient.fullName}</strong>
+                        <small>{notificationRoleLabels[recipient.role] || recipient.role}{recipient.hotel?.name ? ` - ${recipient.hotel.name}` : ''}</small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              <button className="btn btnPrimary" disabled={isSendingNotification}>
+                {isSendingNotification ? 'Envoi...' : 'Envoyer la notification'}
+              </button>
+            </form>
+
+            <section className="notificationPanel">
+              <div className="notificationTabs">
+                <button
+                  type="button"
+                  className={activeNotificationTab === 'inbox' ? 'active' : ''}
+                  onClick={() => setActiveNotificationTab('inbox')}
+                >
+                  Réception
+                </button>
+                <button
+                  type="button"
+                  className={activeNotificationTab === 'sent' ? 'active' : ''}
+                  onClick={() => setActiveNotificationTab('sent')}
+                >
+                  Envoyés
+                </button>
+                <input
+                  value={notificationSearch}
+                  onChange={(event) => setNotificationSearch(event.target.value)}
+                  placeholder="Rechercher..."
+                />
+              </div>
+
+              {isLoading && <p className="notificationEmpty">Chargement...</p>}
+
+              {!isLoading && activeNotificationTab === 'inbox' && (
+                <div className="notificationList">
+                  {filteredInbox.length === 0 ? (
+                    <p className="notificationEmpty">Aucune notification reçue.</p>
+                  ) : (
+                    filteredInbox.map((notification) => {
+                      const isUnread = !notification.recipients?.[0]?.readAt
+                      return (
+                        <article key={notification.id} className={`notificationItem ${notification.priority.toLowerCase()} ${isUnread ? 'unread' : ''}`}>
+                          <div className="notificationItemTop">
+                            <span className={`priorityBadge ${notification.priority.toLowerCase()}`}>
+                              {priorityLabels[notification.priority]}
+                            </span>
+                            <small>{formatDate(notification.createdAt)}</small>
+                          </div>
+                          <h3>{notification.title}</h3>
+                          <p>{notification.message}</p>
+                          <div className="notificationMeta">
+                            <span>De : {notification.sender?.fullName || 'Système'}</span>
+                            {notification.hotel?.name && <span>Hôtel : {notification.hotel.name}</span>}
+                            {notification.category && <span>{notification.category}</span>}
+                          </div>
+                          {isUnread && (
+                            <button type="button" className="markReadBtn" onClick={() => markNotificationAsRead(notification)}>
+                              Marquer comme lu
+                            </button>
+                          )}
+                        </article>
+                      )
+                    })
+                  )}
+                </div>
+              )}
+
+              {!isLoading && activeNotificationTab === 'sent' && (
+                <div className="notificationList">
+                  {sent.length === 0 ? (
+                    <p className="notificationEmpty">Aucun message envoyé.</p>
+                  ) : (
+                    sent.map((notification) => (
+                      <article key={notification.id} className={`notificationItem ${notification.priority.toLowerCase()}`}>
+                        <div className="notificationItemTop">
+                          <span className={`priorityBadge ${notification.priority.toLowerCase()}`}>
+                            {priorityLabels[notification.priority]}
+                          </span>
+                          <small>{formatDate(notification.createdAt)}</small>
+                        </div>
+                        <h3>{notification.title}</h3>
+                        <p>{notification.message}</p>
+                        <div className="notificationMeta">
+                          <span>{notification.recipients.length} destinataire{notification.recipients.length !== 1 ? 's' : ''}</span>
+                          {notification.hotel?.name && <span>Hôtel : {notification.hotel.name}</span>}
+                        </div>
+                      </article>
+                    ))
+                  )}
+                </div>
+              )}
+            </section>
           </div>
         </section>
 
