@@ -217,3 +217,7 @@ WHERE actif = TRUE;
 
 -- Vérification : radcheck doit contenir 5 lignes après l'init
 -- SELECT username, attribute, value FROM radcheck;
+
+-- Garantit que FreeRADIUS peut se connecter à PostgreSQL avec les
+-- identifiants définis dans docker-compose.yml et freeradius/sql.conf.
+ALTER ROLE postgres WITH LOGIN PASSWORD 'postgres';
