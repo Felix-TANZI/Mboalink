@@ -28,7 +28,7 @@ function LoginContent() {
   const hotelId = params.get("hotelId") || "";
   const [identifiantClient, setIdentifiantClient] = useState("");
   const [numeroChambre, setNumeroChambre] = useState("");
-  const [uuid, setUuid] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const [hotel, setHotel] = useState<CaptiveHotel | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,8 +47,8 @@ function LoginContent() {
     e.preventDefault();
     setError("");
 
-    if (!uuid.trim() && (!identifiantClient.trim() || !numeroChambre.trim())) {
-      setError("Veuillez saisir votre UUID ou votre nom avec votre numéro de chambre.");
+    if (!accessCode.trim() && (!identifiantClient.trim() || !numeroChambre.trim())) {
+      setError("Veuillez saisir votre code Wi-Fi, code conférence, UUID ou votre nom avec votre numéro de chambre.");
       return;
     }
 
@@ -60,7 +60,8 @@ function LoginContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hotelId,
-          uuid: uuid.trim(),
+          code: accessCode.trim(),
+          uuid: accessCode.trim(),
           identifiantClient: identifiantClient.trim(),
           numeroChambre: numeroChambre.trim(),
         }),
@@ -166,7 +167,7 @@ function LoginContent() {
           {/* En-tête carte */}
           <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100">
             <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-1 leading-relaxed">
-              Entrez votre nom et votre numéro de chambre, ou votre UUID
+              Entrez votre code Wi-Fi, code conférence, UUID, ou votre nom avec votre numéro de chambre
             </p>
             <h2
               className="text-gray-900 text-xl font-black uppercase mt-2"
@@ -183,11 +184,11 @@ function LoginContent() {
                 <KeyIcon />
               </span>
               <input
-                id="uuid"
+                id="accessCode"
                 type="text"
-                value={uuid}
-                onChange={(e) => setUuid(e.target.value)}
-                placeholder="UUID ou code Wi-Fi"
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                placeholder="Code Wi-Fi, code conférence ou UUID"
                 autoComplete="off"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition text-sm"
                 style={{ "--tw-ring-color": "#C8963E" } as CSSProperties}

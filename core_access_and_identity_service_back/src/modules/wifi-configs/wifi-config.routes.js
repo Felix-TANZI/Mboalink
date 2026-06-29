@@ -8,6 +8,6 @@ const router = Router();
 
 router.get('/wifi-configs', requireAuth, getWifiConfigs);
 router.get('/hotels/:hotelId/wifi-config', requireAuth, getWifiConfigByHotel);
-router.put('/hotels/:hotelId/wifi-config', requireAuth, requireRole('ADMIN', 'HOTEL_IT'), validate(upsertWifiConfigSchema), putWifiConfig);
+router.put('/hotels/:hotelId/wifi-config', requireAuth, requireRole('ADMIN'), validate(upsertWifiConfigSchema), putWifiConfig);
 
 module.exports = router;

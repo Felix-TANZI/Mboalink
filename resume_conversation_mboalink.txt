@@ -1,0 +1,419 @@
+Resume de notre travail sur MboaLink
+Date de creation : 29/06/2026
+
+1. Objectif general
+
+Nous avons travaille sur l'application MboaLink afin de clarifier les roles, stabiliser le backend/front, preparer l'integration FreeRADIUS, ameliorer l'interface administrateur et documenter l'etat du projet.
+
+L'objectif principal actuel est d'avoir une application utilisable par l'equipe MboaLink et suffisamment stable pour permettre ensuite a l'equipe reseau/FreeRADIUS de l'utiliser et de tester l'integration avec les equipements reels.
+
+
+2. Roles et logique d'acces
+
+Les roles principaux retenus sont :
+
+- ADMIN : super administrateur MboaLink. Il dispose maintenant d'une interface dediee, separee de l'ancienne interface operationnelle.
+- SUPPORT : support IT MboaLink. Il garde l'ancienne interface operationnelle, mais sans Hotel Manager et sans Device Manager.
+- HOTEL_IT : informaticien de l'hotel. Il gere les vues utiles a son hotel : dashboard hotel, WiFi Code, statut des logins, rooms, config WiFi, devices, portail captif/web site manager selon les droits prevus.
+- RECEPTIONIST : receptionniste de l'hotel. Il est limite a la vue Manual Login.
+- CLIENT : role existant, mais pas encore une vraie vue admin dediee.
+
+La logique decidee :
+
+- ADMIN ne doit plus utiliser l'ancienne interface bleue.
+- ADMIN doit arriver sur la nouvelle interface /admin-mboa.
+- SUPPORT conserve l'ancienne interface mais sans gestion hotel et sans gestion appareils/equipements.
+- HOTEL_IT et RECEPTIONIST sont automatiquement limites a leur hotel.
+- ADMIN et SUPPORT peuvent voir des donnees globales ou filtrees selon les modules autorises.
+
+
+3. Nouvelle interface Super Admin MboaLink
+
+Une nouvelle interface a ete creee pour ADMIN :
+
+- Route principale : /admin-mboa
+- L'ancienne route /admin/users renvoie aussi vers cette interface.
+- L'ancienne interface operationnelle n'est plus accessible au role ADMIN.
+
+Cette interface contient :
+
+- Tableau de bord
+- Gestion utilisateurs
+- Gestion hotels
+- Gestion equipements reseau
+- Codes WiFi
+- Connexions
+- Notifications internes
+- Rapports
+- Parametres
+- Roles et permissions
+- API Swagger
+- Integrations
+
+Les boutons Nouvel utilisateur, Nouvel hotel et Nouvel equipement affichent maintenant le formulaire uniquement quand on clique dessus. Les formulaires ne restent plus visibles tout le temps sur le cote droit.
+
+
+4. Support IT
+
+Le support IT garde l'ancienne interface operationnelle.
+
+Corrections faites :
+
+- Suppression de Hotel Manager dans la navigation support.
+- Suppression de Device Manager dans la navigation support.
+- Verrouillage aussi cote routes front.
+- Restriction cote backend pour eviter que SUPPORT ne puisse modifier directement hotels, chambres, config WiFi hotel ou equipements reseau via l'API.
+
+
+5. Notifications internes
+
+Un systeme de notifications internes a ete implemente/integre.
+
+Logique prevue :
+
+- ADMIN peut envoyer des messages aux acteurs du systeme.
+- SUPPORT peut aussi envoyer des messages selon son perimetre.
+- HOTEL_IT peut envoyer uniquement au receptionniste de son hotel.
+- RECEPTIONIST ne peut pas envoyer de message.
+
+La vue Notifications existante du support a ete reprise dans la nouvelle interface admin Mboa.
+
+Dans l'admin Mboa, la zone de notification contient maintenant :
+
+- Formulaire Nouveau message
+- Titre
+- Message
+- Priorite
+- Categorie
+- Ciblage : tous les acteurs, un hotel, un role, utilisateurs precis
+- Onglet Reception
+- Onglet Envoyes
+- Recherche
+- Compteur de notifications non lues
+- Marquer comme lu
+
+
+6. Rapports PDF
+
+Dans l'interface admin Mboa, la section Rapports contient un bouton Exporter.
+
+Ce bouton genere maintenant un rapport imprimable en PDF en utilisant du HTML.
+
+Le rapport contient :
+
+- Logo MboaLink officiel
+- Couleurs MboaLink bleu et jaune
+- Page de couverture
+- Indicateurs cles
+- Resume executif
+- Points d'attention
+- Tableau utilisateurs
+- Tableau hotels
+- Tableau equipements reseau
+- Section integrations
+- Pied de page professionnel
+
+Correction importante :
+
+- Le PDF n'utilise plus de popup window.open, car le navigateur bloquait la fenetre.
+- La generation se fait maintenant via une iframe invisible.
+- L'utilisateur peut ensuite choisir "Enregistrer en PDF" dans la boite d'impression.
+
+
+7. Logo MboaLink
+
+Le mauvais petit logo de navbar etait utilise dans le PDF.
+
+Correction faite :
+
+- Le PDF utilise maintenant le grand logo officiel : Logo Mboalink-02 1.png
+- Le logo est plus grand, sans mauvais fond blanc ajoute autour.
+- Le rendu est plus propre dans l'entete bleu MboaLink.
+
+
+8. Frontend
+
+Plusieurs modifications frontend ont ete faites :
+
+- Nouvelle page MboaAdminDashboard.tsx
+- Nouveau style MboaAdminDashboard.css
+- Routes mises a jour
+- Login redirige ADMIN vers /admin-mboa
+- Layout mis a jour pour cacher Hotel Manager et Device Manager au support
+- Ancienne interface bleue interdite au super admin
+- Ajout des sections manquantes dans l'admin Mboa
+- Ajout de la zone notifications admin
+- Ajout de l'export PDF HTML
+- Utilisation du bon logo dans le PDF
+
+Les builds frontend ont ete testes plusieurs fois avec :
+
+npm run build
+
+Le build front est passe.
+
+
+9. Backend
+
+Modifications et corrections importantes :
+
+- Stabilisation de l'authentification.
+- Correction d'un probleme de refresh token identique en ajoutant un identifiant unique jti.
+- Desactivation du cache API sur /api/v1 pour eviter les problemes de reponses stale/304.
+- Ajustement de Helmet pour eviter les erreurs Swagger en HTTP.
+- Permissions backend ajustees :
+  - SUPPORT ne peut plus creer/modifier hotels.
+  - SUPPORT ne peut plus gerer les equipements reseau.
+  - SUPPORT ne peut plus modifier les chambres ni la config WiFi hotel.
+  - ADMIN garde les droits complets.
+  - HOTEL_IT garde les droits utiles sur son hotel.
+
+Tests backend executes :
+
+npm test
+
+Les tests backend disponibles sont passes.
+
+
+10. Swagger
+
+Swagger avait une page blanche a cause du header upgrade-insecure-requests en HTTP.
+
+Correction appliquee :
+
+- Helmet est configure differemment selon l'environnement.
+- En developpement, on evite de forcer HTTPS.
+
+Swagger doit etre accessible via :
+
+http://IP_DU_SERVEUR:13000/api-docs
+
+
+11. Probleme PostgreSQL backend MboaLink
+
+Probleme rencontre :
+
+- Le backend crashait avec Prisma P1000.
+- PostgreSQL avait un volume deja initialise avec un autre mot de passe.
+- Le backend essayait de se connecter avec postgres/postgres.
+
+Commande corrective utilisee :
+
+docker exec -it core_access_and_identity_service_back-postgres-1 \
+  psql -U postgres -d mboalink_local \
+  -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+Ameliorations faites :
+
+- docker-compose backend stabilise.
+- Ajout des variables POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB.
+- Ajout d'un script d'init PostgreSQL backend :
+  postgres-init/01-enforce-postgres-password.sql
+
+Ce script contient :
+
+ALTER USER postgres WITH PASSWORD 'postgres';
+
+Remarque :
+
+Ce script s'applique aux nouveaux volumes. Pour un volume deja initialise, il faut faire une derniere correction manuelle ou recreer le volume.
+
+
+12. Portail captif et Radius
+
+Le portail captif a ete teste.
+
+Les tests backend lies au portail captif ont valide :
+
+- Connexion par UUID.
+- Connexion par code WiFi.
+- Connexion par nom + chambre.
+- Rejet des passes expires/revoques/utilises.
+
+Le portail captif tourne dans le dossier radius.
+
+Cas conferences / evenements :
+
+Les personnes qui recoivent un code lors d'une conference devront aussi passer par le portail captif pour acceder au Wi-Fi. La difference est qu'elles ne se connecteront pas avec nom + chambre, mais avec un code evenement/conference, assimilable a un voucher ou a un guest pass collectif.
+
+Logique recommandee :
+
+- Le portail captif reste le point d'entree unique pour les clients, invites et participants.
+- Un participant a une conference saisit simplement son code conference sur le portail captif.
+- Il n'a pas besoin d'un compte dans l'administration MboaLink.
+- Le code conference peut etre limite par date, duree, nombre d'utilisations, hotel/lieu, bande passante et zone Wi-Fi.
+- Cote FreeRADIUS, ce code devra etre transforme en autorisation reseau comme les autres guest passes.
+
+Cela permet de garder une seule logique d'acces Wi-Fi : tout passe par le portail captif, mais les modes d'identification changent selon le contexte.
+
+Implementation ajoutee :
+
+- Le champ principal du portail captif indique maintenant clairement : code Wi-Fi, code conference ou UUID.
+- Le portail captif envoie ce champ comme `code` et comme `uuid` afin de couvrir les deux logiques backend deja existantes.
+- Les guest pass simples et les mass guest pass restent donc utilisables directement depuis le portail captif.
+- Les codes generes dans WiFi Code, y compris les codes de conference/evenement, doivent etre saisis par l'utilisateur sur le portail captif.
+
+Decision supplementaire sur HOTEL_IT :
+
+- HOTEL_IT ne doit plus voir Hotel Manager.
+- HOTEL_IT ne doit plus voir Device Manager.
+- La navigation HOTEL_IT est maintenant rapprochee de celle du SUPPORT : dashboard, logins utiles et notifications.
+- Les routes directes rooms, config WiFi et devices ne sont plus accessibles a HOTEL_IT cote frontend.
+- Les mutations backend hotel, rooms et config WiFi ont ete reservees a ADMIN.
+
+
+13. Probleme FreeRADIUS / hilton_freeradius
+
+Plusieurs problemes ont ete observes sur le conteneur hilton_freeradius :
+
+- Conteneur unhealthy.
+- Restart loop.
+- docker logs parfois vide.
+- PostgreSQL saturait en connexions : "sorry, too many clients already".
+- FreeRADIUS avait un pool SQL trop grand.
+- Une mauvaise commande sed avait introduit des caracteres \n litteraux dans sql.conf.
+- Ensuite, FreeRADIUS echouait avec :
+  password authentication failed for user postgres
+- Puis PostgreSQL indiquait :
+  role "postgres" is not permitted to log in
+
+Corrections faites/proposees :
+
+- Reduction du pool SQL FreeRADIUS :
+  start = 1
+  min = 1
+  max = 3
+  spare = 1
+  retry_delay = 1
+  max_retries = 3
+  cleanup_interval = 30
+
+- Suppression des anciennes options :
+  num_sql_socks
+  connect_failure_retry_delay
+
+- Ajout dans radius/init.sql :
+
+ALTER ROLE postgres WITH LOGIN PASSWORD 'postgres';
+
+Important :
+
+Cette ligne corrige les nouveaux volumes PostgreSQL Radius.
+Pour appliquer sur le serveur actuel, il faut probablement recreer le volume Radius :
+
+cd /home/junior/Mboalink/radius
+docker compose down -v
+docker compose up -d --build
+
+Attention :
+
+docker compose down -v supprime la base radius_hotel du module Radius. Le fichier init.sql recrée les tables, mais les donnees existantes sont perdues.
+
+
+14. Commandes Docker utiles
+
+Backend MboaLink :
+
+cd /home/junior/Mboalink/core_access_and_identity_service_back
+docker compose up -d --build
+
+Frontend MboaLink :
+
+cd /home/junior/Mboalink/core_access_and_identity_service_front
+docker compose up -d --build
+
+Portail captif / Radius :
+
+cd /home/junior/Mboalink/radius
+docker compose up -d --build
+
+Voir les conteneurs :
+
+docker ps
+docker ps -a
+
+Logs backend :
+
+docker logs core_access_and_identity_service_back-mboalink-backend-1 --tail 100
+
+Logs FreeRADIUS :
+
+docker logs hilton_freeradius --tail 150
+
+Debug FreeRADIUS :
+
+docker compose run --rm --entrypoint sh freeradius -lc "freeradius -X" 2>&1 | tail -160
+
+Inspecter hilton_freeradius :
+
+docker inspect --format='status={{.State.Status}} exit={{.State.ExitCode}} restart={{.RestartCount}} health={{json .State.Health}}' hilton_freeradius
+
+
+15. Synchronisation GitLab
+
+Des modifications ont ete copiees dans les depots GitLab locaux separes :
+
+- /home/jacquy-ngonga4/core_access_and_identity_service_front
+- /home/jacquy-ngonga4/core_access_and_identity_service_back
+- /home/jacquy-ngonga4/radius
+
+Les fichiers copies incluent notamment :
+
+- Nouvelle interface admin Mboa
+- Styles admin Mboa
+- Routes frontend
+- Layout frontend
+- Login frontend
+- Permissions backend
+- Docker compose backend
+- Init SQL backend
+- Init SQL radius
+
+Attention :
+
+Les fichiers ont ete copies dans les dossiers GitLab, mais il faut encore faire commit et push dans chaque depot concerne.
+
+Exemple :
+
+git status
+git add .
+git commit -m "feat: update MboaLink admin and radius stability"
+git push
+
+
+16. Etat actuel estime
+
+L'application a beaucoup progresse cote interface et logique des roles.
+
+Points forts :
+
+- Admin Mboa a maintenant sa propre interface.
+- Support IT est mieux separe.
+- Receptionniste et Hotel IT ont une logique plus claire.
+- Notifications internes disponibles.
+- Export PDF presentable disponible.
+- Portail captif valide cote tests unitaires.
+- Plusieurs problemes backend/front corriges.
+
+Points encore sensibles :
+
+- Stabilisation definitive de FreeRADIUS sur le serveur.
+- Tests reels avec les equipements reseau.
+- Validation de l'architecture reseau avec mini PC/routeur/AP.
+- Nettoyage et commit/push des depots GitLab.
+- Eventuelle amelioration des rapports PDF avec donnees plus detaillees.
+- Eventuelle implementation complete des modules "Parametres", "Integrations" et "Rapports" cote API.
+
+
+17. Decision de deploiement
+
+Pour l'instant, il a ete retenu que MboaLink n'est pas encore suffisamment finalise pour passer a un deploiement professionnel complet.
+
+Railway ou le deploiement actuel peut encore etre utilise pendant la finalisation.
+
+Le passage vers un deploiement plus professionnel devra attendre :
+
+- Stabilisation FreeRADIUS.
+- Validation du portail captif avec equipements reels.
+- Confirmation des roles avec les responsables MboaLink.
+- Tests bout en bout frontend, backend, portail captif et reseau.

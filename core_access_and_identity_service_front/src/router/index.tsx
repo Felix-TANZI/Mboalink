@@ -71,7 +71,7 @@ export const AppRouter = () => {
         <Route path={routes.public.home} element={<ProtectedPage><Home /></ProtectedPage>} />
         <Route path={routes.public.dashboard} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><DashboardPage /></ProtectedPage>} />
         <Route path={routes.public.networkMap} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><NetworkMap3DPage /></ProtectedPage>} />
-        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['HOTEL_IT']}><DeviceManagerPage /></ProtectedPage>} />
+        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
         <Route path={routes.public.wifiCode} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><WifiCodePage /></ProtectedPage>} />
         <Route path={routes.public.loginByAddress} element={<ProtectedPage allowedRoles={['SUPPORT']}><LoginByAddressPage /></ProtectedPage>} />
         <Route path={routes.public.statusLogins} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><StatutLoginsPage /></ProtectedPage>} />
@@ -79,8 +79,8 @@ export const AppRouter = () => {
         <Route path={routes.public.websitesManager} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><WebsitesManagerPage /></ProtectedPage>} />
         <Route path={routes.public.configCode} element={<ProtectedPage allowedRoles={['SUPPORT']}><ConfigCodePage /></ProtectedPage>} />
         <Route path={routes.public.hotels} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
-        <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['HOTEL_IT']}><RoomListPage /></ProtectedPage>} />
-        <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['HOTEL_IT']}><ConfigWifiListPage /></ProtectedPage>} />
+        <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
+        <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
         <Route path={routes.public.adminMboa} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
         <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
         <Route path={routes.public.notifications} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT', 'RECEPTIONIST']}><NotificationsPage /></ProtectedPage>} />

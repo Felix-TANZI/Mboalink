@@ -9,7 +9,7 @@ const router = Router();
 router.get('/', requireAuth, getHotels);
 router.get('/:hotelId', requireAuth, getHotel);
 router.post('/', requireAuth, requireRole('ADMIN'), validate(createHotelSchema), postHotel);
-router.patch('/:hotelId', requireAuth, requireRole('ADMIN', 'HOTEL_IT'), validate(updateHotelSchema), patchHotel);
+router.patch('/:hotelId', requireAuth, requireRole('ADMIN'), validate(updateHotelSchema), patchHotel);
 router.delete('/:hotelId', requireAuth, requireRole('ADMIN'), removeHotel);
 
 module.exports = router;

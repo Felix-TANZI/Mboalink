@@ -48,7 +48,7 @@ export default function Layout({
   const mainPages = isReceptionist
     ? ["LOGINS", "NOTIFICATIONS"]
     : isHotelIt
-      ? ["DASHBOARD", "LOGINS", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"]
+      ? ["DASHBOARD", "LOGINS", "NOTIFICATIONS"]
       : isAdmin
         ? ["ADMINISTRATION", "LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"]
         : isSupport
@@ -76,12 +76,7 @@ export default function Layout({
       { label: "Overview", page: "dashboard" },
       { label: "Network Map", page: "network-map" },
     ],
-    "HOTEL MANAGER": isHotelIt
-      ? [
-          { label: "Rooms", page: "rooms" },
-          { label: "Config WiFi", page: "config-wifi" },
-        ]
-      : [
+    "HOTEL MANAGER": [
           { label: "Hotels", page: "hotels" },
           { label: "Rooms", page: "rooms" },
           { label: "Config WiFi", page: "config-wifi" },
@@ -93,7 +88,7 @@ export default function Layout({
 
   const defaultSubPages: Record<string, string> = {
     LOGINS: isReceptionist ? "manual-login" : "wifi-code",
-    "HOTEL MANAGER": isHotelIt ? "rooms" : "hotels",
+    "HOTEL MANAGER": "hotels",
     DASHBOARD: "dashboard",
     "DEVICE MANAGER": "devices",
     NOTIFICATIONS: "notifications",
