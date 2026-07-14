@@ -7,11 +7,10 @@ WORKDIR /app
 # Installer les dépendances natives nécessaires à SWC
 RUN apk add --no-cache libc6-compat
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 
-# On installe AUSSI @next/swc ici pour qu'il soit dans node_modules
-# et éviter le téléchargement réseau pendant le build
-RUN npm install --frozen-lockfile || npm install
+# Installation déterministe: garde next et @next/swc sur les versions du lockfile.
+RUN npm ci
 
 # ============================================================
 #  Stage 2 — Build

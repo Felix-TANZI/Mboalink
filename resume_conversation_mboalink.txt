@@ -210,9 +210,11 @@ Ameliorations faites :
 - Ajout d'un script d'init PostgreSQL backend :
   postgres-init/01-enforce-postgres-password.sql
 
-Ce script contient :
+Ce script contient maintenant :
 
-ALTER USER postgres WITH PASSWORD 'postgres';
+ALTER ROLE postgres WITH LOGIN PASSWORD 'postgres';
+
+Le healthcheck PostgreSQL backend a aussi ete renforce : il execute une vraie requete SQL avec le mot de passe attendu, au lieu de verifier seulement que PostgreSQL repond. Cela permet de detecter immediatement le cas ou le role postgres existe mais n'a plus le droit LOGIN.
 
 Remarque :
 

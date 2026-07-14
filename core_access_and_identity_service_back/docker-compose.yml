@@ -19,6 +19,8 @@ services:
       - RADIUS_PORT=1812
       - RADIUS_SECRET=${RADIUS_SECRET:-testing123}
       - CAPTIVE_PORTAL_SKIP_RADIUS=${CAPTIVE_PORTAL_SKIP_RADIUS:-true}
+      - DEVICE_HEARTBEAT_ENABLED=${DEVICE_HEARTBEAT_ENABLED:-true}
+      - DEVICE_HEARTBEAT_INTERVAL_MS=${DEVICE_HEARTBEAT_INTERVAL_MS:-30000}
     volumes:
       - .:/app
       - /app/node_modules
@@ -59,7 +61,7 @@ services:
       - pg_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-mboalink_local}"]
+      test: ["CMD-SHELL", "PGPASSWORD=$${POSTGRES_PASSWORD:-postgres} psql -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-mboalink_local} -c 'SELECT 1' >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 6

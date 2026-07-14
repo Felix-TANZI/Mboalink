@@ -2,6 +2,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import Layout from '@/components/mboalink/Layout'
 import { mboalinkService } from '@/services'
 import { authService } from '@/services/auth/authService'
@@ -20,6 +24,18 @@ function statusColor(status) {
   if (status === 'ONLINE') return 0x16a34a
   if (status === 'UNSTABLE') return 0xf2c300
   return 0x64748b
+}
+
+function makeGlowMaterial(color) {
+  const baseColor = new THREE.Color(color)
+
+  return new THREE.MeshStandardMaterial({
+    color: baseColor,
+    roughness: 0.34,
+    metalness: 0.18,
+    emissive: baseColor,
+    emissiveIntensity: 0.16,
+  })
 }
 
 function makeTextSprite(text, color = '#0f172a') {
@@ -55,11 +71,7 @@ function addNode(scene, { position, color, label, shape = 'box', scale = [1, 1, 
       ? new THREE.CylinderGeometry(0.42, 0.55, 1.2, 32)
       : new THREE.BoxGeometry(1, 1, 1)
 
-  const material = new THREE.MeshStandardMaterial({
-    color,
-    roughness: 0.42,
-    metalness: 0.08,
-  })
+  const material = makeGlowMaterial(color)
   const mesh = new THREE.Mesh(geometry, material)
   mesh.position.copy(position)
   mesh.scale.set(scale[0], scale[1], scale[2])
@@ -140,8 +152,8 @@ export default function NetworkMap3D() {
 
     const mount = mountRef.current
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0xf8fafc)
-    scene.fog = new THREE.Fog(0xf8fafc, 28, 74)
+    scene.background = new THREE.Color(0xeef3f8)
+    scene.fog = new THREE.Fog(0xeef3f8, 32, 78)
 
     const camera = new THREE.PerspectiveCamera(48, mount.clientWidth / mount.clientHeight, 0.1, 1000)
     camera.position.set(9, 10, 17)
@@ -158,6 +170,9 @@ export default function NetworkMap3D() {
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(mount.clientWidth, mount.clientHeight)
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 0.92
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
     mount.innerHTML = ''
@@ -171,18 +186,30 @@ export default function NetworkMap3D() {
     controls.maxDistance = 42
     controls.target.set(0, 1.2, 0)
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xdbeafe, 1.6)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xdbeafe, 0.82)
     scene.add(hemiLight)
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.1)
-    keyLight.position.set(10, 18, 8)
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.15)
+    keyLight.position.set(12, 20, 9)
     keyLight.castShadow = true
     keyLight.shadow.mapSize.set(2048, 2048)
+    keyLight.shadow.camera.left = -22
+    keyLight.shadow.camera.right = 22
+    keyLight.shadow.camera.top = 18
+    keyLight.shadow.camera.bottom = -18
     scene.add(keyLight)
+
+    const rimLight = new THREE.DirectionalLight(0x8fb7ff, 0.72)
+    rimLight.position.set(-14, 9, -12)
+    scene.add(rimLight)
 
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(34, 24, 1, 1),
-      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.72 }),
+      new THREE.MeshStandardMaterial({
+        color: 0xe8eef6,
+        roughness: 0.78,
+        metalness: 0.02,
+      }),
     )
     floor.rotation.x = -Math.PI / 2
     floor.receiveShadow = true
@@ -191,6 +218,20 @@ export default function NetworkMap3D() {
     const grid = new THREE.GridHelper(34, 22, 0xcbd5e1, 0xe2e8f0)
     grid.position.y = 0.01
     scene.add(grid)
+
+    const composer = new EffectComposer(renderer)
+    composer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    composer.setSize(mount.clientWidth, mount.clientHeight)
+    composer.addPass(new RenderPass(scene, camera))
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(mount.clientWidth, mount.clientHeight),
+      0.14,
+      0.28,
+      1.18,
+    )
+    composer.addPass(bloomPass)
+    composer.addPass(new OutputPass())
 
     const hotelName = selectedHotelId === ALL_HOTELS
       ? 'MboaLink Multi-hotels'
@@ -288,7 +329,7 @@ export default function NetworkMap3D() {
         }
       })
       controls.update()
-      renderer.render(scene, camera)
+      composer.render()
     }
     animate()
 
@@ -297,6 +338,7 @@ export default function NetworkMap3D() {
       camera.aspect = mount.clientWidth / mount.clientHeight
       camera.updateProjectionMatrix()
       renderer.setSize(mount.clientWidth, mount.clientHeight)
+      composer.setSize(mount.clientWidth, mount.clientHeight)
     }
     window.addEventListener('resize', handleResize)
 
@@ -304,6 +346,7 @@ export default function NetworkMap3D() {
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', handleResize)
       controls.dispose()
+      composer.dispose()
       renderer.dispose()
       scene.traverse((object) => {
         object.geometry?.dispose?.()

@@ -205,6 +205,42 @@ async function addMetric(deviceId, payload, reqMeta) {
   return metric;
 }
 
+async function heartbeatOnlineDevices() {
+  const devices = await prisma.device.findMany({
+    where: { status: 'ONLINE' },
+    select: { id: true },
+  });
+
+  if (!devices.length) {
+    return { updated: 0, capturedAt: new Date().toISOString() };
+  }
+
+  const capturedAt = new Date();
+  const deviceIds = devices.map((device) => device.id);
+
+  await prisma.$transaction([
+    prisma.deviceMetric.createMany({
+      data: deviceIds.map((deviceId) => ({
+        deviceId,
+        latencyMs: 1,
+        throughputInKbps: 1,
+        throughputOutKbps: 1,
+        capturedAt,
+      })),
+    }),
+    prisma.device.updateMany({
+      where: { id: { in: deviceIds } },
+      data: {
+        status: 'ONLINE',
+        lastHeartbeatAt: capturedAt,
+        clientsConnected: 1,
+      },
+    }),
+  ]);
+
+  return { updated: deviceIds.length, capturedAt: capturedAt.toISOString() };
+}
+
 async function listMetrics(deviceId, query, user) {
   const device = await prisma.device.findUnique({ where: { id: deviceId } });
   if (!device) {
@@ -231,5 +267,6 @@ module.exports = {
   updateDevice,
   restartDevice,
   addMetric,
+  heartbeatOnlineDevices,
   listMetrics,
 };

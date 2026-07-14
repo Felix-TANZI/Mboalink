@@ -14,6 +14,8 @@ const env = {
   radiusHost: process.env.RADIUS_HOST || 'freeradius',
   radiusPort: Number(process.env.RADIUS_PORT || 1812),
   radiusSecret: process.env.RADIUS_SECRET || 'testing123',
+  deviceHeartbeatEnabled: process.env.DEVICE_HEARTBEAT_ENABLED !== 'false',
+  deviceHeartbeatIntervalMs: Number(process.env.DEVICE_HEARTBEAT_INTERVAL_MS || 30000),
 };
 
 module.exports = env;
