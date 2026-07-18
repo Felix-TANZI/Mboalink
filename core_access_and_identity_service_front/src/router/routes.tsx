@@ -19,6 +19,7 @@ export const routes = {
     configWifi: '/hotel-manager/config-wifi',
     devices: '/device-manager/devices',
     adminMboa: '/admin-mboa',
+    superAdmin: '/super-admin',
     users: '/admin/users',
     notifications: '/notifications',
   },

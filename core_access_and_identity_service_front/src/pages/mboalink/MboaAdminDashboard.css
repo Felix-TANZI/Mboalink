@@ -18,6 +18,10 @@
   box-shadow: 12px 0 34px rgba(16, 31, 52, 0.12);
 }
 
+.mboaAdminMobileNav {
+  display: none;
+}
+
 .mboaAdminBrand {
   display: flex;
   align-items: center;
@@ -657,37 +661,162 @@
 @media (max-width: 760px) {
   .mboaAdminShell {
     display: block;
+    min-height: 100vh;
+    background: #f6f7fb;
   }
 
   .mboaAdminSidebar {
-    position: static;
-    height: auto;
+    display: none;
   }
 
   .mboaAdminMain {
-    padding: 18px;
+    padding: 0 14px 22px;
   }
 
-  .mboaAdminTopbar,
+  .mboaAdminTopbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: 0 -14px 0;
+    padding: 14px;
+    border-bottom: 1px solid #dce5ef;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+    display: grid;
+    gap: 12px;
+  }
+
+  .mboaAdminTopbar h1 {
+    font-size: 1.28rem;
+  }
+
+  .mboaAdminTopbar p {
+    font-size: 0.84rem;
+  }
+
   .mboaAdminTopActions {
-    align-items: stretch;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
   }
 
   .mboaAdminSearch {
     width: 100%;
+    height: 42px;
+    grid-column: 1 / -1;
+  }
+
+  .mboaAdminIconButton {
+    display: none;
+  }
+
+  .mboaAdminProfile {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .mboaAdminProfile strong,
+  .mboaAdminProfile small {
+    max-width: 190px;
   }
 
   .mboaAdminStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .mboaAdminStats article {
+    min-height: 108px;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .mboaAdminStats strong {
+    font-size: 1.65rem;
+  }
+
+  .mboaAdminStats span {
+    font-size: 0.78rem;
+  }
+
+  .mboaAdminSection,
+  .mboaAdminUtilitySection {
+    margin-bottom: 14px;
+    border-radius: 14px;
+  }
+
+  .mboaAdminSection.hasForm {
     grid-template-columns: 1fr;
   }
 
+  .mboaPanelHeader,
+  .mboaNotificationHeader {
+    min-height: 0;
+    padding: 15px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mboaPanelHeader button,
+  .mboaPrimaryButton,
+  .mboaPanelFilters button {
+    width: 100%;
+  }
+
+  .mboaPanelFilters {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mboaPanelFilters select {
+    width: 100%;
+  }
+
+  .mboaAdminStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .mboaAdminTable {
-    min-width: 760px;
+    min-width: 680px;
   }
 
   .mboaAdminDataPanel {
     overflow-x: auto;
+    border-radius: 14px;
+  }
+
+  .mboaAdminFormPanel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .mboaUtilityGrid,
+  .mboaPermissionList,
+  .mboaAdminNotificationsGrid {
+    padding: 14px;
+  }
+
+  .mboaUtilityCard {
+    min-height: 132px;
+    border-radius: 14px;
+  }
+
+  .notificationsGrid.mboaAdminNotificationsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .notificationTabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .notificationTabs input {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .mboaFormGrid {
@@ -696,5 +825,25 @@
 
   .mboaPermissionRow {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .mboaAdminMain {
+    padding-inline: 10px;
+  }
+
+  .mboaAdminTopbar {
+    margin-inline: -10px;
+    padding-inline: 12px;
+  }
+
+  .mboaAdminStats {
+    grid-template-columns: 1fr;
+  }
+
+  .mboaAdminProfile strong,
+  .mboaAdminProfile small {
+    max-width: 145px;
   }
 }

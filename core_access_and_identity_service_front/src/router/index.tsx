@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import type { ReactElement } from 'react';
-import { LoginPage } from '@/pages/auth';
+import { useEffect, type ReactElement } from 'react';
+import { LoginPage, SuperAdminLoginPage } from '@/pages/auth';
 import { LoginMfa } from '@/pages/auth mfa';
 import { Home } from '@/pages/home';
 import {
@@ -52,12 +52,41 @@ function ProtectedPage({
   return children;
 }
 
+const appSurface = import.meta.env.VITE_APP_SURFACE ?? 'main';
+const isSuperAdminSurface = appSurface === 'super-admin';
+const superAdminUrl = import.meta.env.VITE_SUPER_ADMIN_URL ?? `${window.location.protocol}//${window.location.hostname}:5174`;
+
+function ExternalRedirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+
+  return null;
+}
+
+function SuperAdminRoutes() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path={routes.public.login} element={<SuperAdminLoginPage />} />
+        <Route path={routes.public.mfa} element={<LoginMfa />} />
+        <Route path={routes.public.adminMboa} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
+        <Route path={routes.public.superAdmin} element={<Navigate to={routes.public.adminMboa} replace />} />
+        <Route path="/" element={<Navigate to={routes.public.adminMboa} replace />} />
+        <Route path="*" element={<Navigate to={routes.public.adminMboa} replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
 // Importez vos autres pages quand elles seront prêtes
 // import { AdminLayout } from '@/pages/AdminLayout';
 // import { UserLayout } from '@/pages/UserLayout';
 // import { AuthGuard } from '@/guards';
 
 export const AppRouter = () => {
+  if (isSuperAdminSurface) return <SuperAdminRoutes />;
+
   return (
     <BrowserRouter>
       <Routes>
@@ -81,8 +110,8 @@ export const AppRouter = () => {
         <Route path={routes.public.hotels} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
         <Route path={routes.public.rooms} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
         <Route path={routes.public.configWifi} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
-        <Route path={routes.public.adminMboa} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
-        <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><MboaAdminDashboardPage /></ProtectedPage>} />
+        <Route path={routes.public.adminMboa} element={<ProtectedPage allowedRoles={['ADMIN']}><ExternalRedirect to={superAdminUrl} /></ProtectedPage>} />
+        <Route path={routes.public.users} element={<ProtectedPage allowedRoles={['ADMIN']}><ExternalRedirect to={superAdminUrl} /></ProtectedPage>} />
         <Route path={routes.public.notifications} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT', 'RECEPTIONIST']}><NotificationsPage /></ProtectedPage>} />
 
         {/* Routes protégées - à décommenter quand prêt */}
