@@ -26,6 +26,10 @@ function LoginContent() {
   const router = useRouter();
   const params = useSearchParams();
   const hotelId = params.get("hotelId") || "";
+  const linkLoginOnly = params.get("linkLoginOnly") || "";
+  const linkOrig = params.get("linkOrig") || "";
+  const clientMac = params.get("mac") || "";
+  const clientIp = params.get("ip") || "";
   const [identifiantClient, setIdentifiantClient] = useState("");
   const [numeroChambre, setNumeroChambre] = useState("");
   const [accessCode, setAccessCode] = useState("");
@@ -64,12 +68,38 @@ function LoginContent() {
           uuid: accessCode.trim(),
           identifiantClient: identifiantClient.trim(),
           numeroChambre: numeroChambre.trim(),
+          macAddress: clientMac || undefined,
+          ipAddress: clientIp || undefined,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
+        if (linkLoginOnly && data.code) {
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = linkLoginOnly;
+
+          const fields = {
+            username: data.code,
+            password: data.code,
+            dst: linkOrig || "http://neverssl.com",
+          };
+
+          Object.entries(fields).forEach(([name, value]) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+          });
+
+          document.body.appendChild(form);
+          form.submit();
+          return;
+        }
+
         router.push(
           `/success?prenom=${encodeURIComponent(data.prenom)}&chambre=${encodeURIComponent(data.numeroChambre)}&hotel=${encodeURIComponent(data.hotelName)}`
         );

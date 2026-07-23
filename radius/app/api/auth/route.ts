@@ -12,6 +12,8 @@ export async function POST(req: NextRequest) {
     const clientName = String(body.identifiantClient || body.clientName || "").trim();
     const roomNumber = String(body.numeroChambre || body.roomNumber || "").trim();
     const hotelId = String(body.hotelId || "").trim();
+    const macAddress = String(body.macAddress || "").trim();
+    const ipAddress = String(body.ipAddress || "").trim();
 
     if (!code && !uuid && (!clientName || !roomNumber)) {
       return NextResponse.json(
@@ -35,9 +37,11 @@ export async function POST(req: NextRequest) {
         roomNumber: roomNumber || undefined,
         hotelId: hotelId || undefined,
         ipAddress:
-          req.headers.get("x-forwarded-for") ??
-          req.headers.get("x-real-ip") ??
+          ipAddress ||
+          req.headers.get("x-forwarded-for") ||
+          req.headers.get("x-real-ip") ||
           undefined,
+        macAddress: macAddress || undefined,
       }),
     });
 
