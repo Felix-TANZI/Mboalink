@@ -234,12 +234,6 @@ export default function ManualLogin() {
     setSelectedRoom(found ? found.id : '')
   }
 
-  const handleDropdownChange = (id) => {
-    setSelectedRoom(id)
-    const room = hotelRooms.find((r) => r.id === id)
-    if (room) setRoomText(room.name || room.type || '')
-  }
-
   const roomExists = !!selectedRoom
   const roomNumberIsFilled = !!roomText.trim()
 
@@ -391,7 +385,7 @@ export default function ManualLogin() {
                   Numéro de chambre <span className="required">*</span>
                 </label>
                 <p className="mlFieldHelp">
-                  Tapez le numéro directement, ou sélectionnez dans la liste.
+                  Tapez le numéro directement. La chambre sera reconnue ou créée automatiquement.
                 </p>
                 <div className="mlRoomInputWrapper">
                   <input
@@ -419,21 +413,6 @@ export default function ManualLogin() {
                     ))}
                   </datalist>
                 </div>
-                <select
-                  className="mlSelect"
-                  value={selectedRoom}
-                  onChange={(e) => handleDropdownChange(e.target.value)}
-                  disabled={isLoading || !canCreateManualLogin}
-                >
-                  <option value="">— Parcourir les chambres —</option>
-                  {hotelRooms.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name || r.type}
-                      {r.type && r.name ? ` — ${r.type}` : ''}
-                      {r.floor != null ? ` (Étage ${r.floor})` : ''}
-                    </option>
-                  ))}
-                </select>
               </div>
 
               {/* Date entrée */}

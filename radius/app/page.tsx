@@ -115,7 +115,6 @@ function LoginContent() {
 
   const hotelName = hotel?.name || "MboaLink";
   const mainPhoto = hotel?.photos?.find((photo) => photo.isMain)?.url || hotel?.photos?.[0]?.url;
-  const ssid = hotel?.wifiConfig?.ssid || "MboaLink Guest";
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f5f5f5" }}>
@@ -129,7 +128,7 @@ function LoginContent() {
             : "linear-gradient(135deg, #0D2240 0%, #315C7D 55%, #C8963E 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight: "340px",
+          minHeight: "190px",
         }}
       >
         {/* Overlay dégradé sombre */}
@@ -142,7 +141,7 @@ function LoginContent() {
         />
 
         {/* Texte hero centré */}
-        <div className="relative z-10 text-center px-6 py-16">
+        <div className="relative z-10 text-center px-6 py-10">
           <p
             className="text-white text-base font-light tracking-widest mb-2"
             style={{ fontFamily: "Georgia, serif", textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
@@ -153,7 +152,7 @@ function LoginContent() {
             className="text-white font-bold leading-tight"
             style={{
               fontFamily: "Georgia, serif",
-              fontSize: "clamp(1.6rem, 4vw, 2.8rem)",
+              fontSize: "clamp(1.45rem, 3vw, 2.2rem)",
               textShadow: "0 3px 16px rgba(0,0,0,0.8)",
               maxWidth: "700px",
               margin: "0 auto",
@@ -171,31 +170,16 @@ function LoginContent() {
 
       {/* ── FORMULAIRE ── carte blanche centrée sous le hero */}
       <div
-        className="flex-1 flex items-start justify-center px-4 py-10"
+        className="flex-1 flex items-start justify-center px-4 py-8"
         style={{ backgroundColor: "#f5f5f5" }}
       >
-        <div className="w-full max-w-5xl grid gap-6 md:grid-cols-[1fr_380px] items-start">
-          <section className="bg-white shadow-xl px-7 py-7" style={{ borderRadius: "4px" }}>
-            <h2 className="text-gray-900 text-xl font-black uppercase" style={{ fontFamily: "Georgia, serif" }}>
-              {hotel?.wifiConfig?.captivePortal?.welcomeMessage || `Bienvenue chez ${hotelName}`}
-            </h2>
-            {hotel?.description && (
-              <p className="text-gray-600 text-sm mt-3 leading-6">{hotel.description}</p>
-            )}
-            <div className="grid sm:grid-cols-2 gap-3 mt-6 text-sm text-gray-600">
-              {hotel?.address && <p><strong>Adresse:</strong> {hotel.address}</p>}
-              {hotel?.phone && <p><strong>Téléphone:</strong> {hotel.phone}</p>}
-              {hotel?.website && <p><strong>Site:</strong> {hotel.website}</p>}
-              <p><strong>Wi-Fi:</strong> {ssid}</p>
-            </div>
-          </section>
-
+        <div className="w-full max-w-md mx-auto">
           <div
             className="bg-white w-full shadow-xl"
             style={{ borderRadius: "4px" }}
           >
           {/* En-tête carte */}
-          <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100">
+          <div className="px-7 pt-7 pb-4 text-center border-b border-gray-100">
             <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-1 leading-relaxed">
               Entrez votre code Wi-Fi, code conférence, UUID, ou votre nom avec votre numéro de chambre
             </p>
@@ -208,7 +192,7 @@ function LoginContent() {
           </div>
 
           {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4">
+          <form onSubmit={handleSubmit} className="px-7 py-5 space-y-3">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                 <KeyIcon />
@@ -300,7 +284,7 @@ function LoginContent() {
           </form>
 
           {/* Footer carte */}
-          <div className="px-8 pb-6 text-center">
+          <div className="px-7 pb-5 text-center">
             <p className="text-xs text-gray-400">
               En vous connectant, vous acceptez les conditions d'utilisation du réseau Wi-Fi de l'hôtel.
             </p>
