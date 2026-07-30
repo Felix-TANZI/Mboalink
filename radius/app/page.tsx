@@ -26,6 +26,7 @@ function LoginContent() {
   const router = useRouter();
   const params = useSearchParams();
   const hotelId = params.get("hotelId") || "";
+  const ssidParam = params.get("ssid") || "";
   const linkLoginOnly = params.get("linkLoginOnly") || "";
   const linkOrig = params.get("linkOrig") || "";
   const clientMac = params.get("mac") || "";
@@ -38,14 +39,17 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const suffix = hotelId ? `?hotelId=${encodeURIComponent(hotelId)}` : "";
+    const search = new URLSearchParams();
+    if (hotelId) search.set("hotelId", hotelId);
+    if (ssidParam) search.set("ssid", ssidParam);
+    const suffix = search.toString() ? `?${search.toString()}` : "";
     fetch(`/api/hotel${suffix}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setHotel(data.hotel);
       })
       .catch(() => undefined);
-  }, [hotelId]);
+  }, [hotelId, ssidParam]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -64,6 +68,7 @@ function LoginContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hotelId,
+          ssid: ssidParam,
           code: accessCode.trim(),
           uuid: accessCode.trim(),
           identifiantClient: identifiantClient.trim(),

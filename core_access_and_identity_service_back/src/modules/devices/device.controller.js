@@ -21,6 +21,8 @@ const postDevice = asyncHandler(async (req, res) => {
   const data = await createDevice(req.body, {
     requestId: req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.status(201).json(success(data));
 });
@@ -29,6 +31,8 @@ const patchDevice = asyncHandler(async (req, res) => {
   const data = await updateDevice(req.params.deviceId, req.body, {
     requestId: req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.json(success(data));
 });
@@ -37,6 +41,8 @@ const postRestartDevice = asyncHandler(async (req, res) => {
   const data = await restartDevice(req.params.deviceId, {
     requestId: req.context.requestId,
     actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
   });
   res.json(success(data));
 });

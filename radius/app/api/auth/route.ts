@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const clientName = String(body.identifiantClient || body.clientName || "").trim();
     const roomNumber = String(body.numeroChambre || body.roomNumber || "").trim();
     const hotelId = String(body.hotelId || "").trim();
+    const ssid = String(body.ssid || "").trim();
     const macAddress = String(body.macAddress || "").trim();
     const ipAddress = String(body.ipAddress || "").trim();
 
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
         clientName: clientName || undefined,
         roomNumber: roomNumber || undefined,
         hotelId: hotelId || undefined,
+        ssid: ssid || undefined,
         ipAddress:
           ipAddress ||
           req.headers.get("x-forwarded-for") ||

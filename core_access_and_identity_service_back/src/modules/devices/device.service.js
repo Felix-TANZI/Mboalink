@@ -24,6 +24,16 @@ function ensureCanAccessHotel(hotelId, user) {
   }
 }
 
+function ensureCanManageHotel(hotelId, reqMeta) {
+  if (reqMeta.actorRole !== 'HOTEL_IT') return;
+
+  if (!reqMeta.actorHotelId || reqMeta.actorHotelId !== hotelId) {
+    const err = new Error('Hotel IT cannot manage devices outside its hotel');
+    err.status = 403;
+    throw err;
+  }
+}
+
 async function listDevices(query, user) {
   return prisma.device.findMany({
     where: {
@@ -77,6 +87,8 @@ async function getDeviceByMac(macAddress, user) {
 }
 
 async function createDevice(payload, reqMeta) {
+  ensureCanManageHotel(payload.hotelId, reqMeta);
+
   const hotel = await prisma.hotel.findUnique({ where: { id: payload.hotelId } });
   if (!hotel) {
     const err = new Error('Hotel not found');
@@ -116,6 +128,7 @@ async function updateDevice(deviceId, payload, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanManageHotel(existing.hotelId, reqMeta);
 
   const device = await prisma.device.update({
     where: { id: deviceId },
@@ -143,6 +156,7 @@ async function restartDevice(deviceId, reqMeta) {
     err.status = 404;
     throw err;
   }
+  ensureCanManageHotel(existing.hotelId, reqMeta);
 
   await writeAuditLog({
     requestId: reqMeta.requestId,

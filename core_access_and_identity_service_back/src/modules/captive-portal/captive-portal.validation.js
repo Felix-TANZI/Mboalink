@@ -6,6 +6,7 @@ const captiveAuthSchema = z.object({
   clientName: z.string().max(120).optional(),
   roomNumber: z.string().max(80).optional(),
   hotelId: z.string().max(80).optional(),
+  ssid: z.string().max(120).optional(),
   ipAddress: z.string().max(64).optional(),
   macAddress: z.string().max(64).optional(),
 }).refine(

@@ -15,7 +15,7 @@ const postCaptiveAuth = asyncHandler(async (req, res) => {
 });
 
 const getCaptiveHotelPublic = asyncHandler(async (req, res) => {
-  const data = await getCaptiveHotel(req.params.hotelId || req.query.hotelId);
+  const data = await getCaptiveHotel({ hotelId: req.params.hotelId || req.query.hotelId, ssid: req.query.ssid });
   res.json(success(data));
 });
 

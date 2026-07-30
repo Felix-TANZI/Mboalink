@@ -100,7 +100,7 @@ export const AppRouter = () => {
         <Route path={routes.public.home} element={<ProtectedPage><Home /></ProtectedPage>} />
         <Route path={routes.public.dashboard} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><DashboardPage /></ProtectedPage>} />
         <Route path={routes.public.networkMap} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><NetworkMap3DPage /></ProtectedPage>} />
-        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['ADMIN']}><Navigate to={routes.public.adminMboa} replace /></ProtectedPage>} />
+        <Route path={routes.public.devices} element={<ProtectedPage allowedRoles={['ADMIN', 'HOTEL_IT']}><DeviceManagerPage /></ProtectedPage>} />
         <Route path={routes.public.wifiCode} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><WifiCodePage /></ProtectedPage>} />
         <Route path={routes.public.loginByAddress} element={<ProtectedPage allowedRoles={['SUPPORT']}><LoginByAddressPage /></ProtectedPage>} />
         <Route path={routes.public.statusLogins} element={<ProtectedPage allowedRoles={['SUPPORT', 'HOTEL_IT']}><StatutLoginsPage /></ProtectedPage>} />

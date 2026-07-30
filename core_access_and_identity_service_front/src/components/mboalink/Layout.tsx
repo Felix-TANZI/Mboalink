@@ -48,7 +48,7 @@ export default function Layout({
   const mainPages = isReceptionist
     ? ["LOGINS", "NOTIFICATIONS"]
     : isHotelIt
-      ? ["DASHBOARD", "LOGINS", "NOTIFICATIONS"]
+      ? ["DASHBOARD", "LOGINS", "DEVICE MANAGER", "NOTIFICATIONS"]
       : isAdmin
         ? ["ADMINISTRATION", "LOGINS", "DASHBOARD", "HOTEL MANAGER", "DEVICE MANAGER", "NOTIFICATIONS"]
         : isSupport
