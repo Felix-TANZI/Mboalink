@@ -24,6 +24,8 @@ const mapHotelFromApi = (hotel: Record<string, any>) => ({
   contact: hotel.contactEmail || '',
   rooms: hotel._count?.rooms || 0,
   status: mapStatusFromApi(hotel.status),
+  captivePortalPort: hotel.captivePortalPort || null,
+  captivePortalUrl: hotel.captivePortalUrl || '',
 })
 
 export default function HotelList() {
@@ -160,6 +162,31 @@ export default function HotelList() {
           </div>
         </div>
 
+        <section className="captivePortalPortsPanel">
+          <div className="portalPanelHeader">
+            <div>
+              <h2>Portails captifs par établissement</h2>
+              <p>Chaque établissement dispose d'un port dédié pour son instance de portail captif.</p>
+            </div>
+          </div>
+          <div className="portalPortsGrid">
+            {hotels.map((hotel) => (
+              <article key={hotel.id} className="portalPortCard">
+                <div>
+                  <strong>{hotel.name}</strong>
+                  <span>{hotel.city}, {hotel.country}</span>
+                </div>
+                <div className="portalPortValue">
+                  {hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}
+                </div>
+                {hotel.captivePortalUrl && (
+                  <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir le portail</a>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+
         <div className="actionsBar">
           <input
             type="text"
@@ -178,6 +205,7 @@ export default function HotelList() {
                 <th style={{ width: '120px' }}>Photo</th>
                 <th>Hôtel</th>
                 <th>Contact</th>
+                <th>Portail captif</th>
                 <th>Statistiques</th>
                 <th style={{ width: '120px' }}>Statut</th>
                 <th style={{ width: '180px' }}>Actions</th>
@@ -205,6 +233,14 @@ export default function HotelList() {
                     <div className="contactCell">
                       <div>✉️ {hotel.contact}</div>
                       <div>📞 {hotel.phone}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="hotelPortalCell">
+                      <strong>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</strong>
+                      {hotel.captivePortalUrl && (
+                        <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
+                      )}
                     </div>
                   </td>
                   <td>

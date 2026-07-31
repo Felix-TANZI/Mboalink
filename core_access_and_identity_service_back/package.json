@@ -15,7 +15,9 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:push": "prisma db push",
     "swagger:print": "node -e \"console.log('Swagger: http://localhost:3000/api-docs')\"",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "captive:ports": "node scripts/assign-captive-portal-ports.js",
+    "captive:instances": "node scripts/generate-captive-instances.js"
   },
   "keywords": [
     "mboalink",

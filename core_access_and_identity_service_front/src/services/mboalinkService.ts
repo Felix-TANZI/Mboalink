@@ -23,6 +23,8 @@ export interface HotelEntity {
   amenities: string[];
   photos: Array<{ url: string; isMain?: boolean; name?: string }>;
   status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
+  captivePortalPort?: number | null;
+  captivePortalUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -75,9 +77,12 @@ export interface WifiConfigEntity {
   status: "ACTIVE" | "INACTIVE";
   updatedAt: string;
   lastModifiedBy?: string;
+  captivePortalPort?: number | null;
+  captivePortalUrl?: string | null;
   hotel?: {
     id: string;
     name: string;
+    captivePortalPort?: number | null;
   };
 }
 

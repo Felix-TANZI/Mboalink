@@ -321,3 +321,25 @@
     grid-template-columns: 1fr;
   }
 }
+.portalCell {
+  display: grid;
+  gap: 4px;
+  min-width: 110px;
+}
+
+.portalCell strong {
+  color: var(--mboa-blue-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+}
+
+.portalCell a {
+  color: var(--mboa-blue);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.portalCell a:hover {
+  text-decoration: underline;
+}

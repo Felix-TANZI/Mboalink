@@ -23,6 +23,7 @@ const createHotelSchema = z.object({
   amenities: z.array(z.string()).default([]),
   photos: z.array(photoSchema).default([]),
   status: hotelStatus.default('ACTIVE'),
+  captivePortalPort: z.number().int().positive().max(65535).optional(),
 });
 
 const updateHotelSchema = createHotelSchema.partial();

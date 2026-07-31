@@ -1,5 +1,6 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
+const { allocateCaptivePortalPort, buildCaptivePortalUrl } = require('./captive-portal-port.service');
 
 function ensureReceptionistHotel(user) {
   if (user?.role !== 'RECEPTIONIST' && user?.role !== 'HOTEL_IT') return null;
@@ -15,7 +16,7 @@ async function listHotels(query, user) {
   const search = query.search?.trim();
   const scopedHotelId = ensureReceptionistHotel(user);
 
-  return prisma.hotel.findMany({
+  const hotels = await prisma.hotel.findMany({
     where: {
       id: scopedHotelId || undefined,
       OR: search ? [
@@ -26,9 +27,12 @@ async function listHotels(query, user) {
     },
     include: {
       _count: { select: { rooms: true } },
+      wifiConfig: { select: { ssid: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  return hotels.map(withCaptivePortalAccess);
 }
 
 async function getHotelById(hotelId, user) {
@@ -54,13 +58,28 @@ async function getHotelById(hotelId, user) {
     throw err;
   }
 
-  return hotel;
+  return withCaptivePortalAccess(hotel);
+}
+
+function withCaptivePortalAccess(hotel) {
+  const ssid = hotel.wifiConfig?.ssid;
+  return {
+    ...hotel,
+    captivePortalUrl: buildCaptivePortalUrl(hotel.captivePortalPort, {
+      hotelId: hotel.id,
+      ssid,
+    }),
+  };
 }
 
 async function createHotel(data, reqMeta) {
+  const captivePortalPort = await allocateCaptivePortalPort(data.captivePortalPort);
+  const { captivePortalPort: _ignoredPort, ...hotelData } = data;
+
   const hotel = await prisma.hotel.create({
     data: {
-      ...data,
+      ...hotelData,
+      captivePortalPort,
       amenities: data.amenities || [],
       photos: data.photos || [],
     },
@@ -74,7 +93,7 @@ async function createHotel(data, reqMeta) {
     action: 'create',
     actorUserId: reqMeta.actorUserId,
     hotelId: hotel.id,
-    payload: { name: hotel.name, city: hotel.city, status: hotel.status },
+    payload: { name: hotel.name, city: hotel.city, status: hotel.status, captivePortalPort: hotel.captivePortalPort },
   });
 
   await prisma.guestConfig.create({
@@ -83,7 +102,7 @@ async function createHotel(data, reqMeta) {
     },
   });
 
-  return hotel;
+  return withCaptivePortalAccess(hotel);
 }
 
 async function updateHotel(hotelId, data, reqMeta) {
@@ -97,9 +116,23 @@ async function updateHotel(hotelId, data, reqMeta) {
 
   await getHotelById(hotelId);
 
+  const { captivePortalPort, ...hotelData } = data;
+  const nextData = { ...hotelData };
+
+  if (captivePortalPort !== undefined) {
+    const current = await prisma.hotel.findUnique({
+      where: { id: hotelId },
+      select: { captivePortalPort: true },
+    });
+
+    if (Number(captivePortalPort) !== current?.captivePortalPort) {
+      nextData.captivePortalPort = await allocateCaptivePortalPort(captivePortalPort);
+    }
+  }
+
   const hotel = await prisma.hotel.update({
     where: { id: hotelId },
-    data,
+    data: nextData,
   });
 
   await writeAuditLog({
@@ -110,10 +143,10 @@ async function updateHotel(hotelId, data, reqMeta) {
     action: 'update',
     actorUserId: reqMeta.actorUserId,
     hotelId: hotel.id,
-    payload: data,
+    payload: nextData,
   });
 
-  return hotel;
+  return withCaptivePortalAccess(hotel);
 }
 
 async function deleteHotel(hotelId, reqMeta) {

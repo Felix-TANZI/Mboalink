@@ -1,5 +1,6 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
+const { buildCaptivePortalUrl } = require('../hotels/captive-portal-port.service');
 
 function scopedHotelId(queryHotelId, user) {
   if (user?.role === 'RECEPTIONIST' || user?.role === 'HOTEL_IT') {
@@ -27,6 +28,17 @@ function ensureCanUseHotel(hotelId, reqMetaOrUser) {
   }
 }
 
+function withCaptivePortalAccess(config) {
+  return {
+    ...config,
+    captivePortalPort: config.hotel?.captivePortalPort || null,
+    captivePortalUrl: buildCaptivePortalUrl(config.hotel?.captivePortalPort, {
+      hotelId: config.hotelId,
+      ssid: config.ssid,
+    }),
+  };
+}
+
 async function listWifiConfigs(query, user) {
   const where = {
     hotelId: scopedHotelId(query.hotelId, user),
@@ -37,13 +49,15 @@ async function listWifiConfigs(query, user) {
     ] : undefined,
   };
 
-  return prisma.wifiConfig.findMany({
+  const configs = await prisma.wifiConfig.findMany({
     where,
     include: {
-      hotel: { select: { id: true, name: true } },
+      hotel: { select: { id: true, name: true, captivePortalPort: true } },
     },
     orderBy: { updatedAt: 'desc' },
   });
+
+  return configs.map(withCaptivePortalAccess);
 }
 
 async function getWifiConfigByHotelId(hotelId, user) {
@@ -52,11 +66,11 @@ async function getWifiConfigByHotelId(hotelId, user) {
   const config = await prisma.wifiConfig.findUnique({
     where: { hotelId },
     include: {
-      hotel: { select: { id: true, name: true } },
+      hotel: { select: { id: true, name: true, captivePortalPort: true } },
     },
   });
 
-  return config;
+  return config ? withCaptivePortalAccess(config) : null;
 }
 
 async function upsertWifiConfig(hotelId, data, reqMeta) {
@@ -85,7 +99,7 @@ async function upsertWifiConfig(hotelId, data, reqMeta) {
       captivePortal: data.captivePortal || {},
     },
     include: {
-      hotel: { select: { id: true, name: true } },
+      hotel: { select: { id: true, name: true, captivePortalPort: true } },
     },
   });
 
@@ -105,7 +119,7 @@ async function upsertWifiConfig(hotelId, data, reqMeta) {
     },
   });
 
-  return config;
+  return withCaptivePortalAccess(config);
 }
 
 module.exports = {

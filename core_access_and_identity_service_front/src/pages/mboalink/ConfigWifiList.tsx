@@ -52,6 +52,8 @@ export default function ConfigWifiList() {
         downloadSpeed: config.downloadSpeedKbps,
         lastModified: config.updatedAt,
         modifiedBy: config.lastModifiedBy || 'N/A',
+        captivePortalPort: config.captivePortalPort || config.hotel?.captivePortalPort || null,
+        captivePortalUrl: config.captivePortalUrl || '',
       })))
     } catch (error) {
       alert((error as Error).message || 'Impossible de charger les configurations WiFi')
@@ -216,6 +218,7 @@ export default function ConfigWifiList() {
               <tr>
                 <th>Hôtel</th>
                 <th>SSID</th>
+                <th>Portail dédié</th>
                 <th>Authentification</th>
                 <th>Durée Session</th>
                 <th>Devices Max</th>
@@ -237,6 +240,14 @@ export default function ConfigWifiList() {
                   <td>
                     <div className="ssidCell">
                       📶 <strong>{config.ssid}</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="portalCell">
+                      <strong>{config.captivePortalPort ? `:${config.captivePortalPort}` : 'Non assigné'}</strong>
+                      {config.captivePortalUrl && (
+                        <a href={config.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
+                      )}
                     </div>
                   </td>
                   <td>

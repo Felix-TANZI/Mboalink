@@ -77,6 +77,7 @@ const defaultHotelForm = {
   country: 'Cameroun',
   address: '',
   description: '',
+  captivePortalPort: '',
 }
 
 const defaultDeviceForm = {
@@ -328,6 +329,7 @@ export default function MboaAdminDashboard() {
       setIsSaving(true)
       const payload = {
         ...hotelForm,
+        captivePortalPort: hotelForm.captivePortalPort ? Number(hotelForm.captivePortalPort) : undefined,
         amenities: [],
         photos: [],
         status: 'ACTIVE',
@@ -398,6 +400,7 @@ export default function MboaAdminDashboard() {
       country: hotel.country,
       address: hotel.address,
       description: hotel.description || '',
+      captivePortalPort: hotel.captivePortalPort ? String(hotel.captivePortalPort) : '',
     })
   }
 
@@ -986,13 +989,21 @@ export default function MboaAdminDashboard() {
           <div className="mboaAdminDataPanel">
             <PanelHeader title="Gestion des hôtels" subtitle="Liste de tous les hôtels enregistrés" actionLabel="Nouvel hôtel" onAction={resetHotelForm} />
             <table className="mboaAdminTable">
-              <thead><tr><th>Nom de l'hôtel</th><th>Ville</th><th>Adresse</th><th>Statut</th><th>Date création</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Nom de l'hôtel</th><th>Ville</th><th>Adresse</th><th>Portail captif</th><th>Statut</th><th>Date création</th><th>Actions</th></tr></thead>
               <tbody>
                 {filteredHotels.map((hotel) => (
                   <tr key={hotel.id}>
                     <td><strong>{hotel.name}</strong></td>
                     <td>{hotel.city}</td>
                     <td>{hotel.address}</td>
+                    <td>
+                      <div className="mboaPortalCell">
+                        <strong>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</strong>
+                        {hotel.captivePortalUrl && (
+                          <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
+                        )}
+                      </div>
+                    </td>
                     <td><span className="mboaStatusBadge active">{hotel.status === 'ACTIVE' ? 'Actif' : hotel.status}</span></td>
                     <td>{formatDate(hotel.createdAt)}</td>
                     <td><RowActions onEdit={() => editHotel(hotel)} onDelete={() => deleteHotel(hotel)} /></td>
@@ -1015,6 +1026,16 @@ export default function MboaAdminDashboard() {
               <label>Pays<input value={hotelForm.country} onChange={(event) => setHotelForm((prev) => ({ ...prev, country: event.target.value }))} required /></label>
             </div>
             <label>Adresse<input value={hotelForm.address} onChange={(event) => setHotelForm((prev) => ({ ...prev, address: event.target.value }))} required /></label>
+            <section className="mboaPortalFormSection">
+              <div>
+                <h3>Portail captif de l'établissement</h3>
+                <p>Le port est créé automatiquement. Le super admin peut le corriger en cas de conflit d'exploitation.</p>
+              </div>
+              <label>Port dédié<input type="number" min="1" max="65535" value={hotelForm.captivePortalPort} placeholder="Auto" onChange={(event) => setHotelForm((prev) => ({ ...prev, captivePortalPort: event.target.value }))} /></label>
+              {editingHotelId && hotelForm.captivePortalPort && (
+                <a className="mboaPortalPreviewLink" href={`http://13.140.183.51:${hotelForm.captivePortalPort}/?hotelId=${editingHotelId}`} target="_blank" rel="noreferrer">Ouvrir le portail captif</a>
+              )}
+            </section>
             <label>Description<textarea value={hotelForm.description} onChange={(event) => setHotelForm((prev) => ({ ...prev, description: event.target.value }))} /></label>
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />{editingHotelId ? "Enregistrer l'hôtel" : "Créer l'hôtel"}</button>
           </form>

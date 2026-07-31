@@ -41,7 +41,10 @@ export async function GET(req: NextRequest) {
       req.nextUrl.searchParams.get("hotelId") ||
       process.env.MBOALINK_DEFAULT_HOTEL_ID ||
       "";
-    const ssid = req.nextUrl.searchParams.get("ssid") || "";
+    const ssid =
+      req.nextUrl.searchParams.get("ssid") ||
+      process.env.MBOALINK_DEFAULT_SSID ||
+      "";
     const query = ssid ? `?ssid=${encodeURIComponent(ssid)}` : "";
     const path = hotelId
       ? `/captive/hotel/${encodeURIComponent(hotelId)}${query}`

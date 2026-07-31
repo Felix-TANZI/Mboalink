@@ -116,6 +116,7 @@ model Hotel {
   amenities    Json?
   photos       Json?
   status       HotelStatus @default(ACTIVE)
+  captivePortalPort Int?   @unique
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

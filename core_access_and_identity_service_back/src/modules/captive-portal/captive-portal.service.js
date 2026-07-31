@@ -3,6 +3,7 @@ const dgram = require('dgram');
 
 const prisma = require('../../config/prisma');
 const logger = require('../../config/logger');
+const { buildCaptivePortalUrl } = require('../hotels/captive-portal-port.service');
 
 const RADIUS_HOST = process.env.RADIUS_HOST || 'freeradius';
 const RADIUS_PORT = Number(process.env.RADIUS_PORT || 1812);
@@ -332,6 +333,7 @@ async function getCaptiveHotel(params = {}) {
       phone: true,
       website: true,
       description: true,
+      captivePortalPort: true,
       latitude: true,
       longitude: true,
       amenities: true,
@@ -352,7 +354,13 @@ async function getCaptiveHotel(params = {}) {
     throw err;
   }
 
-  return hotel;
+  return {
+    ...hotel,
+    captivePortalUrl: buildCaptivePortalUrl(hotel.captivePortalPort, {
+      hotelId: hotel.id,
+      ssid: hotel.wifiConfig?.ssid,
+    }),
+  };
 }
 
 module.exports = {

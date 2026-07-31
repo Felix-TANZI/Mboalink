@@ -5,6 +5,55 @@ L'utilisateur saisit son identifiant client et son numéro de chambre dans une i
 Next.js. L'application Next.js joue ensuite le rôle de client RADIUS et interroge
 FreeRADIUS, qui valide les identifiants à partir des données stockées dans PostgreSQL.
 
+
+## Portail captif multi-instance par établissement
+
+MboaLink attribue maintenant un port captif dédié à chaque établissement au moment de sa création. Le port est stocké côté backend dans le champ `captivePortalPort` de l'hôtel. Le portail conserve aussi le mode multi-établissement par `hotelId` ou `ssid`, mais chaque instance Docker peut être lancée avec un hôtel par défaut.
+
+Principe recommandé :
+
+```text
+Port 3000  -> portail générique de secours
+Port 3100+ -> une instance dédiée par établissement actif
+```
+
+Après création d'un hôtel ou après une restauration de base, exécuter côté backend :
+
+```bash
+cd /home/junior/Mboalink/core_access_and_identity_service_back
+npm run prisma:push
+npm run captive:ports
+npm run captive:instances
+```
+
+Le script `captive:ports` attribue un port aux anciens hôtels qui n'en ont pas encore. Le script `captive:instances` génère le fichier :
+
+```text
+/home/junior/Mboalink/radius/docker-compose.captive-instances.yml
+```
+
+Ensuite lancer les instances côté portail captif :
+
+```bash
+cd /home/junior/Mboalink/radius
+sudo docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml up -d --build
+sudo docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml ps
+```
+
+Chaque service généré reçoit :
+
+- `MBOALINK_DEFAULT_HOTEL_ID` : hôtel servi par défaut par cette instance ;
+- `MBOALINK_DEFAULT_SSID` : SSID associé si la configuration Wi-Fi existe ;
+- un mapping `PORT_DEDIE:3000`.
+
+Pour MikroTik, l'URL du portail d'un établissement doit pointer vers son port dédié, par exemple :
+
+```text
+http://13.140.183.51:3100/?hotelId=ID_HOTEL&ssid=SSID_INVITE&linkLoginOnly=$(link-login-only)&linkOrig=$(link-orig)&mac=$(mac)&ip=$(ip)
+```
+
+Le port exact est visible dans MboaLink sur la configuration Wi-Fi de l'établissement.
+
 ## Vue d'ensemble
 
 Le système est composé de trois briques principales :

@@ -54,6 +54,93 @@
   font-weight: 600;
 }
 
+
+.captivePortalPortsPanel {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.portalPanelHeader {
+  padding: 18px 22px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.portalPanelHeader h2 {
+  margin: 0 0 4px 0;
+  color: var(--mboa-blue-dark);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.portalPanelHeader p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.portalPortsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+.portalPortCard {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.portalPortCard strong,
+.hotelPortalCell strong {
+  color: var(--mboa-blue-dark);
+  font-weight: 900;
+}
+
+.portalPortCard span {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.portalPortValue {
+  width: fit-content;
+  padding: 6px 10px;
+  border: 1px solid rgba(237, 199, 7, 0.35);
+  border-radius: 8px;
+  background: rgba(237, 199, 7, 0.12);
+  color: #7a5600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.portalPortCard a,
+.hotelPortalCell a {
+  color: var(--mboa-blue);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.portalPortCard a:hover,
+.hotelPortalCell a:hover {
+  text-decoration: underline;
+}
+
+.hotelPortalCell {
+  display: grid;
+  gap: 5px;
+  min-width: 110px;
+}
+
 .actionsBar {
   display: flex;
   gap: 12px;

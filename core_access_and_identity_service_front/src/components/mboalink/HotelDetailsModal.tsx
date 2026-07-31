@@ -160,6 +160,26 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel }: HotelDetai
             </section>
           </div>
 
+          <section className="captivePortalDetailsSection">
+            <h3 className="sectionTitle">🌐 Portails captifs</h3>
+            <div className="captivePortalDetailsGrid">
+              <div className="captivePortalDetailCard">
+                <span className="infoLabel">Port dédié</span>
+                <strong>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</strong>
+              </div>
+              <div className="captivePortalDetailCard wide">
+                <span className="infoLabel">URL du portail</span>
+                {hotel.captivePortalUrl ? (
+                  <a href={hotel.captivePortalUrl} target="_blank" rel="noopener noreferrer">
+                    {hotel.captivePortalUrl}
+                  </a>
+                ) : (
+                  <strong>Générer les instances captives</strong>
+                )}
+              </div>
+            </div>
+          </section>
+
           {/* Statistiques */}
           <section className="statsSection">
             <h3 className="sectionTitle">📊 Statistiques</h3>
