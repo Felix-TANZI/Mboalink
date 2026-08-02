@@ -7,6 +7,19 @@ import {
   saveSession,
 } from "@/services/auth/session";
 
+export interface CaptivePortalEntity {
+  id: string;
+  hotelId: string;
+  name: string;
+  ssid: string;
+  port: number;
+  status: "ACTIVE" | "INACTIVE";
+  isDefault: boolean;
+  captivePortalUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface HotelEntity {
   id: string;
   name: string;
@@ -25,6 +38,8 @@ export interface HotelEntity {
   status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
   captivePortalPort?: number | null;
   captivePortalUrl?: string | null;
+  captivePortalCount?: number;
+  captivePortals?: CaptivePortalEntity[];
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -357,6 +372,27 @@ export const mboalinkService = {
   },
   deleteHotel(hotelId: string) {
     return authedRequest<{ deleted: boolean }>(`/hotels/${hotelId}`, {
+      method: "DELETE",
+    });
+  },
+
+  listCaptivePortals(hotelId: string) {
+    return authedRequest<CaptivePortalEntity[]>(`/hotels/${hotelId}/captive-portals`);
+  },
+  createCaptivePortal(hotelId: string, payload: Pick<CaptivePortalEntity, "name" | "ssid"> & { status?: "ACTIVE" | "INACTIVE" }) {
+    return authedRequest<CaptivePortalEntity>(`/hotels/${hotelId}/captive-portals`, {
+      method: "POST",
+      body: payload,
+    });
+  },
+  updateCaptivePortal(hotelId: string, portalId: string, payload: Partial<Pick<CaptivePortalEntity, "name" | "ssid" | "status">>) {
+    return authedRequest<CaptivePortalEntity>(`/hotels/${hotelId}/captive-portals/${portalId}`, {
+      method: "PATCH",
+      body: payload,
+    });
+  },
+  deleteCaptivePortal(hotelId: string, portalId: string) {
+    return authedRequest<{ deleted: boolean }>(`/hotels/${hotelId}/captive-portals/${portalId}`, {
       method: "DELETE",
     });
   },

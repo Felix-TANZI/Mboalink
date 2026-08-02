@@ -1,29 +1,37 @@
 const prisma = require('../src/config/prisma');
 const { allocateCaptivePortalPort, buildCaptivePortalUrl } = require('../src/modules/hotels/captive-portal-port.service');
+const { ensureDefaultCaptivePortal } = require('../src/modules/captive-portal-instances/captive-portal-instance.service');
 
 async function main() {
   const hotels = await prisma.hotel.findMany({
-    where: { captivePortalPort: null },
-    include: { wifiConfig: { select: { ssid: true } } },
+    include: {
+      wifiConfig: { select: { ssid: true } },
+      captivePortals: true,
+    },
     orderBy: { createdAt: 'asc' },
   });
 
   if (hotels.length === 0) {
-    console.log('All hotels already have a captive portal port.');
+    console.log('No hotel found.');
     return;
   }
 
   for (const hotel of hotels) {
-    const captivePortalPort = await allocateCaptivePortalPort();
-    const updated = await prisma.hotel.update({
-      where: { id: hotel.id },
-      data: { captivePortalPort },
-      include: { wifiConfig: { select: { ssid: true } } },
+    const defaultPortal = await ensureDefaultCaptivePortal(hotel.id, {
+      name: 'Client',
+      ssid: hotel.wifiConfig?.ssid,
     });
 
-    console.log(`${updated.name} (${updated.id}) -> ${buildCaptivePortalUrl(updated.captivePortalPort, {
-      hotelId: updated.id,
-      ssid: updated.wifiConfig?.ssid,
+    if (!hotel.captivePortalPort) {
+      await prisma.hotel.update({
+        where: { id: hotel.id },
+        data: { captivePortalPort: defaultPortal.port },
+      });
+    }
+    console.log(`${hotel.name} (${hotel.id}) -> ${buildCaptivePortalUrl(defaultPortal.port, {
+      portalId: defaultPortal.id,
+      hotelId: hotel.id,
+      ssid: defaultPortal.ssid,
     })}`);
   }
 }

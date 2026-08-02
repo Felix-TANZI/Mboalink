@@ -162,12 +162,43 @@ function guestPassIsUsable(pass) {
 }
 
 
-async function resolveCaptiveHotelId({ hotelId, ssid } = {}) {
+async function resolveCaptiveHotelId({ hotelId, portalId, ssid } = {}) {
+  const normalizedPortalId = normalizeText(portalId);
+  if (normalizedPortalId) {
+    const portal = await prisma.captivePortalInstance.findFirst({
+      where: {
+        id: normalizedPortalId,
+        status: 'ACTIVE',
+        hotel: { status: 'ACTIVE' },
+      },
+      select: { hotelId: true },
+    });
+
+    if (!portal) {
+      const err = new Error('Portail captif introuvable ou inactif.');
+      err.status = 404;
+      throw err;
+    }
+
+    return portal.hotelId;
+  }
+
   const normalizedHotelId = normalizeText(hotelId);
   if (normalizedHotelId) return normalizedHotelId;
 
   const normalizedSsid = normalizeText(ssid);
   if (!normalizedSsid) return '';
+
+  const portal = await prisma.captivePortalInstance.findFirst({
+    where: {
+      ssid: normalizedSsid,
+      status: 'ACTIVE',
+      hotel: { status: 'ACTIVE' },
+    },
+    select: { hotelId: true },
+  });
+
+  if (portal) return portal.hotelId;
 
   const hotel = await prisma.hotel.findFirst({
     where: {
@@ -193,6 +224,7 @@ async function authenticateCaptivePortal(payload) {
   const roomNumber = normalizeText(payload.roomNumber);
   const hotelId = await resolveCaptiveHotelId({
     hotelId: payload.hotelId,
+    portalId: payload.portalId,
     ssid: payload.ssid,
   });
   const now = new Date();
@@ -310,17 +342,17 @@ async function authenticateCaptivePortal(payload) {
 
 async function getCaptiveHotel(params = {}) {
   const hotelId = normalizeText(typeof params === 'string' ? params : params.hotelId);
+  const portalId = normalizeText(typeof params === 'object' ? params.portalId : '');
   const ssid = normalizeText(typeof params === 'object' ? params.ssid : '');
 
-  if (!hotelId && !ssid) {
-    const err = new Error('Etablissement introuvable: hotelId ou ssid requis pour charger le portail captif.');
+  if (!hotelId && !portalId && !ssid) {
+    const err = new Error('Etablissement introuvable: portalId, hotelId ou ssid requis pour charger le portail captif.');
     err.status = 400;
     throw err;
   }
 
-  const where = hotelId
-    ? { id: hotelId }
-    : { status: 'ACTIVE', wifiConfig: { is: { ssid } } };
+  const resolvedHotelId = await resolveCaptiveHotelId({ hotelId, portalId, ssid });
+  const where = { id: resolvedHotelId };
 
   const hotel = await prisma.hotel.findFirst({
     where,
@@ -338,6 +370,10 @@ async function getCaptiveHotel(params = {}) {
       longitude: true,
       amenities: true,
       photos: true,
+      captivePortals: {
+        where: portalId ? { id: portalId } : undefined,
+        orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+      },
       wifiConfig: {
         select: {
           ssid: true,
@@ -356,9 +392,10 @@ async function getCaptiveHotel(params = {}) {
 
   return {
     ...hotel,
-    captivePortalUrl: buildCaptivePortalUrl(hotel.captivePortalPort, {
+    captivePortalUrl: buildCaptivePortalUrl(hotel.captivePortals?.[0]?.port || hotel.captivePortalPort, {
+      portalId: hotel.captivePortals?.[0]?.id,
       hotelId: hotel.id,
-      ssid: hotel.wifiConfig?.ssid,
+      ssid: hotel.captivePortals?.[0]?.ssid || hotel.wifiConfig?.ssid,
     }),
   };
 }

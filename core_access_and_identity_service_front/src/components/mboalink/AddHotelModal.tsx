@@ -323,6 +323,19 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
               />
             </div>
 
+            <div className="formRow autoPortalRow">
+              <div className="formLabel">
+                <label>Portail captif automatique</label>
+                <p className="labelHelp">Le port est octroyé automatiquement après création.</p>
+              </div>
+              <input
+                type="text"
+                value={hotel?.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Automatique'}
+                disabled
+                readOnly
+              />
+            </div>
+
             <div className="formRow">
               <div className="formLabel">
                 <label>Statut</label>

@@ -28,32 +28,44 @@ function assertPortInRange(port) {
   }
 }
 
-async function allocateCaptivePortalPort(preferredPort, client = prisma) {
+async function collectUsedPorts(client = prisma, options = {}) {
+  const [hotels, portals] = await Promise.all([
+    client.hotel.findMany({
+      where: options.excludeHotelId
+        ? { captivePortalPort: { not: null }, id: { not: options.excludeHotelId } }
+        : { captivePortalPort: { not: null } },
+      select: { captivePortalPort: true },
+    }),
+    client.captivePortalInstance.findMany({
+      where: options.excludePortalId
+        ? { id: { not: options.excludePortalId } }
+        : undefined,
+      select: { port: true },
+    }),
+  ]);
+
+  return new Set([
+    ...hotels.map((hotel) => hotel.captivePortalPort),
+    ...portals.map((portal) => portal.port),
+  ].filter(Boolean));
+}
+
+async function allocateCaptivePortalPort(preferredPort, client = prisma, options = {}) {
   const { base, max } = getPortRange();
+  const usedPorts = await collectUsedPorts(client, options);
 
   if (preferredPort !== undefined && preferredPort !== null && preferredPort !== '') {
     const port = Number(preferredPort);
     assertPortInRange(port);
 
-    const existing = await client.hotel.findFirst({
-      where: { captivePortalPort: port },
-      select: { id: true },
-    });
-
-    if (existing) {
-      const err = new Error(`Captive portal port ${port} is already assigned to another hotel`);
+    if (usedPorts.has(port)) {
+      const err = new Error(`Captive portal port ${port} is already assigned`);
       err.status = 409;
       throw err;
     }
 
     return port;
   }
-
-  const hotels = await client.hotel.findMany({
-    where: { captivePortalPort: { not: null } },
-    select: { captivePortalPort: true },
-  });
-  const usedPorts = new Set(hotels.map((hotel) => hotel.captivePortalPort).filter(Boolean));
 
   for (let port = base; port <= max; port += 1) {
     if (!usedPorts.has(port)) return port;
@@ -72,6 +84,7 @@ function buildCaptivePortalUrl(port, params = {}) {
   const url = new URL(normalizedHost);
   url.port = String(port);
 
+  if (params.portalId) url.searchParams.set('portalId', params.portalId);
   if (params.hotelId) url.searchParams.set('hotelId', params.hotelId);
   if (params.ssid) url.searchParams.set('ssid', params.ssid);
 

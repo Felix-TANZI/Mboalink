@@ -229,11 +229,26 @@
   gap: 4px;
 }
 
+
 .hotelNameList {
   font-size: 16px;
   font-weight: 800;
   color: var(--mboa-blue-dark);
   margin: 0;
+}
+
+.hotelNameButton {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hotelNameButton:hover {
+  text-decoration: underline;
 }
 
 .hotelLocationList {
@@ -410,4 +425,17 @@
   .statsBar {
     grid-template-columns: 1fr;
   }
+}
+.portalCountBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-left: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(237, 199, 7, 0.16);
+  color: #7a5600;
+  font-size: 11px;
+  font-weight: 900;
+  vertical-align: middle;
 }

@@ -37,6 +37,10 @@ function normalizeHotelAssets(hotel: any) {
 
 export async function GET(req: NextRequest) {
   try {
+    const portalId =
+      req.nextUrl.searchParams.get("portalId") ||
+      process.env.MBOALINK_DEFAULT_PORTAL_ID ||
+      "";
     const hotelId =
       req.nextUrl.searchParams.get("hotelId") ||
       process.env.MBOALINK_DEFAULT_HOTEL_ID ||
@@ -45,7 +49,10 @@ export async function GET(req: NextRequest) {
       req.nextUrl.searchParams.get("ssid") ||
       process.env.MBOALINK_DEFAULT_SSID ||
       "";
-    const query = ssid ? `?ssid=${encodeURIComponent(ssid)}` : "";
+    const queryParams = new URLSearchParams();
+    if (portalId) queryParams.set("portalId", portalId);
+    if (ssid) queryParams.set("ssid", ssid);
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : "";
     const path = hotelId
       ? `/captive/hotel/${encodeURIComponent(hotelId)}${query}`
       : `/captive/hotel${query}`;

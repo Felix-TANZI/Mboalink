@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     const uuid = String(body.uuid || "").trim();
     const clientName = String(body.identifiantClient || body.clientName || "").trim();
     const roomNumber = String(body.numeroChambre || body.roomNumber || "").trim();
+    const portalId = String(body.portalId || process.env.MBOALINK_DEFAULT_PORTAL_ID || "").trim();
     const hotelId = String(body.hotelId || process.env.MBOALINK_DEFAULT_HOTEL_ID || "").trim();
     const ssid = String(body.ssid || process.env.MBOALINK_DEFAULT_SSID || "").trim();
     const macAddress = String(body.macAddress || "").trim();
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
         uuid: uuid || undefined,
         clientName: clientName || undefined,
         roomNumber: roomNumber || undefined,
+        portalId: portalId || undefined,
         hotelId: hotelId || undefined,
         ssid: ssid || undefined,
         ipAddress:

@@ -329,7 +329,6 @@ export default function MboaAdminDashboard() {
       setIsSaving(true)
       const payload = {
         ...hotelForm,
-        captivePortalPort: hotelForm.captivePortalPort ? Number(hotelForm.captivePortalPort) : undefined,
         amenities: [],
         photos: [],
         status: 'ACTIVE',
@@ -998,7 +997,7 @@ export default function MboaAdminDashboard() {
                     <td>{hotel.address}</td>
                     <td>
                       <div className="mboaPortalCell">
-                        <strong>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</strong>
+                        <strong>{hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0} portail{(hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0) > 1 ? 's' : ''}</strong>
                         {hotel.captivePortalUrl && (
                           <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
                         )}
@@ -1028,10 +1027,10 @@ export default function MboaAdminDashboard() {
             <label>Adresse<input value={hotelForm.address} onChange={(event) => setHotelForm((prev) => ({ ...prev, address: event.target.value }))} required /></label>
             <section className="mboaPortalFormSection">
               <div>
-                <h3>Portail captif de l'établissement</h3>
-                <p>Le port est créé automatiquement. Le super admin peut le corriger en cas de conflit d'exploitation.</p>
+                <h3>Portails captifs de l'établissement</h3>
+                <p>Les ports sont octroyés automatiquement. Gérez les noms et SSID depuis la fiche de l'établissement.</p>
               </div>
-              <label>Port dédié<input type="number" min="1" max="65535" value={hotelForm.captivePortalPort} placeholder="Auto" onChange={(event) => setHotelForm((prev) => ({ ...prev, captivePortalPort: event.target.value }))} /></label>
+              <label>Port principal<input type="text" value={hotelForm.captivePortalPort ? `:${hotelForm.captivePortalPort}` : 'Automatique'} disabled readOnly /></label>
               {editingHotelId && hotelForm.captivePortalPort && (
                 <a className="mboaPortalPreviewLink" href={`http://13.140.183.51:${hotelForm.captivePortalPort}/?hotelId=${editingHotelId}`} target="_blank" rel="noreferrer">Ouvrir le portail captif</a>
               )}

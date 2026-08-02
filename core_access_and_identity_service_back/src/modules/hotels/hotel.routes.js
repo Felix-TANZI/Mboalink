@@ -3,10 +3,12 @@ const validate = require('../../middlewares/validate');
 const { requireAuth, requireRole } = require('../../middlewares/auth');
 const { createHotelSchema, updateHotelSchema } = require('./hotel.validation');
 const { getHotels, getHotel, postHotel, patchHotel, removeHotel } = require('./hotel.controller');
+const captivePortalInstanceRoutes = require('../captive-portal-instances/captive-portal-instance.routes');
 
 const router = Router();
 
 router.get('/', requireAuth, getHotels);
+router.use('/:hotelId/captive-portals', captivePortalInstanceRoutes);
 router.get('/:hotelId', requireAuth, getHotel);
 router.post('/', requireAuth, requireRole('ADMIN'), validate(createHotelSchema), postHotel);
 router.patch('/:hotelId', requireAuth, requireRole('ADMIN'), validate(updateHotelSchema), patchHotel);

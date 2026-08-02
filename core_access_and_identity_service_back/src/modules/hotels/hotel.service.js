@@ -1,6 +1,7 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 const { allocateCaptivePortalPort, buildCaptivePortalUrl } = require('./captive-portal-port.service');
+const { ensureDefaultCaptivePortal, withPortalUrl } = require('../captive-portal-instances/captive-portal-instance.service');
 
 function ensureReceptionistHotel(user) {
   if (user?.role !== 'RECEPTIONIST' && user?.role !== 'HOTEL_IT') return null;
@@ -26,8 +27,9 @@ async function listHotels(query, user) {
         ] : undefined,
     },
     include: {
-      _count: { select: { rooms: true } },
+      _count: { select: { rooms: true, captivePortals: true } },
       wifiConfig: { select: { ssid: true } },
+      captivePortals: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -48,7 +50,8 @@ async function getHotelById(hotelId, user) {
     include: {
       rooms: true,
       wifiConfig: true,
-      _count: { select: { rooms: true, devices: true } },
+      captivePortals: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }] },
+      _count: { select: { rooms: true, devices: true, captivePortals: true } },
     },
   });
 
@@ -62,10 +65,19 @@ async function getHotelById(hotelId, user) {
 }
 
 function withCaptivePortalAccess(hotel) {
-  const ssid = hotel.wifiConfig?.ssid;
+  const portals = Array.isArray(hotel.captivePortals)
+    ? hotel.captivePortals.map(withPortalUrl)
+    : [];
+  const defaultPortal = portals.find((portal) => portal.isDefault) || portals[0] || null;
+  const ssid = defaultPortal?.ssid || hotel.wifiConfig?.ssid;
+  const port = defaultPortal?.port || hotel.captivePortalPort;
+
   return {
     ...hotel,
-    captivePortalUrl: buildCaptivePortalUrl(hotel.captivePortalPort, {
+    captivePortals: portals,
+    captivePortalCount: hotel._count?.captivePortals ?? portals.length,
+    captivePortalPort: port || null,
+    captivePortalUrl: defaultPortal?.captivePortalUrl || buildCaptivePortalUrl(port, {
       hotelId: hotel.id,
       ssid,
     }),
@@ -102,7 +114,9 @@ async function createHotel(data, reqMeta) {
     },
   });
 
-  return withCaptivePortalAccess(hotel);
+  await ensureDefaultCaptivePortal(hotel.id, { name: 'Client' });
+
+  return getHotelById(hotel.id);
 }
 
 async function updateHotel(hotelId, data, reqMeta) {

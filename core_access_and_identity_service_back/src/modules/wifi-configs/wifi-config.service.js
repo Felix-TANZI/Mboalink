@@ -1,6 +1,7 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 const { buildCaptivePortalUrl } = require('../hotels/captive-portal-port.service');
+const { ensureDefaultCaptivePortal, withPortalUrl } = require('../captive-portal-instances/captive-portal-instance.service');
 
 function scopedHotelId(queryHotelId, user) {
   if (user?.role === 'RECEPTIONIST' || user?.role === 'HOTEL_IT') {
@@ -31,11 +32,13 @@ function ensureCanUseHotel(hotelId, reqMetaOrUser) {
 function withCaptivePortalAccess(config) {
   return {
     ...config,
-    captivePortalPort: config.hotel?.captivePortalPort || null,
-    captivePortalUrl: buildCaptivePortalUrl(config.hotel?.captivePortalPort, {
-      hotelId: config.hotelId,
-      ssid: config.ssid,
-    }),
+    captivePortalPort: config.hotel?.captivePortals?.[0]?.port || config.hotel?.captivePortalPort || null,
+    captivePortalUrl: config.hotel?.captivePortals?.[0]
+      ? withPortalUrl(config.hotel.captivePortals[0]).captivePortalUrl
+      : buildCaptivePortalUrl(config.hotel?.captivePortalPort, {
+        hotelId: config.hotelId,
+        ssid: config.ssid,
+      }),
   };
 }
 
@@ -52,7 +55,7 @@ async function listWifiConfigs(query, user) {
   const configs = await prisma.wifiConfig.findMany({
     where,
     include: {
-      hotel: { select: { id: true, name: true, captivePortalPort: true } },
+      hotel: { select: { id: true, name: true, captivePortalPort: true, captivePortals: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }], take: 1 } } },
     },
     orderBy: { updatedAt: 'desc' },
   });
@@ -66,7 +69,7 @@ async function getWifiConfigByHotelId(hotelId, user) {
   const config = await prisma.wifiConfig.findUnique({
     where: { hotelId },
     include: {
-      hotel: { select: { id: true, name: true, captivePortalPort: true } },
+      hotel: { select: { id: true, name: true, captivePortalPort: true, captivePortals: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }], take: 1 } } },
     },
   });
 
@@ -99,9 +102,11 @@ async function upsertWifiConfig(hotelId, data, reqMeta) {
       captivePortal: data.captivePortal || {},
     },
     include: {
-      hotel: { select: { id: true, name: true, captivePortalPort: true } },
+      hotel: { select: { id: true, name: true, captivePortalPort: true, captivePortals: { orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }], take: 1 } } },
     },
   });
+
+  await ensureDefaultCaptivePortal(hotelId, { ssid: data.ssid, name: 'Client' });
 
   await writeAuditLog({
     requestId: reqMeta.requestId,

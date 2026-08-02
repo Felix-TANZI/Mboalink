@@ -26,6 +26,8 @@ const mapHotelFromApi = (hotel: Record<string, any>) => ({
   status: mapStatusFromApi(hotel.status),
   captivePortalPort: hotel.captivePortalPort || null,
   captivePortalUrl: hotel.captivePortalUrl || '',
+  captivePortalCount: hotel.captivePortalCount ?? hotel._count?.captivePortals ?? hotel.captivePortals?.length ?? 0,
+  captivePortals: hotel.captivePortals || [],
 })
 
 export default function HotelList() {
@@ -177,7 +179,7 @@ export default function HotelList() {
                   <span>{hotel.city}, {hotel.country}</span>
                 </div>
                 <div className="portalPortValue">
-                  {hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}
+                  {hotel.captivePortalCount} portail{hotel.captivePortalCount > 1 ? 's' : ''}
                 </div>
                 {hotel.captivePortalUrl && (
                   <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir le portail</a>
@@ -225,7 +227,7 @@ export default function HotelList() {
                   </td>
                   <td>
                     <div className="hotelNameCell">
-                      <h3 className="hotelNameList">{hotel.name}</h3>
+                      <h3 className="hotelNameList"><button type="button" className="hotelNameButton" onClick={() => handleViewDetails(hotel)}>{hotel.name}</button><span className="portalCountBadge">{hotel.captivePortalCount} portail{hotel.captivePortalCount > 1 ? 's' : ''}</span></h3>
                       <p className="hotelLocationList">📍 {hotel.city}, {hotel.country}</p>
                     </div>
                   </td>
@@ -322,6 +324,7 @@ export default function HotelList() {
           setViewingHotel(null)
         }}
         hotel={viewingHotel}
+        onChanged={loadHotels}
       />
     </Layout>
   )

@@ -1,17 +1,86 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { mboalinkService, type CaptivePortalEntity } from '@/services/mboalinkService'
 import './HotelDetailsModal.css'
 
 type HotelDetailsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   hotel?: Record<string, any> | null;
+  onChanged?: () => void;
 };
 
-export default function HotelDetailsModal({ isOpen, onClose, hotel }: HotelDetailsModalProps) {
+export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }: HotelDetailsModalProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
+  const [portals, setPortals] = useState<CaptivePortalEntity[]>([])
+  const [portalForm, setPortalForm] = useState({ name: '', ssid: '' })
+  const [isSavingPortal, setIsSavingPortal] = useState(false)
+
+  const loadPortals = async () => {
+    if (!hotel?.id) return
+    try {
+      const data = await mboalinkService.listCaptivePortals(hotel.id)
+      setPortals(data)
+    } catch {
+      setPortals(hotel.captivePortals || [])
+    }
+  }
+
+  useEffect(() => {
+    if (!isOpen || !hotel?.id) return
+    setPortalForm({ name: '', ssid: '' })
+    loadPortals()
+  }, [isOpen, hotel?.id])
 
   if (!isOpen || !hotel) return null
+
+
+  const handleCreatePortal = async () => {
+    if (!hotel?.id) return
+    if (!portalForm.name.trim() || !portalForm.ssid.trim()) {
+      alert('Nom et SSID du portail requis')
+      return
+    }
+
+    try {
+      setIsSavingPortal(true)
+      await mboalinkService.createCaptivePortal(hotel.id, {
+        name: portalForm.name.trim(),
+        ssid: portalForm.ssid.trim(),
+        status: 'ACTIVE',
+      })
+      setPortalForm({ name: '', ssid: '' })
+      await loadPortals()
+      onChanged?.()
+    } catch (error) {
+      alert((error as Error).message || 'Impossible de créer le portail captif')
+    } finally {
+      setIsSavingPortal(false)
+    }
+  }
+
+  const handleUpdatePortal = async (portal: CaptivePortalEntity, field: 'name' | 'ssid' | 'status', value: string) => {
+    if (!hotel?.id) return
+    try {
+      await mboalinkService.updateCaptivePortal(hotel.id, portal.id, { [field]: value })
+      await loadPortals()
+      onChanged?.()
+    } catch (error) {
+      alert((error as Error).message || 'Impossible de modifier le portail captif')
+    }
+  }
+
+  const handleDeletePortal = async (portal: CaptivePortalEntity) => {
+    if (!hotel?.id || portal.isDefault) return
+    if (!confirm(`Supprimer le portail ${portal.name} ?`)) return
+    try {
+      await mboalinkService.deleteCaptivePortal(hotel.id, portal.id)
+      await loadPortals()
+      onChanged?.()
+    } catch (error) {
+      alert((error as Error).message || 'Suppression impossible')
+    }
+  }
 
   const photos = hotel.photos || []
   const currentPhoto = photos[currentPhotoIndex]
@@ -161,22 +230,68 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel }: HotelDetai
           </div>
 
           <section className="captivePortalDetailsSection">
-            <h3 className="sectionTitle">🌐 Portails captifs</h3>
-            <div className="captivePortalDetailsGrid">
-              <div className="captivePortalDetailCard">
-                <span className="infoLabel">Port dédié</span>
-                <strong>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</strong>
+            <div className="portalSectionHeader">
+              <div>
+                <h3 className="sectionTitle">🌐 Portails captifs</h3>
+                <p>{portals.length} portail{portals.length > 1 ? 's' : ''} dédié{portals.length > 1 ? 's' : ''} à cet établissement.</p>
               </div>
-              <div className="captivePortalDetailCard wide">
-                <span className="infoLabel">URL du portail</span>
-                {hotel.captivePortalUrl ? (
-                  <a href={hotel.captivePortalUrl} target="_blank" rel="noopener noreferrer">
-                    {hotel.captivePortalUrl}
-                  </a>
-                ) : (
-                  <strong>Générer les instances captives</strong>
-                )}
-              </div>
+            </div>
+
+            <div className="portalCreateRow">
+              <input
+                value={portalForm.name}
+                onChange={(event) => setPortalForm((prev) => ({ ...prev, name: event.target.value }))}
+                placeholder="Nom du portail: Client, Bureau, Staff..."
+              />
+              <input
+                value={portalForm.ssid}
+                onChange={(event) => setPortalForm((prev) => ({ ...prev, ssid: event.target.value }))}
+                placeholder="SSID: OBEN CLIENT"
+              />
+              <button type="button" onClick={handleCreatePortal} disabled={isSavingPortal}>Ajouter</button>
+            </div>
+
+            <div className="portalCardsList">
+              {portals.map((portal) => (
+                <article key={portal.id} className="portalManageCard">
+                  <div className="portalManageHeader">
+                    <input
+                      defaultValue={portal.name}
+                      onBlur={(event) => {
+                        const nextName = event.target.value.trim()
+                        if (nextName && nextName !== portal.name) handleUpdatePortal(portal, 'name', nextName)
+                      }}
+                      aria-label="Nom du portail"
+                    />
+                    <span className="portalPortReadonly">:{portal.port}</span>
+                  </div>
+                  <div className="portalManageGrid">
+                    <label>
+                      SSID
+                      <input
+                        defaultValue={portal.ssid}
+                        onBlur={(event) => {
+                          const nextSsid = event.target.value.trim()
+                          if (nextSsid && nextSsid !== portal.ssid) handleUpdatePortal(portal, 'ssid', nextSsid)
+                        }}
+                      />
+                    </label>
+                    <label>
+                      Statut
+                      <select value={portal.status} onChange={(event) => handleUpdatePortal(portal, 'status', event.target.value)}>
+                        <option value="ACTIVE">Actif</option>
+                        <option value="INACTIVE">Inactif</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div className="portalManageFooter">
+                    {portal.captivePortalUrl && (
+                      <a href={portal.captivePortalUrl} target="_blank" rel="noopener noreferrer">Ouvrir le portail</a>
+                    )}
+                    {portal.isDefault ? <span>Portail principal</span> : <button type="button" onClick={() => handleDeletePortal(portal)}>Supprimer</button>}
+                  </div>
+                </article>
+              ))}
             </div>
           </section>
 

@@ -25,6 +25,7 @@ type CaptiveHotel = {
 function LoginContent() {
   const router = useRouter();
   const params = useSearchParams();
+  const portalId = params.get("portalId") || "";
   const hotelId = params.get("hotelId") || "";
   const ssidParam = params.get("ssid") || "";
   const linkLoginOnly = params.get("linkLoginOnly") || "";
@@ -40,6 +41,7 @@ function LoginContent() {
 
   useEffect(() => {
     const search = new URLSearchParams();
+    if (portalId) search.set("portalId", portalId);
     if (hotelId) search.set("hotelId", hotelId);
     if (ssidParam) search.set("ssid", ssidParam);
     const suffix = search.toString() ? `?${search.toString()}` : "";
@@ -49,7 +51,7 @@ function LoginContent() {
         if (data.success) setHotel(data.hotel);
       })
       .catch(() => undefined);
-  }, [hotelId, ssidParam]);
+  }, [portalId, hotelId, ssidParam]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -67,6 +69,7 @@ function LoginContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          portalId,
           hotelId,
           ssid: ssidParam,
           code: accessCode.trim(),
