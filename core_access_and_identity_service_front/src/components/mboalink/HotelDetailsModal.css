@@ -550,9 +550,11 @@
     grid-template-columns: 1fr;
   }
 }
+
 .portalSectionHeader {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 16px;
   margin-bottom: 14px;
 }
@@ -566,6 +568,25 @@
   color: #64748b;
   font-size: 13px;
 }
+
+.createPortalToggleBtn {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--mboa-yellow) 0%, #ffd700 100%);
+  color: var(--mboa-blue-dark);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.createPortalToggleBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(237, 199, 7, 0.24);
+}
+
 
 .portalCreateRow {
   display: grid;

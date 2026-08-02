@@ -15,6 +15,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
   const [portals, setPortals] = useState<CaptivePortalEntity[]>([])
   const [portalForm, setPortalForm] = useState({ name: '', ssid: '' })
   const [isSavingPortal, setIsSavingPortal] = useState(false)
+  const [isPortalFormOpen, setIsPortalFormOpen] = useState(false)
 
   const loadPortals = async () => {
     if (!hotel?.id) return
@@ -29,6 +30,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
   useEffect(() => {
     if (!isOpen || !hotel?.id) return
     setPortalForm({ name: '', ssid: '' })
+    setIsPortalFormOpen(false)
     loadPortals()
   }, [isOpen, hotel?.id])
 
@@ -50,6 +52,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
         status: 'ACTIVE',
       })
       setPortalForm({ name: '', ssid: '' })
+      setIsPortalFormOpen(false)
       await loadPortals()
       onChanged?.()
     } catch (error) {
@@ -235,8 +238,16 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
                 <h3 className="sectionTitle">🌐 Portails captifs</h3>
                 <p>{portals.length} portail{portals.length > 1 ? 's' : ''} dédié{portals.length > 1 ? 's' : ''} à cet établissement.</p>
               </div>
+              <button
+                type="button"
+                className="createPortalToggleBtn"
+                onClick={() => setIsPortalFormOpen((open) => !open)}
+              >
+                {isPortalFormOpen ? 'Annuler' : '+ Créer un portail'}
+              </button>
             </div>
 
+            {isPortalFormOpen && (
             <div className="portalCreateRow">
               <input
                 value={portalForm.name}
@@ -250,6 +261,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
               />
               <button type="button" onClick={handleCreatePortal} disabled={isSavingPortal}>Ajouter</button>
             </div>
+            )}
 
             <div className="portalCardsList">
               {portals.map((portal) => (

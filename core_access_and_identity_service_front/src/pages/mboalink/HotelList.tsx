@@ -181,9 +181,12 @@ export default function HotelList() {
                 <div className="portalPortValue">
                   {hotel.captivePortalCount} portail{hotel.captivePortalCount > 1 ? 's' : ''}
                 </div>
-                {hotel.captivePortalUrl && (
-                  <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir le portail</a>
-                )}
+                <div className="portalCardActions">
+                  <button type="button" onClick={() => handleViewDetails(hotel)}>Gérer</button>
+                  {hotel.captivePortalUrl && (
+                    <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir le portail</a>
+                  )}
+                </div>
               </article>
             ))}
           </div>

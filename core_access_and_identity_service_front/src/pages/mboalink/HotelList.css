@@ -426,6 +426,31 @@
     grid-template-columns: 1fr;
   }
 }
+.portalCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.portalCardActions button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(30, 64, 175, 0.22);
+  border-radius: 8px;
+  background: white;
+  color: var(--mboa-blue-dark);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.portalCardActions button:hover {
+  border-color: var(--mboa-yellow);
+  background: rgba(237, 199, 7, 0.12);
+}
+
+
 .portalCountBadge {
   display: inline-flex;
   align-items: center;
