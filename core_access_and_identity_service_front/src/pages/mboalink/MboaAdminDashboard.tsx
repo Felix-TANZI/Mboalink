@@ -90,6 +90,13 @@ const defaultDeviceForm = {
   floor: '',
 }
 
+const defaultPortalForm = {
+  hotelId: '',
+  hotelName: '',
+  name: 'Client',
+  ssid: '',
+}
+
 const defaultNotificationForm = {
   title: '',
   message: '',
@@ -101,7 +108,7 @@ const defaultNotificationForm = {
   userIds: [] as string[],
 }
 
-type ActiveForm = 'user' | 'hotel' | 'device' | null
+type ActiveForm = 'user' | 'hotel' | 'device' | 'portal' | null
 
 function formatDate(value?: string | null) {
   if (!value) return 'Jamais'
@@ -146,6 +153,7 @@ export default function MboaAdminDashboard() {
   const [userForm, setUserForm] = useState(defaultUserForm)
   const [hotelForm, setHotelForm] = useState(defaultHotelForm)
   const [deviceForm, setDeviceForm] = useState(defaultDeviceForm)
+  const [portalForm, setPortalForm] = useState(defaultPortalForm)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [editingHotelId, setEditingHotelId] = useState<string | null>(null)
   const [editingDeviceId, setEditingDeviceId] = useState<string | null>(null)
@@ -278,6 +286,17 @@ export default function MboaAdminDashboard() {
     setActiveForm('device')
   }
 
+  const openPortalForm = (hotel: HotelEntity) => {
+    const defaultSsid = `${hotel.name} CLIENT`.toUpperCase().replace(/\s+/g, ' ').trim()
+    setPortalForm({
+      hotelId: hotel.id,
+      hotelName: hotel.name,
+      name: 'Client',
+      ssid: defaultSsid,
+    })
+    setActiveForm('portal')
+  }
+
   const closeForm = () => {
     setActiveForm(null)
     setEditingUserId(null)
@@ -286,6 +305,7 @@ export default function MboaAdminDashboard() {
     setUserForm(defaultUserForm)
     setHotelForm(defaultHotelForm)
     setDeviceForm(defaultDeviceForm)
+    setPortalForm(defaultPortalForm)
   }
 
   const submitUser = async (event: React.FormEvent) => {
@@ -437,18 +457,26 @@ export default function MboaAdminDashboard() {
     }
   }
 
-  const createCaptivePortalForHotel = async (hotel: HotelEntity) => {
-    const defaultSsid = `${hotel.name} CLIENT`.toUpperCase().replace(/\s+/g, ' ').trim()
-    const name = prompt('Nom du portail', 'Client')?.trim()
-    if (!name) return
-    const ssid = prompt('SSID du portail', defaultSsid)?.trim()
-    if (!ssid) return
+  const submitCaptivePortal = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!portalForm.hotelId || !portalForm.name.trim() || !portalForm.ssid.trim()) {
+      alert('Renseignez le nom du portail et le SSID.')
+      return
+    }
 
     try {
-      await mboalinkService.createCaptivePortal(hotel.id, { name, ssid, status: 'ACTIVE' })
+      setIsSaving(true)
+      await mboalinkService.createCaptivePortal(portalForm.hotelId, {
+        name: portalForm.name.trim(),
+        ssid: portalForm.ssid.trim(),
+        status: 'ACTIVE',
+      })
+      closeForm()
       await loadData()
     } catch (error) {
       alert((error as Error).message || 'Création du portail impossible')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -999,13 +1027,13 @@ export default function MboaAdminDashboard() {
           )}
         </section>
 
-        <section id="hotels" className={`mboaAdminSection ${activeForm === 'hotel' ? 'hasForm' : ''}`}>
+        <section id="hotels" className={`mboaAdminSection ${activeForm === 'hotel' || activeForm === 'portal' ? 'hasForm' : ''}`}>
           <div className="mboaAdminDataPanel">
             <PanelHeader title="Gestion des établissements" subtitle="Liste de tous les établissements enregistrés" actionLabel="Nouvel établissement" onAction={resetHotelForm} />
             <table className="mboaAdminTable">
               <thead><tr><th>Nom de l'établissement</th><th>Ville</th><th>Adresse</th><th>Portail captif</th><th>Statut</th><th>Date création</th><th>Actions</th></tr></thead>
               <tbody>
-                {filteredÉtablissements.map((hotel) => (
+                {filteredHotels.map((hotel) => (
                   <tr key={hotel.id}>
                     <td><strong>{hotel.name}</strong></td>
                     <td>{hotel.city}</td>
@@ -1014,7 +1042,7 @@ export default function MboaAdminDashboard() {
                       <div className="mboaPortalCell">
                         <strong>{hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0} portail{(hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0) > 1 ? 's' : ''}</strong>
                         <div className="mboaPortalActions">
-                          <button type="button" onClick={() => createCaptivePortalForHotel(hotel)}>Créer</button>
+                          <button type="button" onClick={() => openPortalForm(hotel)}>Créer</button>
                           {hotel.captivePortalUrl && (
                             <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
                           )}
@@ -1028,7 +1056,7 @@ export default function MboaAdminDashboard() {
                 ))}
               </tbody>
             </table>
-            <PanelFooter count={filteredÉtablissements.length} label="établissement" />
+            <PanelFooter count={filteredHotels.length} label="établissement" />
           </div>
 
           {activeForm === 'hotel' && (
@@ -1057,6 +1085,26 @@ export default function MboaAdminDashboard() {
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />{editingHotelId ? "Enregistrer l'établissement" : "Créer l'établissement"}</button>
           </form>
           )}
+
+          {activeForm === 'portal' && (
+          <form className="mboaAdminFormPanel" onSubmit={submitCaptivePortal}>
+            <div className="mboaFormHeader">
+              <h2>Nouveau portail captif</h2>
+              <button type="button" onClick={closeForm}>Fermer</button>
+            </div>
+            <section className="mboaPortalFormSection">
+              <div>
+                <h3>{portalForm.hotelName}</h3>
+                <p>Le port sera octroyé automatiquement après création. Utilisez le nom pour distinguer les accès Client, Bureau, Staff ou VIP.</p>
+              </div>
+              <label>Établissement<input type="text" value={portalForm.hotelName} disabled readOnly /></label>
+              <label>Nom du portail<input value={portalForm.name} onChange={(event) => setPortalForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Client, Bureau, Staff..." required /></label>
+              <label>SSID<input value={portalForm.ssid} onChange={(event) => setPortalForm((prev) => ({ ...prev, ssid: event.target.value }))} placeholder="OBEN CLIENT" required /></label>
+              <label>Port<input type="text" value="Automatique" disabled readOnly /></label>
+            </section>
+            <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />Créer le portail</button>
+          </form>
+          )}
         </section>
 
         <section id="devices" className={`mboaAdminSection ${activeForm === 'device' ? 'hasForm' : ''}`}>
@@ -1065,7 +1113,7 @@ export default function MboaAdminDashboard() {
               <div><h2>Gestion des équipements réseau</h2><p>Routeurs, switchs, points d'accès et contrôleurs par établissement</p></div>
               <div className="mboaPanelFilters">
                 <select value={hotelFilter} onChange={(event) => setHotelFilter(event.target.value)}>
-                  <option value="all">Tous les établissement(s)</option>
+                  <option value="all">Tous les établissements</option>
                   {hotels.map((hotel) => <option key={hotel.id} value={hotel.id}>{hotel.name}</option>)}
                 </select>
                 <select value={deviceStatusFilter} onChange={(event) => setDeviceStatusFilter(event.target.value)}>
