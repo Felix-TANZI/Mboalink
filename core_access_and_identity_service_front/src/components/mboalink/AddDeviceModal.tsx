@@ -35,7 +35,7 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, hotels, defaul
 
   const handleSubmit = () => {
     if (!formData.hotelId) {
-      alert('Sélectionnez un hôtel')
+      alert('Sélectionnez un établissement')
       return
     }
     if (!formData.macAddress) {
@@ -77,13 +77,13 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, hotels, defaul
 
             <div className="formRow">
               <div className="formLabel">
-                <label>Hôtel *</label>
+                <label>Établissement *</label>
               </div>
               <select
                 value={formData.hotelId}
                 onChange={(e) => handleChange('hotelId', e.target.value)}
               >
-                <option value="">Sélectionner un hôtel</option>
+                <option value="">Sélectionner un établissement</option>
                 {hotels.map((hotel) => (
                   <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
                 ))}

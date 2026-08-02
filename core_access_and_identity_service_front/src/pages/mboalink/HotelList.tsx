@@ -45,7 +45,7 @@ export default function HotelList() {
       const data = await mboalinkService.listHotels()
       setHotels(data.map(mapHotelFromApi))
     } catch (error) {
-      alert((error as Error).message || 'Impossible de charger les hôtels')
+      alert((error as Error).message || 'Impossible de charger les établissement(s)')
     } finally {
       setIsLoading(false)
     }
@@ -77,7 +77,7 @@ export default function HotelList() {
   }
 
   const handleDeleteHotel = async (hotelId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet hôtel ?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')) {
       try {
         await mboalinkService.deleteHotel(hotelId)
         setHotels(prev => prev.filter(h => h.id !== hotelId))
@@ -137,18 +137,18 @@ export default function HotelList() {
           <div>
             <h1 className="pageTitle">Gestion des Établissements</h1>
             <p className="pageSubtitle">
-              Gérez vos hôtels, leurs informations et leur configuration réseau.
+              Gérez vos établissement(s), leurs informations et leur configuration réseau.
             </p>
           </div>
           <button className="btn btnPrimary" onClick={handleAddHotel}>
-            + Ajouter Hôtel
+            + Ajouter Établissement
           </button>
         </div>
 
         <div className="statsBar">
           <div className="statCard">
             <div className="statValue">{hotels.length}</div>
-            <div className="statLabel">Total Hôtels</div>
+            <div className="statLabel">Total Établissements</div>
           </div>
           <div className="statCard">
             <div className="statValue">{hotels.filter(h => h.status === 'Actif').length}</div>
@@ -196,19 +196,19 @@ export default function HotelList() {
           <input
             type="text"
             className="searchInput"
-            placeholder="Rechercher un hôtel, une ville..."
+            placeholder="Rechercher un établissement, une ville..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
         <div className="hotelListContainer">
-          {isLoading && <p>Chargement des hôtels...</p>}
+          {isLoading && <p>Chargement des établissement(s)...</p>}
           <table className="hotelTable">
             <thead>
               <tr>
                 <th style={{ width: '120px' }}>Photo</th>
-                <th>Hôtel</th>
+                <th>Établissement</th>
                 <th>Contact</th>
                 <th>Portail captif</th>
                 <th>Statistiques</th>
@@ -301,9 +301,9 @@ export default function HotelList() {
 
           {filteredHotels.length === 0 && (
             <div className="emptyState">
-              <p>Aucun hôtel trouvé.</p>
+              <p>Aucun établissement trouvé.</p>
               <button className="btn btnPrimary" onClick={handleAddHotel}>
-                Ajouter le premier hôtel
+                Ajouter le premier établissement
               </button>
             </div>
           )}

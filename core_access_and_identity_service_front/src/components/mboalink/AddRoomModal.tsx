@@ -153,7 +153,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
 
   const handleSubmit = async () => {
     if (!formData.hotelId || !formData.type || !formData.name || !formData.description) {
-      alert('Veuillez remplir tous les champs requis (Hôtel, Type, Numéro, Description)')
+      alert('Veuillez remplir tous les champs requis (Établissement, Type, Numéro, Description)')
       return
     }
 
@@ -185,7 +185,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
               {isDuplicate ? 'Dupliquer la Chambre' : room ? 'Modifier la Chambre' : 'Ajouter une Chambre'}
             </h2>
             <p>
-              Configurez le type de chambre et ses équipements pour cet hôtel client.
+              Configurez le type de chambre et ses équipements pour cet établissement client.
             </p>
           </div>
         </div>
@@ -197,15 +197,15 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
 
             <div className="formRow">
               <div className="formLabel">
-                <label>Hôtel *</label>
-                <p className="labelHelp">Sélectionnez l'hôtel client</p>
+                <label>Établissement *</label>
+                <p className="labelHelp">Sélectionnez l'établissement client</p>
               </div>
               <select
                 value={formData.hotelId}
                 onChange={(e) => handleInputChange('hotelId', e.target.value)}
                 required
               >
-                <option value="">-- Sélectionner un hôtel --</option>
+                <option value="">-- Sélectionner un établissement --</option>
                 {hotels.map(hotel => (
                   <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
                 ))}
@@ -229,7 +229,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
             <div className="formRow">
               <div className="formLabel">
                 <label>Numéro de chambre *</label>
-                <p className="labelHelp">Ex: 101, 204B, Suite 12. Ce numéro identifie la chambre dans l'hôtel.</p>
+                <p className="labelHelp">Ex: 101, 204B, Suite 12. Ce numéro identifie la chambre dans l'établissement.</p>
               </div>
               <input
                 type="text"

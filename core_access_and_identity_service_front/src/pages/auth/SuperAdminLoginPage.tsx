@@ -58,7 +58,7 @@ export default function SuperAdminLoginPage() {
           <div className="superAdminEyebrow"><ShieldCheck size={16} /> Accès super administrateur</div>
           <h1>Contrôle central MboaLink</h1>
           <p>
-            Cette surface est isolée du portail opérationnel pour concentrer la gestion des hôtels,
+            Cette surface est isolée du portail opérationnel pour concentrer la gestion des établissement(s),
             utilisateurs, équipements réseau, notifications et paramètres sensibles.
           </p>
         </div>

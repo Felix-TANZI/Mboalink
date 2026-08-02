@@ -51,7 +51,7 @@ export default function LoginByAddress() {
 
   const handleClear = async () => {
     if (!selectedHotelId) {
-      alert('Sélectionnez un hôtel')
+      alert('Sélectionnez un établissement')
       return
     }
 
@@ -117,7 +117,7 @@ export default function LoginByAddress() {
             <div className="formGrid">
               <div className="formCol">
                 <div className="formField">
-                  <label>Hotel</label>
+                  <label>Établissement</label>
                   <select
                     value={selectedHotelId}
                     onChange={(e) => {

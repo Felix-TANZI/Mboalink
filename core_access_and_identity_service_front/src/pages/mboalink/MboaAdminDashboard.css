@@ -420,6 +420,30 @@
   font-size: 0.84rem;
 }
 
+.mboaPortalActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.mboaPortalActions button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(29, 79, 143, 0.22);
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  font-size: 0.76rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.mboaPortalActions button:hover {
+  border-color: #edc707;
+  background: rgba(237, 199, 7, 0.12);
+}
+
 .mboaPortalCell a,
 .mboaPortalPreviewLink {
   color: #1d4f8f;

@@ -36,7 +36,7 @@ export default function RoomDetailsModal({ isOpen, onClose, room }: RoomDetailsM
             <p>Détails complets de la chambre</p>
           </div>
           <div className="hotelBadge">
-            🏨 {room.hotelName}
+            🏢 {room.hotelName}
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export default function RoomDetailsModal({ isOpen, onClose, room }: RoomDetailsM
                   <span className="infoValue">{room.type}</span>
                 </div>
                 <div className="infoItem">
-                  <span className="infoLabel">Hôtel</span>
+                  <span className="infoLabel">Établissement</span>
                   <span className="infoValue">{room.hotelName}</span>
                 </div>
                 <div className="infoItem">

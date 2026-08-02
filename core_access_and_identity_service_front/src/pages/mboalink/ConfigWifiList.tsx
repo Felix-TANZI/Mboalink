@@ -70,7 +70,7 @@ export default function ConfigWifiList() {
         setHotelId(defaultId)
         await loadConfigs(defaultId)
       })
-      .catch((error) => alert((error as Error).message || 'Impossible de charger les hôtels'))
+      .catch((error) => alert((error as Error).message || 'Impossible de charger les établissement(s)'))
   }, [])
 
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function ConfigWifiList() {
           <div>
             <h1 className="pageTitle">Configuration WiFi</h1>
             <p className="pageSubtitle">
-              Paramètres réseau et accès WiFi par hôtel client
+              Paramètres réseau et accès WiFi par établissement client
             </p>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function ConfigWifiList() {
         <div className="statsBar">
           <div className="statCard">
             <div className="statValue">{totalConfigs}</div>
-            <div className="statLabel">Hôtels Configurés</div>
+            <div className="statLabel">Établissements Configurés</div>
           </div>
           <div className="statCard">
             <div className="statValue">{activeConfigs}</div>
@@ -186,7 +186,7 @@ export default function ConfigWifiList() {
               value={hotelId}
               onChange={(e) => setHotelId(e.target.value)}
             >
-              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              <option value={ALL_HOTELS}>Tous les établissement(s)</option>
               {hotels.map((hotel) => (
                 <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
               ))}
@@ -195,7 +195,7 @@ export default function ConfigWifiList() {
           <input
             type="text"
             className="searchInput"
-            placeholder="Rechercher un hôtel ou SSID..."
+            placeholder="Rechercher un établissement ou SSID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -216,7 +216,7 @@ export default function ConfigWifiList() {
           <table className="configWifiTable">
             <thead>
               <tr>
-                <th>Hôtel</th>
+                <th>Établissement</th>
                 <th>SSID</th>
                 <th>Portail dédié</th>
                 <th>Authentification</th>

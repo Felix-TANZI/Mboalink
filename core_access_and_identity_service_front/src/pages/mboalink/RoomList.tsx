@@ -170,7 +170,7 @@ export default function RoomList() {
           <div>
             <h1 className="pageTitle">Gestion des Chambres</h1>
             <p className="pageSubtitle">
-              Catalogue des types de chambres par hôtel client
+              Catalogue des types de chambres par établissement client
             </p>
           </div>
           <button className="btn btnPrimary" onClick={handleAddRoom}>
@@ -185,7 +185,7 @@ export default function RoomList() {
           </div>
           <div className="statCard">
             <div className="statValue">{hotelsWithRooms}</div>
-            <div className="statLabel">Hôtels Configurés</div>
+            <div className="statLabel">Établissements Configurés</div>
           </div>
           <div className="statCard">
             <div className="statValue">{totalCapacity}</div>
@@ -218,7 +218,7 @@ export default function RoomList() {
               value={filterHotel}
               onChange={(e) => setFilterHotel(e.target.value)}
             >
-              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              <option value={ALL_HOTELS}>Tous les établissement(s)</option>
               {hotels.map(hotel => (
                 <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
               ))}
@@ -244,7 +244,7 @@ export default function RoomList() {
               <tr>
                 <th style={{ width: '120px' }}>Photo</th>
                 <th>Type & Description</th>
-                <th>Hôtel</th>
+                <th>Établissement</th>
                 <th>Détails</th>
                 <th>Équipements</th>
                 <th style={{ width: '200px' }}>Actions</th>

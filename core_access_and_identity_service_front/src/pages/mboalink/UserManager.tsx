@@ -6,7 +6,7 @@ import './UserManager.css'
 const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Admin Mboalink',
   SUPPORT: 'Support IT Mboalink',
-  HOTEL_IT: 'IT hôtel',
+  HOTEL_IT: 'IT établissement',
   RECEPTIONIST: 'Réceptionniste',
   CLIENT: 'Client',
 }
@@ -97,7 +97,7 @@ export default function UserManager() {
     event.preventDefault()
 
     if (hotelScopedRoles.includes(formData.role) && !formData.hotelId) {
-      alert('Veuillez associer cet utilisateur à un hôtel.')
+      alert('Veuillez associer cet utilisateur à un établissement.')
       return
     }
 
@@ -149,7 +149,7 @@ export default function UserManager() {
           <div>
             <h1 className="pageTitle">Gestion des utilisateurs</h1>
             <p className="pageSubtitle">
-              Créez les comptes internes Mboalink et les comptes liés aux hôtels.
+              Créez les comptes internes Mboalink et les comptes liés aux établissement(s).
             </p>
           </div>
           {editingUser && (
@@ -170,7 +170,7 @@ export default function UserManager() {
           </div>
           <div className="statCard">
             <div className="statValue">{stats.hotelScoped}</div>
-            <div className="statLabel">Comptes hôtel</div>
+            <div className="statLabel">Comptes établissement</div>
           </div>
           <div className="statCard">
             <div className="statValue">{stats.mboalinkTeam}</div>
@@ -227,13 +227,13 @@ export default function UserManager() {
 
             {hotelScopedRoles.includes(formData.role) && (
               <label>
-                Hôtel associé
+                Établissement associé
                 <select
                   value={formData.hotelId}
                   onChange={(event) => setFormData((prev) => ({ ...prev, hotelId: event.target.value }))}
                   required
                 >
-                  <option value="">Sélectionner un hôtel</option>
+                  <option value="">Sélectionner un établissement</option>
                   {hotels.map((hotel) => (
                     <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
                   ))}
@@ -243,7 +243,7 @@ export default function UserManager() {
 
             {mboalinkTeamRoles.includes(formData.role) && (
               <p className="formHint">
-                Ce rôle appartient à l'équipe Mboalink et n'a pas besoin d'être lié à un hôtel.
+                Ce rôle appartient à l'équipe Mboalink et n'a pas besoin d'être lié à un établissement.
               </p>
             )}
 
@@ -268,7 +268,7 @@ export default function UserManager() {
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Rechercher un nom, email, hôtel..."
+                placeholder="Rechercher un nom, email, établissement..."
               />
               <select
                 className="filterSelect"
@@ -289,7 +289,7 @@ export default function UserManager() {
                   <tr>
                     <th>Utilisateur</th>
                     <th>Rôle</th>
-                    <th>Hôtel</th>
+                    <th>Établissement</th>
                     <th>Statut</th>
                     <th>Actions</th>
                   </tr>

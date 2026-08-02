@@ -77,7 +77,7 @@ export default function Layout({
       { label: "Network Map", page: "network-map" },
     ],
     "HOTEL MANAGER": [
-          { label: "Hotels", page: "hotels" },
+          { label: "Établissements", page: "hotels" },
           { label: "Rooms", page: "rooms" },
           { label: "Config WiFi", page: "config-wifi" },
         ],

@@ -16,7 +16,7 @@ type TargetMode = 'ALL' | 'HOTEL' | 'ROLE' | 'USERS'
 const roleLabels: Record<string, string> = {
   ADMIN: 'Admins MboaLink',
   SUPPORT: 'Support IT MboaLink',
-  HOTEL_IT: 'IT hôtel',
+  HOTEL_IT: 'IT établissement',
   RECEPTIONIST: 'Réceptionnistes',
 }
 
@@ -128,7 +128,7 @@ export default function Notifications() {
 
     if (!canSend) return
     if (formData.targetMode === 'HOTEL' && !isHotelIt && !formData.hotelId) {
-      alert('Sélectionnez un hôtel.')
+      alert('Sélectionnez un établissement.')
       return
     }
     if (formData.targetMode === 'USERS' && formData.userIds.length === 0) {
@@ -244,7 +244,7 @@ export default function Notifications() {
                   disabled={isHotelIt}
                 >
                   {!isHotelIt && <option value="ALL">Tous les acteurs</option>}
-                  <option value="HOTEL">{isHotelIt ? 'Réceptionnistes de mon hôtel' : 'Acteurs d’un hôtel'}</option>
+                  <option value="HOTEL">{isHotelIt ? 'Réceptionnistes de mon établissement' : 'Acteurs d’un établissement'}</option>
                   {!isHotelIt && <option value="ROLE">Un rôle précis</option>}
                   <option value="USERS">Utilisateurs précis</option>
                 </select>
@@ -252,13 +252,13 @@ export default function Notifications() {
 
               {formData.targetMode === 'HOTEL' && !isHotelIt && (
                 <label>
-                  Hôtel
+                  Établissement
                   <select
                     value={formData.hotelId}
                     onChange={(event) => setFormData((prev) => ({ ...prev, hotelId: event.target.value }))}
                     required
                   >
-                    <option value="">Sélectionner un hôtel</option>
+                    <option value="">Sélectionner un établissement</option>
                     {hotels.map((hotel) => (
                       <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
                     ))}
@@ -350,7 +350,7 @@ export default function Notifications() {
                         <p>{notification.message}</p>
                         <div className="notificationMeta">
                           <span>De : {notification.sender?.fullName || 'Système'}</span>
-                          {notification.hotel?.name && <span>Hôtel : {notification.hotel.name}</span>}
+                          {notification.hotel?.name && <span>Établissement : {notification.hotel.name}</span>}
                           {notification.category && <span>{notification.category}</span>}
                         </div>
                         {isUnread && (
@@ -382,7 +382,7 @@ export default function Notifications() {
                       <p>{notification.message}</p>
                       <div className="notificationMeta">
                         <span>{notification.recipients.length} destinataire{notification.recipients.length !== 1 ? 's' : ''}</span>
-                        {notification.hotel?.name && <span>Hôtel : {notification.hotel.name}</span>}
+                        {notification.hotel?.name && <span>Établissement : {notification.hotel.name}</span>}
                       </div>
                     </article>
                   ))

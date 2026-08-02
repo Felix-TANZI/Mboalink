@@ -244,7 +244,7 @@ export default function ManualLogin() {
 
   // Soumission
   const handleProceed = async () => {
-    if (!hasConcreteHotelScope(hotelId)) { alert("Sélectionnez d'abord un hôtel précis"); return }
+    if (!hasConcreteHotelScope(hotelId)) { alert("Sélectionnez d'abord un établissement précis"); return }
     if (!clientName.trim())   { alert('Le nom du client est requis'); return }
     if (!roomNumberIsFilled)   { alert('Saisissez un numéro de chambre'); return }
     if (!checkInDate)          { alert("La date d'entrée est requise"); return }
@@ -346,7 +346,7 @@ export default function ManualLogin() {
                 value={hotelId}
                 onChange={(e) => setHotelId(e.target.value)}
               >
-                <option value={ALL_HOTELS}>Tous les hôtels</option>
+                <option value={ALL_HOTELS}>Tous les établissement(s)</option>
                 {hotels.map((hotel) => (
                   <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
                 ))}
@@ -357,7 +357,7 @@ export default function ManualLogin() {
           <div className="mlCardBody">
             {hotelId === ALL_HOTELS && (
               <div className="mlErrorBox">
-                Vue globale active : sélectionnez un hôtel précis pour enregistrer un check-in.
+                Vue globale active : sélectionnez un établissement précis pour enregistrer un check-in.
               </div>
             )}
             <div className="mlFormGrid">

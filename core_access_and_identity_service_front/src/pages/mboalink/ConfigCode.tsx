@@ -46,7 +46,7 @@ export default function ConfigCode() {
 
   const handleModify = async () => {
     if (!selectedHotelId) {
-      alert('Sélectionnez un hôtel')
+      alert('Sélectionnez un établissement')
       return
     }
 
@@ -99,7 +99,7 @@ export default function ConfigCode() {
 
         <div className="configCard">
           <div className="configSection">
-            <h3 className="sectionTitle">Hotel Selection</h3>
+            <h3 className="sectionTitle">Sélection de l'établissement</h3>
             <div className="configField">
               <label htmlFor="hotelId">Hotel</label>
               <select

@@ -325,7 +325,7 @@ export default function Dashboard() {
                 value={selectedHotelId}
                 onChange={(event) => setSelectedHotelId(event.target.value)}
               >
-                <option value={ALL_HOTELS}>Tous les hôtels</option>
+                <option value={ALL_HOTELS}>Tous les établissement(s)</option>
                 {hotelOptions.map((hotel) => (
                   <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
                 ))}

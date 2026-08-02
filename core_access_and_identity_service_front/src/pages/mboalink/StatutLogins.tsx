@@ -139,7 +139,7 @@ export default function StatutLogins() {
               value={hotelId}
               onChange={(e) => setHotelId(e.target.value)}
             >
-              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              <option value={ALL_HOTELS}>Tous les établissement(s)</option>
               {hotels.map((hotel) => (
                 <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
               ))}

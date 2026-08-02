@@ -166,7 +166,7 @@ export default function WifiCode() {
 
   // ── Création ──────────────────────────────────────────────
   const handleAddGuestPass = async (newPass) => {
-    if (!hasConcreteHotelScope(hotelId)) { alert('Sélectionnez un hôtel précis avant de créer un code'); return }
+    if (!hasConcreteHotelScope(hotelId)) { alert('Sélectionnez un établissement précis avant de créer un code'); return }
     try {
       const durationValue = newPass.duration === '' || newPass.duration === undefined
         ? undefined : Number(newPass.duration)
@@ -192,7 +192,7 @@ export default function WifiCode() {
   }
 
   const handleAddMassGuestPass = async (massData) => {
-    if (!hasConcreteHotelScope(hotelId)) { alert('Sélectionnez un hôtel précis avant de créer des codes'); return }
+    if (!hasConcreteHotelScope(hotelId)) { alert('Sélectionnez un établissement précis avant de créer des codes'); return }
     try {
       const durationValue = massData.duration === '' || massData.duration === undefined
         ? undefined : Number(massData.duration)
@@ -227,12 +227,12 @@ export default function WifiCode() {
           <h1 className="pageTitle">Guest WiFi Codes</h1>
           {isHotelIt && (
             <span className="hotelBadge">
-              Vue IT hôtel - accès clients
+              Vue IT établissement - accès clients
             </span>
           )}
           <p className="pageDescription">
             {isHotelIt
-                ? "Gérez les accès Wi-Fi clients de votre hôtel, avec un périmètre limité à votre établissement."
+                ? "Gérez les accès Wi-Fi clients de votre établissement, avec un périmètre limité à votre établissement."
               : "Les WiFi Codes permettent à vos invités d'accéder à Internet via MboaLink. Vous pouvez créer de nouveaux codes, ajuster la durée, le débit et le nombre d'utilisations, ou supprimer les codes existants à partir de cette liste."}
           </p>
         </div>
@@ -256,7 +256,7 @@ export default function WifiCode() {
               value={hotelId}
               onChange={(e) => setHotelId(e.target.value)}
             >
-              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              <option value={ALL_HOTELS}>Tous les établissement(s)</option>
               {hotels.map((hotel) => (
                 <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
               ))}
@@ -299,13 +299,13 @@ export default function WifiCode() {
 
         {!hotelId && !isLoading && (
           <div className="warningBanner">
-            Créez d'abord un hôtel dans Hotel Manager avant de générer des codes WiFi.
+            Créez d'abord un établissement dans Établissements avant de générer des codes WiFi.
           </div>
         )}
 
         {hotelId === ALL_HOTELS && !isLoading && (
           <div className="warningBanner">
-            Vue globale active : sélectionnez un hôtel précis pour créer de nouveaux codes WiFi.
+            Vue globale active : sélectionnez un établissement précis pour créer de nouveaux codes WiFi.
           </div>
         )}
 

@@ -127,7 +127,7 @@ export default function ConfigWifiModal({ isOpen, onClose, onSave, config }: Con
           <div className="modalTitle">
             <h2>Configuration WiFi - {config.hotelName}</h2>
             <p>
-              Paramétrez les accès réseau et le portail captif pour cet hôtel.
+              Paramétrez les accès réseau et le portail captif pour cet établissement.
             </p>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function ConfigWifiModal({ isOpen, onClose, onSave, config }: Con
                 type="text"
                 value={formData.ssid}
                 onChange={(e) => handleInputChange('ssid', e.target.value)}
-                placeholder="Ex: HotelName-Guest"
+                placeholder="Ex: Etablissement-Guest"
                 required
               />
             </div>
@@ -305,7 +305,7 @@ export default function ConfigWifiModal({ isOpen, onClose, onSave, config }: Con
 
               <div className="formRow">
                 <div className="formLabel">
-                  <label>Logo de l'Hôtel</label>
+                  <label>Logo de l'Établissement</label>
                   <p className="labelHelp">Image affichée sur la page de connexion</p>
                 </div>
                 <div className="logoUploadSection">
@@ -345,7 +345,7 @@ export default function ConfigWifiModal({ isOpen, onClose, onSave, config }: Con
                 <textarea
                   value={formData.captivePortal.welcomeMessage}
                   onChange={(e) => handleCaptivePortalChange('welcomeMessage', e.target.value)}
-                  placeholder="Ex: Bienvenue à l'Hôtel X..."
+                  placeholder="Ex: Bienvenue à l'Établissement X..."
                   rows="3"
                 />
               </div>

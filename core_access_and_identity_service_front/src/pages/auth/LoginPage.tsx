@@ -63,8 +63,8 @@ export default function LoginPage() {
             votre <span className="highlight">écosystème</span> Mboa.
           </h2>
           <p className="heroDescription">
-            MboaLink synchronise vos hôtels, gares routières et partenaires en une 
-            seule plateforme fluide, pensée pour l'Afrique et le monde.
+            MboaLink synchronise vos établissements, gares routières et partenaires en une
+seule plateforme fluide, pensée pour l'Afrique et le monde.
           </p>
 
           <div className="features">

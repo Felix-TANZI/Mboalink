@@ -201,7 +201,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
             ← RETOUR
           </button>
           <div className="modalTitle">
-            <h2>{hotel ? 'Modifier l\'Hôtel' : 'Ajouter un Hôtel'}</h2>
+            <h2>{hotel ? 'Modifier l\'Établissement' : 'Ajouter un Établissement'}</h2>
             <p>
               Renseignez les informations de l'établissement et configurez ses équipements.
             </p>
@@ -215,14 +215,14 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
 
             <div className="formRow">
               <div className="formLabel">
-                <label>Nom de l'Hôtel *</label>
+                <label>Nom de l'Établissement *</label>
                 <p className="labelHelp">Nom complet de l'établissement</p>
               </div>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Ex: Hôtel La Résidence - Douala"
+                placeholder="Ex: Établissement La Résidence - Douala"
                 required
               />
             </div>
@@ -276,7 +276,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
             <div className="formRow">
               <div className="formLabel">
                 <label>Site Web</label>
-                <p className="labelHelp">URL du site web de l'hôtel</p>
+                <p className="labelHelp">URL du site web de l'établissement</p>
               </div>
               <input
                 type="url"
@@ -294,7 +294,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Décrivez l'hôtel en quelques lignes..."
+                placeholder="Décrivez l'établissement en quelques lignes..."
                 rows="3"
               />
             </div>
@@ -433,7 +433,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
 
           {/* Équipements */}
           <section className="formSection">
-            <h3 className="sectionTitle">🎯 Équipements (Niveau Hôtel)</h3>
+            <h3 className="sectionTitle">🎯 Équipements (Niveau Établissement)</h3>
 
             <div className="formRow">
               <div className="formLabel">
@@ -471,7 +471,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
 
           {/* Photos */}
           <section className="formSection">
-            <h3 className="sectionTitle">📸 Photos de l'Hôtel</h3>
+            <h3 className="sectionTitle">📸 Photos de l'Établissement</h3>
 
             <div className="formRow">
               <div className="formLabel">
@@ -530,18 +530,18 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
 
         <div className="modalFooter">
           <button className="btn btnPrimary" onClick={handleSubmit}>
-            {hotel ? 'Sauvegarder les Modifications' : 'Ajouter l\'Hôtel'}
+            {hotel ? 'Sauvegarder les Modifications' : 'Ajouter l\'Établissement'}
           </button>
           <button className="btn btnSecondary" onClick={onClose}>
             Annuler
           </button>
           {hotel && (
             <button className="btn btnDanger" onClick={() => {
-              if (confirm('Supprimer cet hôtel définitivement ?')) {
+              if (confirm('Supprimer cet établissement définitivement ?')) {
                 onClose()
               }
             }}>
-              Supprimer l'Hôtel
+              Supprimer l'Établissement
             </button>
           )}
         </div>

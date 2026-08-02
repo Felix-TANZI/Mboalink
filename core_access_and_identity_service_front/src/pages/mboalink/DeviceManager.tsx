@@ -41,7 +41,7 @@ export default function DeviceManager() {
         setSelectedHotelId(defaultHotelId)
         return loadDevices(defaultHotelId)
       })
-      .catch((error) => alert((error as Error).message || 'Impossible de charger les hôtels'))
+      .catch((error) => alert((error as Error).message || 'Impossible de charger les établissement(s)'))
   }, [])
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function DeviceManager() {
             className="btn btnPrimary"
             onClick={() => setIsAddModalOpen(true)}
             disabled={!canCreateDevice}
-            title={!canCreateDevice ? 'Sélectionnez un hôtel précis pour ajouter un device' : undefined}
+            title={!canCreateDevice ? 'Sélectionnez un établissement précis pour ajouter un device' : undefined}
           >
             + Ajouter un device
           </button>
@@ -86,7 +86,7 @@ export default function DeviceManager() {
               value={selectedHotelId}
               onChange={(e) => setSelectedHotelId(e.target.value)}
             >
-              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              <option value={ALL_HOTELS}>Tous les établissement(s)</option>
               {hotels.map((hotel) => (
                 <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
               ))}

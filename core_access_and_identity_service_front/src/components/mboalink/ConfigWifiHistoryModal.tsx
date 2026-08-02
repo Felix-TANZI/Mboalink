@@ -27,7 +27,7 @@ export default function ConfigWifiHistoryModal({ isOpen, onClose, config }: Conf
       modifiedBy: 'Tech Support',
       action: 'Modification',
       changes: [
-        { field: 'SSID', oldValue: 'Hotel-Guest', newValue: 'LaResidence-Guest' },
+        { field: 'SSID', oldValue: 'Etablissement-Guest', newValue: 'LaResidence-Guest' },
         { field: 'Message Bienvenue', oldValue: 'Bienvenue', newValue: 'Bienvenue à La Résidence Douala' }
       ]
     },

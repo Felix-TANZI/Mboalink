@@ -234,8 +234,8 @@ export default function NetworkMap3D() {
     composer.addPass(new OutputPass())
 
     const hotelName = selectedHotelId === ALL_HOTELS
-      ? 'MboaLink Multi-hotels'
-      : hotels[0]?.name || 'Hotel MboaLink'
+      ? 'MboaLink multi-établissements'
+      : hotels[0]?.name || 'Établissement MboaLink'
     const hotelBase = new THREE.Vector3(-11, 1.2, 0)
     addNode(scene, {
       position: hotelBase,
@@ -368,7 +368,7 @@ export default function NetworkMap3D() {
         <div className="networkMapHeader">
           <div>
             <p className="networkMapEyebrow">Architecture reseau 3D</p>
-            <h1>{selectedHotelId === ALL_HOTELS ? 'Carte reseau multi-hotels' : "Carte reseau de l'hotel"}</h1>
+            <h1>{selectedHotelId === ALL_HOTELS ? 'Carte reseau multi-établissements' : "Carte reseau de l'établissement"}</h1>
             <span>Gateway, switchs, access points et clients actifs dans une vue interactive.</span>
           </div>
           {canChooseHotel && (
@@ -377,7 +377,7 @@ export default function NetworkMap3D() {
               value={selectedHotelId}
               onChange={(event) => setSelectedHotelId(event.target.value)}
             >
-              <option value={ALL_HOTELS}>Tous les hôtels</option>
+              <option value={ALL_HOTELS}>Tous les établissement(s)</option>
               {hotelOptions.map((hotel) => (
                 <option key={hotel.id} value={hotel.id}>{hotel.name}</option>
               ))}
@@ -396,7 +396,7 @@ export default function NetworkMap3D() {
           {loadError && <div className="networkMapNotice">{loadError}</div>}
           {renderError && (
             <div className="networkMapFallback">
-              <div className="fallbackNode hotel">Hotel</div>
+              <div className="fallbackNode hotel">Établissement</div>
               <div className="fallbackLine" />
               <div className="fallbackNode gateway">Gateway</div>
               <div className="fallbackLine" />
