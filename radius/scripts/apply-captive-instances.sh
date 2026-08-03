@@ -41,8 +41,8 @@ cd "$RADIUS_DIR"
 log "validating docker compose configuration"
 docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml config >/dev/null
 
-log "applying captive portal instances"
-docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml up -d --build
+log "applying captive portal instances and removing obsolete containers"
+docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml up -d --build --remove-orphans
 
 log "current captive portal services"
 docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml ps

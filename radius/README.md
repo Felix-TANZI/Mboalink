@@ -70,9 +70,9 @@ sudo systemctl status mboalink-captive-instances.service --no-pager
 sudo journalctl -u mboalink-captive-instances.service -n 80 --no-pager
 ```
 
-À partir de là, lorsqu'un portail est créé ou modifié dans MboaLink, le backend régénère le fichier compose et le serveur démarre automatiquement le nouveau conteneur. Le portail devient normalement accessible après quelques secondes sur son port dédié.
+À partir de là, lorsqu'un portail est créé, modifié ou supprimé dans MboaLink, le backend régénère le fichier compose et le serveur applique automatiquement l'état attendu. Le portail devient normalement accessible après quelques secondes sur son port dédié.
 
-Le script fourni est volontairement non destructif : il démarre et met à jour les instances déclarées, mais ne supprime pas automatiquement les anciens conteneurs orphelins. Pour supprimer physiquement une instance après suppression d'un portail, il faut exécuter une opération contrôlée avec `--remove-orphans`.
+Le script utilise `--remove-orphans` afin de retirer les anciennes instances Docker qui ne sont plus déclarées dans `docker-compose.captive-instances.yml`. C'est nécessaire lorsqu'un portail est renommé, supprimé ou recréé, car un ancien conteneur peut sinon continuer à occuper son port.
 
 Chaque service généré reçoit :
 
