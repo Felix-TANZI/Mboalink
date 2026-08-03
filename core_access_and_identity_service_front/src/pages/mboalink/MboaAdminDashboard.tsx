@@ -214,7 +214,7 @@ export default function MboaAdminDashboard() {
     )
   }, [users, query])
 
-  const filteredÉtablissements = useMemo(() => {
+  const filteredHotels = useMemo(() => {
     const q = query.trim().toLowerCase()
     return hotels.filter((hotel) =>
       `${hotel.name} ${hotel.city} ${hotel.address}`
