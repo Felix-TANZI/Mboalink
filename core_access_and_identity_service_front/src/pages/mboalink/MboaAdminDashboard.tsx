@@ -1008,11 +1008,20 @@ export default function MboaAdminDashboard() {
           <div className="mboaAdminTopActions">
             <div className="mboaAdminSearch">
               <Search size={16} />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher..." />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filtrer les listes..." />
             </div>
-            <button className="mboaAdminIconButton" type="button">
+            <button
+              className="mboaAdminIconButton"
+              type="button"
+              aria-label={`${unreadCount} notification${unreadCount !== 1 ? 's' : ''} non lue${unreadCount !== 1 ? 's' : ''}`}
+              title="Voir les notifications"
+              onClick={() => {
+                setActiveNotificationTab('inbox')
+                document.getElementById('admin-notifications')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+            >
               <Bell size={18} />
-              <span>{stats.users}</span>
+              {unreadCount > 0 && <span>{unreadCount}</span>}
             </button>
             <div className="mboaAdminProfile">
               <div className="mboaAdminAvatar">{initials(currentUser?.fullName || currentUser?.email || 'Admin')}</div>

@@ -147,6 +147,14 @@
   border-radius: 8px;
   background: #fff;
   color: #274466;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.mboaAdminIconButton:hover {
+  border-color: #f4c542;
+  color: #12223a;
+  transform: translateY(-1px);
 }
 
 .mboaAdminIconButton span {
@@ -844,7 +852,10 @@
   }
 
   .mboaAdminIconButton {
-    display: none;
+    width: 42px;
+    height: 42px;
+    grid-column: 2;
+    grid-row: 2;
   }
 
   .mboaAdminProfile {
