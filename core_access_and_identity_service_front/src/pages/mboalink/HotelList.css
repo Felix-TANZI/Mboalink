@@ -140,6 +140,15 @@
   font-weight: 700;
 }
 
+.portalPortList span a {
+  color: var(--mboa-blue);
+  text-decoration: none;
+}
+
+.portalPortList span a:hover {
+  text-decoration: underline;
+}
+
 .portalPortList b {
   color: var(--mboa-blue-dark);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

@@ -97,6 +97,11 @@ const defaultPortalForm = {
   ssid: '',
 }
 
+const getCaptivePortalUrl = (portal: NonNullable<HotelEntity['captivePortals']>[number]) => {
+  if (portal.captivePortalUrl) return portal.captivePortalUrl
+  return `${window.location.protocol}//${window.location.hostname}:${portal.port}/?portalId=${portal.id}&hotelId=${portal.hotelId}&ssid=${encodeURIComponent(portal.ssid)}`
+}
+
 const defaultNotificationForm = {
   title: '',
   message: '',
@@ -1063,7 +1068,9 @@ export default function MboaAdminDashboard() {
                           {(hotel.captivePortals || []).length > 0 ? (
                             hotel.captivePortals?.map((portal) => (
                               <span key={portal.id} className="mboaPortalPortItem">
-                                <span>{portal.name} <b>:{portal.port}</b></span>
+                                <a href={getCaptivePortalUrl(portal)} target="_blank" rel="noreferrer">
+                                  {portal.name} <b>:{portal.port}</b>
+                                </a>
                                 {portal.isDefault ? (
                                   <em>Principal</em>
                                 ) : (
@@ -1077,9 +1084,6 @@ export default function MboaAdminDashboard() {
                         </div>
                         <div className="mboaPortalActions">
                           <button type="button" onClick={() => openPortalForm(hotel)}>Créer</button>
-                          {hotel.captivePortalUrl && (
-                            <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
-                          )}
                         </div>
                       </div>
                     </td>

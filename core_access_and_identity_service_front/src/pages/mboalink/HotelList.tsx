@@ -30,6 +30,11 @@ const mapHotelFromApi = (hotel: Record<string, any>) => ({
   captivePortals: hotel.captivePortals || [],
 })
 
+const getCaptivePortalUrl = (portal: Record<string, any>) => {
+  if (portal.captivePortalUrl) return portal.captivePortalUrl
+  return `${window.location.protocol}//${window.location.hostname}:${portal.port}/?portalId=${portal.id}&hotelId=${portal.hotelId}&ssid=${encodeURIComponent(portal.ssid || '')}`
+}
+
 export default function HotelList() {
   const [hotels, setHotels] = useState<Array<Record<string, any>>>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -185,7 +190,9 @@ export default function HotelList() {
                   {(hotel.captivePortals || []).length > 0 ? (
                     hotel.captivePortals.map((portal) => (
                       <span key={portal.id}>
-                        {portal.name} <b>:{portal.port}</b>
+                        <a href={getCaptivePortalUrl(portal)} target="_blank" rel="noreferrer">
+                          {portal.name} <b>:{portal.port}</b>
+                        </a>
                       </span>
                     ))
                   ) : (
@@ -258,7 +265,9 @@ export default function HotelList() {
                         {(hotel.captivePortals || []).length > 0 ? (
                           hotel.captivePortals.map((portal) => (
                             <span key={portal.id}>
-                              {portal.name} <b>:{portal.port}</b>
+                              <a href={getCaptivePortalUrl(portal)} target="_blank" rel="noreferrer">
+                                {portal.name} <b>:{portal.port}</b>
+                              </a>
                             </span>
                           ))
                         ) : (

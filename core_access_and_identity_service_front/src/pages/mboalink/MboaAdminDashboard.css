@@ -439,8 +439,18 @@
   font-weight: 700;
 }
 
-.mboaPortalPortItem span {
+.mboaPortalPortItem span,
+.mboaPortalPortItem a {
   min-width: 0;
+}
+
+.mboaPortalPortItem a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.mboaPortalPortItem a:hover {
+  text-decoration: underline;
 }
 
 .mboaPortalPortList b {
