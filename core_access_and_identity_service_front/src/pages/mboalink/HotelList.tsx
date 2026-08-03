@@ -181,6 +181,17 @@ export default function HotelList() {
                 <div className="portalPortValue">
                   {hotel.captivePortalCount} portail{hotel.captivePortalCount > 1 ? 's' : ''}
                 </div>
+                <div className="portalPortList">
+                  {(hotel.captivePortals || []).length > 0 ? (
+                    hotel.captivePortals.map((portal) => (
+                      <span key={portal.id}>
+                        {portal.name} <b>:{portal.port}</b>
+                      </span>
+                    ))
+                  ) : (
+                    <span>Principal <b>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Automatique'}</b></span>
+                  )}
+                </div>
                 <div className="portalCardActions">
                   <button type="button" onClick={() => handleViewDetails(hotel)}>Gérer</button>
                   {hotel.captivePortalUrl && (
@@ -242,7 +253,18 @@ export default function HotelList() {
                   </td>
                   <td>
                     <div className="hotelPortalCell">
-                      <strong>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</strong>
+                      <strong>{hotel.captivePortalCount} portail{hotel.captivePortalCount > 1 ? 's' : ''}</strong>
+                      <div className="portalPortList compact">
+                        {(hotel.captivePortals || []).length > 0 ? (
+                          hotel.captivePortals.map((portal) => (
+                            <span key={portal.id}>
+                              {portal.name} <b>:{portal.port}</b>
+                            </span>
+                          ))
+                        ) : (
+                          <span>Principal <b>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Non assigné'}</b></span>
+                        )}
+                      </div>
                       {hotel.captivePortalUrl && (
                         <a href={hotel.captivePortalUrl} target="_blank" rel="noreferrer">Ouvrir</a>
                       )}

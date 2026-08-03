@@ -122,6 +122,39 @@
   font-weight: 900;
 }
 
+.portalPortList {
+  display: grid;
+  gap: 5px;
+}
+
+.portalPortList span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #fff;
+  color: #536275;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.portalPortList b {
+  color: var(--mboa-blue-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+.portalPortList.compact {
+  max-width: 190px;
+}
+
+.portalPortList.compact span {
+  padding: 4px 7px;
+  background: #f3f7fb;
+}
+
 .portalPortCard a,
 .hotelPortalCell a {
   color: var(--mboa-blue);

@@ -173,6 +173,15 @@ async function updateCaptivePortal(hotelId, portalId, data, reqMeta) {
     payload: nextData,
   });
 
+  triggerCaptiveInstanceSync({
+    action: 'update',
+    portalId: portal.id,
+    hotelId,
+    port: portal.port,
+    ssid: portal.ssid,
+    status: portal.status,
+  });
+
   return withPortalUrl(portal);
 }
 
@@ -202,6 +211,14 @@ async function deleteCaptivePortal(hotelId, portalId, reqMeta) {
     hotelId,
     payload: { name: existing.name, ssid: existing.ssid, port: existing.port },
     severity: 'WARNING',
+  });
+
+  triggerCaptiveInstanceSync({
+    action: 'delete',
+    portalId: existing.id,
+    hotelId,
+    port: existing.port,
+    ssid: existing.ssid,
   });
 
   return { deleted: true };

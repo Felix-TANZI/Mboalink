@@ -482,6 +482,22 @@ export default function MboaAdminDashboard() {
     }
   }
 
+  const deleteCaptivePortalForHotel = async (hotel: HotelEntity, portal: NonNullable<HotelEntity['captivePortals']>[number]) => {
+    if (portal.isDefault) {
+      alert('Le portail principal ne peut pas être supprimé.')
+      return
+    }
+
+    if (!confirm(`Supprimer le portail ${portal.name} et retirer son instance dédiée ?`)) return
+
+    try {
+      await mboalinkService.deleteCaptivePortal(hotel.id, portal.id)
+      await loadData()
+    } catch (error) {
+      alert((error as Error).message || 'Suppression du portail impossible')
+    }
+  }
+
   const handleNotificationRecipientToggle = (userId: string) => {
     setNotificationForm((prev) => ({
       ...prev,
@@ -1043,6 +1059,22 @@ export default function MboaAdminDashboard() {
                     <td>
                       <div className="mboaPortalCell">
                         <strong>{hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0} portail{(hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0) > 1 ? 's' : ''}</strong>
+                        <div className="mboaPortalPortList">
+                          {(hotel.captivePortals || []).length > 0 ? (
+                            hotel.captivePortals?.map((portal) => (
+                              <span key={portal.id} className="mboaPortalPortItem">
+                                <span>{portal.name} <b>:{portal.port}</b></span>
+                                {portal.isDefault ? (
+                                  <em>Principal</em>
+                                ) : (
+                                  <button type="button" onClick={() => deleteCaptivePortalForHotel(hotel, portal)}>Supprimer</button>
+                                )}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="mboaPortalPortItem"><span>Principal <b>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Automatique'}</b></span></span>
+                          )}
+                        </div>
                         <div className="mboaPortalActions">
                           <button type="button" onClick={() => openPortalForm(hotel)}>Créer</button>
                           {hotel.captivePortalUrl && (
