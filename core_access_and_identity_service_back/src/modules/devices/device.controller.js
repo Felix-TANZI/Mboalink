@@ -1,6 +1,6 @@
 const asyncHandler = require('../../utils/async-handler');
 const { success } = require('../../utils/api-response');
-const { listDevices, listDeviceMacAddresses, getDeviceByMac, createDevice, updateDevice, restartDevice, addMetric, listMetrics } = require('./device.service');
+const { listDevices, listDeviceMacAddresses, getDeviceByMac, createDevice, updateDevice, deleteDevice, restartDevice, addMetric, listMetrics } = require('./device.service');
 
 const getDevices = asyncHandler(async (req, res) => {
   const data = await listDevices(req.query, req.user);
@@ -29,6 +29,16 @@ const postDevice = asyncHandler(async (req, res) => {
 
 const patchDevice = asyncHandler(async (req, res) => {
   const data = await updateDevice(req.params.deviceId, req.body, {
+    requestId: req.context.requestId,
+    actorUserId: req.user?.sub,
+    actorRole: req.user?.role,
+    actorHotelId: req.user?.hotelId,
+  });
+  res.json(success(data));
+});
+
+const removeDevice = asyncHandler(async (req, res) => {
+  const data = await deleteDevice(req.params.deviceId, {
     requestId: req.context.requestId,
     actorUserId: req.user?.sub,
     actorRole: req.user?.role,
@@ -66,6 +76,7 @@ module.exports = {
   getDeviceByMacAddress,
   postDevice,
   patchDevice,
+  removeDevice,
   postRestartDevice,
   postMetric,
   getMetrics,

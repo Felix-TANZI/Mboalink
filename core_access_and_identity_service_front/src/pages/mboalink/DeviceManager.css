@@ -33,8 +33,17 @@
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
+  margin-right: 6px;
 }
 
 .actionBtn:hover {
   background: #0b3b73;
+}
+
+.actionBtn.deleteBtn {
+  background: #dc2626;
+}
+
+.actionBtn.deleteBtn:hover {
+  background: #b91c1c;
 }

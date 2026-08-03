@@ -111,13 +111,14 @@ export default function RoomList() {
   }
 
   const handleDeleteRoom = async (roomId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette chambre ?')) {
-      try {
-        await mboalinkService.deleteRoom(roomId)
-        setRooms(prev => prev.filter(r => r.id !== roomId))
-      } catch (error) {
-        alert((error as Error).message || 'Suppression impossible')
-      }
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette chambre ?')) return false
+    try {
+      await mboalinkService.deleteRoom(roomId)
+      setRooms(prev => prev.filter(r => r.id !== roomId))
+      return true
+    } catch (error) {
+      alert((error as Error).message || 'Suppression impossible')
+      return false
     }
   }
 
@@ -345,6 +346,13 @@ export default function RoomList() {
           setEditingRoom(null)
         }}
         onSave={handleSaveRoom}
+        onDelete={async (room) => {
+          const deleted = await handleDeleteRoom(room.id)
+          if (deleted) {
+            setIsAddModalOpen(false)
+            setEditingRoom(null)
+          }
+        }}
         room={editingRoom}
         hotels={hotels}
       />

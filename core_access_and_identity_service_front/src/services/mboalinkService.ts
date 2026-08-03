@@ -535,6 +535,11 @@ export const mboalinkService = {
       body: payload,
     });
   },
+  deleteDevice(deviceId: string) {
+    return authedRequest<{ deleted: boolean }>(`/devices/${deviceId}`, {
+      method: "DELETE",
+    });
+  },
   restartDevice(deviceId: string) {
     return authedRequest<{ accepted: boolean }>(
       `/devices/${deviceId}/restart`,

@@ -84,13 +84,14 @@ export default function HotelList() {
   }
 
   const handleDeleteHotel = async (hotelId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')) {
-      try {
-        await mboalinkService.deleteHotel(hotelId)
-        setHotels(prev => prev.filter(h => h.id !== hotelId))
-      } catch (error) {
-        alert((error as Error).message || 'Suppression impossible')
-      }
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')) return false
+    try {
+      await mboalinkService.deleteHotel(hotelId)
+      setHotels(prev => prev.filter(h => h.id !== hotelId))
+      return true
+    } catch (error) {
+      alert((error as Error).message || 'Suppression impossible')
+      return false
     }
   }
 
@@ -352,6 +353,13 @@ export default function HotelList() {
           setEditingHotel(null)
         }}
         onSave={handleSaveHotel}
+        onDelete={async (hotel) => {
+          const deleted = await handleDeleteHotel(hotel.id)
+          if (deleted) {
+            setIsEditModalOpen(false)
+            setEditingHotel(null)
+          }
+        }}
         hotel={editingHotel}
       />
 

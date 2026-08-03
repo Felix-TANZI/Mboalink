@@ -27,7 +27,9 @@ import { useNavigate } from 'react-router-dom'
 import {
   mboalinkService,
   type DeviceEntity,
+  type GuestPassEntity,
   type HotelEntity,
+  type LoginSessionEntity,
   type NotificationEntity,
   type NotificationPriority,
   type NotificationRecipientEntity,
@@ -153,6 +155,8 @@ export default function MboaAdminDashboard() {
   const [users, setUsers] = useState<UserEntity[]>([])
   const [hotels, setHotels] = useState<HotelEntity[]>([])
   const [devices, setDevices] = useState<DeviceEntity[]>([])
+  const [guestPasses, setGuestPasses] = useState<GuestPassEntity[]>([])
+  const [loginSessions, setLoginSessions] = useState<LoginSessionEntity[]>([])
   const [query, setQuery] = useState('')
   const [hotelFilter, setHotelFilter] = useState('all')
   const [deviceStatusFilter, setDeviceStatusFilter] = useState('all')
@@ -180,6 +184,8 @@ export default function MboaAdminDashboard() {
         userList,
         hotelList,
         deviceList,
+        guestPassList,
+        sessionList,
         inboxList,
         sentList,
         recipientList,
@@ -187,6 +193,8 @@ export default function MboaAdminDashboard() {
         mboalinkService.listUsers(),
         mboalinkService.listHotels(),
         mboalinkService.listDevices(),
+        mboalinkService.listGuestPasses(),
+        mboalinkService.listLoginSessions(),
         mboalinkService.listNotificationsInbox(),
         mboalinkService.listSentNotifications(),
         mboalinkService.listNotificationRecipients(),
@@ -194,6 +202,8 @@ export default function MboaAdminDashboard() {
       setUsers(userList)
       setHotels(hotelList)
       setDevices(deviceList)
+      setGuestPasses(guestPassList)
+      setLoginSessions(sessionList)
       setInbox(inboxList)
       setSent(sentList)
       setRecipients(recipientList)
@@ -240,13 +250,23 @@ export default function MboaAdminDashboard() {
 
   const stats = useMemo(() => {
     const onlineDevices = devices.filter((device) => device.status === 'ONLINE').length
+    const now = new Date()
+    const activeGuestPasses = guestPasses.filter((pass) => {
+      if (pass.isRevoked) return false
+      if (pass.expiryAt && new Date(pass.expiryAt) <= now) return false
+      return pass.maxUses <= 0 || pass.uses < pass.maxUses
+    }).length
+    const activeSessions = loginSessions.filter((session) => session.status === 'ONLINE').length
     return {
       users: users.length,
       hotels: hotels.length,
       devices: devices.length,
       onlineDevices,
+      activeGuestPasses,
+      activeSessions,
+      sessions: loginSessions.length,
     }
-  }, [users, hotels, devices])
+  }, [users, hotels, devices, guestPasses, loginSessions])
 
   const filteredInbox = useMemo(() => {
     const q = notificationSearch.trim().toLowerCase()
@@ -511,6 +531,17 @@ export default function MboaAdminDashboard() {
       await loadData()
     } catch (error) {
       alert((error as Error).message || 'Suppression du portail impossible')
+    }
+  }
+
+  const deleteDevice = async (device: DeviceEntity) => {
+    const label = device.model || device.serialNumber || device.macAddress;
+    if (!confirm(`Supprimer l'équipement ${label} ?`)) return;
+    try {
+      await mboalinkService.deleteDevice(device.id);
+      await loadData();
+    } catch (error) {
+      alert((error as Error).message || 'Suppression équipement impossible');
     }
   }
 
@@ -1200,7 +1231,7 @@ export default function MboaAdminDashboard() {
                     <td>{device.localIp || '-'}</td>
                     <td><span className={`mboaStatusBadge ${device.status.toLowerCase()}`}>{device.status === 'ONLINE' ? 'En ligne' : device.status === 'UNSTABLE' ? 'Instable' : 'Hors ligne'}</span></td>
                     <td>{formatDate(device.lastHeartbeatAt)}</td>
-                    <td><RowActions onEdit={() => editDevice(device)} onDelete={() => alert('Suppression équipement à valider côté backend.')} /></td>
+                    <td><RowActions onEdit={() => editDevice(device)} onDelete={() => deleteDevice(device)} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -1233,9 +1264,9 @@ export default function MboaAdminDashboard() {
         <section id="codes" className="mboaAdminUtilitySection">
           <PanelHeader title="Codes WiFi" subtitle="Pilotage global des accès clients par établissement" actionLabel="Voir les codes" onAction={() => setHotelFilter('all')} />
           <div className="mboaUtilityGrid">
-            <UtilityCard icon={<KeyRound size={18} />} title="Codes actifs" value={`${stats.users}`} detail="Les codes restent administrés depuis les établissement(s) concernés." />
+            <UtilityCard icon={<KeyRound size={18} />} title="Codes actifs" value={`${stats.activeGuestPasses}`} detail="Codes WiFi actifs, non expirés et non révoqués." />
             <UtilityCard icon={<Hotel size={18} />} title="Filtrage établissement" value={hotels.length ? 'Disponible' : 'À configurer'} detail="Le super admin conserve la vue globale et peut filtrer par établissement." />
-            <UtilityCard icon={<ShieldCheck size={18} />} title="Contrôle" value="Admin" detail="Création, révocation et suivi seront consolidés ici." />
+            <UtilityCard icon={<ShieldCheck size={18} />} title="Contrôle" value={`${guestPasses.length}`} detail="Codes créés et suivis via l'API MboaLink." />
           </div>
         </section>
 
@@ -1244,7 +1275,7 @@ export default function MboaAdminDashboard() {
           <div className="mboaUtilityGrid">
             <UtilityCard icon={<Plug size={18} />} title="Équipements en ligne" value={String(stats.onlineDevices)} detail="Indicateur réseau disponible depuis les équipements remontés." />
             <UtilityCard icon={<Wifi size={18} />} title="Établissements couverts" value={String(stats.hotels)} detail="Les connexions seront filtrables par établissement dans cette section." />
-            <UtilityCard icon={<FileClock size={18} />} title="Historique" value="Prévu" detail="Journal des sessions et expirations à consolider côté API." />
+            <UtilityCard icon={<FileClock size={18} />} title="Historique" value={String(stats.sessions)} detail={`${stats.activeSessions} session(s) actuellement en ligne.`} />
           </div>
         </section>
 
@@ -1494,8 +1525,8 @@ export default function MboaAdminDashboard() {
           <PanelHeader title="Intégrations" subtitle="Services connectés à MboaLink" actionLabel="Tester" onAction={() => alert('Tests d’intégration à connecter aux endpoints de santé.')} />
           <div className="mboaUtilityGrid">
             <UtilityCard icon={<Database size={18} />} title="Swagger API" value="Disponible" detail="Documentation backend accessible via /api-docs." />
-            <UtilityCard icon={<Wifi size={18} />} title="FreeRADIUS" value="En cours" detail="Intégration réseau à stabiliser avec l'équipe radius." />
-            <UtilityCard icon={<Plug size={18} />} title="Portail captif" value="Actif" detail="Authentification client par UUID, code WiFi, nom et chambre." />
+            <UtilityCard icon={<Wifi size={18} />} title="FreeRADIUS" value={stats.devices ? 'Actif' : 'À connecter'} detail={`${stats.devices} équipement(s) réseau déclaré(s) dans MboaLink.`} />
+            <UtilityCard icon={<Plug size={18} />} title="Portail captif" value={String(hotels.reduce((total, hotel) => total + (hotel.captivePortalCount || hotel.captivePortals?.length || 0), 0))} detail="Instances captives déclarées par établissement et SSID." />
           </div>
         </section>
 

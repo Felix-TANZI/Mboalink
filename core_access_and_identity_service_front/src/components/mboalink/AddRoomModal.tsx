@@ -6,6 +6,7 @@ type AddRoomModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: Record<string, unknown>) => void;
+  onDelete?: (room: Record<string, any>) => void;
   room?: Record<string, any> | null;
   hotels: Array<Record<string, any>>;
 };
@@ -19,8 +20,8 @@ function fileToDataUrl(file: File) {
   })
 }
 
-export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: AddRoomModalProps) {
-  // Equipment Catalog (normalement vient de l'API)
+export default function AddRoomModal({ isOpen, onClose, onSave, onDelete, room, hotels }: AddRoomModalProps) {
+  // Local equipment choices used by the room form.
   const equipmentCatalog = [
     'Smart TV 55"',
     'Smart TV 50"',
@@ -434,9 +435,7 @@ export default function AddRoomModal({ isOpen, onClose, onSave, room, hotels }: 
           </button>
           {room && room.id && (
             <button className="btn btnDanger" onClick={() => {
-              if (confirm('Supprimer cette chambre définitivement ?')) {
-                onClose()
-              }
+              onDelete?.(room)
             }}>
               Supprimer la Chambre
             </button>

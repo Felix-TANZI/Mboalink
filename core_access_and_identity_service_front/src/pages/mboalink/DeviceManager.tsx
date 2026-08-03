@@ -61,6 +61,17 @@ export default function DeviceManager() {
     )
   }, [devices, searchQuery])
 
+  const handleDeleteDevice = async (device: Record<string, any>) => {
+    const label = device.model || device.serialNumber || device.macAddress
+    if (!confirm(`Supprimer l'équipement ${label} ?`)) return
+    try {
+      await mboalinkService.deleteDevice(device.id)
+      await loadDevices(selectedHotelId)
+    } catch (error) {
+      alert((error as Error).message || 'Suppression équipement impossible')
+    }
+  }
+
   return (
     <Layout activePage="DEVICE MANAGER" activeSubPage="">
       <div className="deviceManagerPage">
@@ -147,6 +158,12 @@ export default function DeviceManager() {
                       onClick={() => mboalinkService.restartDevice(device.id).then(() => loadDevices(selectedHotelId))}
                     >
                       Redémarrer
+                    </button>
+                    <button
+                      className="actionBtn deleteBtn"
+                      onClick={() => handleDeleteDevice(device)}
+                    >
+                      Supprimer
                     </button>
                   </td>
                 </tr>

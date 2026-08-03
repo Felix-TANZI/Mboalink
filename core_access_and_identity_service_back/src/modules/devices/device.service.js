@@ -149,6 +149,36 @@ async function updateDevice(deviceId, payload, reqMeta) {
   return device;
 }
 
+async function deleteDevice(deviceId, reqMeta) {
+  const existing = await prisma.device.findUnique({ where: { id: deviceId } });
+  if (!existing) {
+    const err = new Error('Device not found');
+    err.status = 404;
+    throw err;
+  }
+  ensureCanManageHotel(existing.hotelId, reqMeta);
+
+  await prisma.device.delete({ where: { id: deviceId } });
+
+  await writeAuditLog({
+    requestId: reqMeta.requestId,
+    eventType: 'device.lifecycle',
+    entityType: 'device',
+    entityId: existing.id,
+    action: 'delete',
+    actorUserId: reqMeta.actorUserId,
+    hotelId: existing.hotelId,
+    payload: {
+      macAddress: existing.macAddress,
+      model: existing.model,
+      zone: existing.zone,
+    },
+    severity: 'WARNING',
+  });
+
+  return { deleted: true };
+}
+
 async function restartDevice(deviceId, reqMeta) {
   const existing = await prisma.device.findUnique({ where: { id: deviceId } });
   if (!existing) {
@@ -279,6 +309,7 @@ module.exports = {
   getDeviceByMac,
   createDevice,
   updateDevice,
+  deleteDevice,
   restartDevice,
   addMetric,
   heartbeatOnlineDevices,

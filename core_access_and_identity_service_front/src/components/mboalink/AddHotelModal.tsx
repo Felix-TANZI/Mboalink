@@ -6,6 +6,7 @@ type AddHotelModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: Record<string, unknown>) => void;
+  onDelete?: (hotel: Record<string, any>) => void;
   hotel?: Record<string, any> | null;
 };
 
@@ -18,7 +19,7 @@ function fileToDataUrl(file: File) {
   })
 }
 
-export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHotelModalProps) {
+export default function AddHotelModal({ isOpen, onClose, onSave, onDelete, hotel }: AddHotelModalProps) {
   const [formData, setFormData] = useState<Record<string, any>>({
     name: '',
     city: '',
@@ -573,9 +574,7 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
           </button>
           {hotel && (
             <button className="btn btnDanger" onClick={() => {
-              if (confirm('Supprimer cet établissement définitivement ?')) {
-                onClose()
-              }
+              onDelete?.(hotel)
             }}>
               Supprimer l'Établissement
             </button>
