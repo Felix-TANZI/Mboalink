@@ -30,6 +30,8 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
     latitude: '',
     longitude: '',
     description: '',
+    siteType: 'HOTEL',
+    primarySsid: '',
     rooms: 0,
     floors: 1,
     status: 'Actif',
@@ -54,6 +56,8 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
         latitude: hotel.latitude || '',
         longitude: hotel.longitude || '',
         description: hotel.description || '',
+        siteType: hotel.siteType || 'HOTEL',
+        primarySsid: hotel.primarySsid || hotel.wifiConfig?.ssid || hotel.captivePortals?.[0]?.ssid || '',
         rooms: hotel.rooms || 0,
         floors: hotel.floors || 1,
         status: hotel.status || 'Actif',
@@ -76,6 +80,8 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
         latitude: '',
         longitude: '',
         description: '',
+        siteType: 'HOTEL',
+        primarySsid: '',
         rooms: 0,
         floors: 1,
         status: 'Actif',
@@ -145,8 +151,8 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
   }
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.city || !formData.contact || !formData.address) {
-      alert('Veuillez remplir tous les champs requis (Nom, Ville, Adresse, Contact)')
+    if (!formData.name || !formData.city || !formData.contact || !formData.address || !formData.primarySsid) {
+      alert('Veuillez remplir tous les champs requis (Nom, Ville, Adresse, Contact, SSID principal)')
       return
     }
 
@@ -229,6 +235,34 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
 
             <div className="formRow">
               <div className="formLabel">
+                <label>Type de site *</label>
+                <p className="labelHelp">Hôtel garde l'accès nom client + chambre. Établissement utilise le code UUID uniquement par défaut.</p>
+              </div>
+              <select
+                value={formData.siteType}
+                onChange={(e) => handleInputChange('siteType', e.target.value)}
+              >
+                <option value="HOTEL">Hôtel</option>
+                <option value="ESTABLISHMENT">Établissement</option>
+              </select>
+            </div>
+
+            <div className="formRow">
+              <div className="formLabel">
+                <label>SSID principal *</label>
+                <p className="labelHelp">Nom du Wi-Fi visible par les utilisateurs, ex : OBEN CLIENT.</p>
+              </div>
+              <input
+                type="text"
+                value={formData.primarySsid}
+                onChange={(e) => handleInputChange('primarySsid', e.target.value)}
+                placeholder="Ex: OBEN CLIENT"
+                required
+              />
+            </div>
+
+            <div className="formRow">
+              <div className="formLabel">
                 <label>Ville *</label>
               </div>
               <input
@@ -299,17 +333,19 @@ export default function AddHotelModal({ isOpen, onClose, onSave, hotel }: AddHot
               />
             </div>
 
-            <div className="formRow">
-              <div className="formLabel">
-                <label>Nombre de Chambres</label>
+            {formData.siteType === 'HOTEL' && (
+              <div className="formRow">
+                <div className="formLabel">
+                  <label>Nombre de Chambres</label>
+                </div>
+                <input
+                  type="number"
+                  value={formData.rooms}
+                  onChange={(e) => handleInputChange('rooms', Number(e.target.value))}
+                  min="0"
+                />
               </div>
-              <input
-                type="number"
-                value={formData.rooms}
-                onChange={(e) => handleInputChange('rooms', Number(e.target.value))}
-                min="0"
-              />
-            </div>
+            )}
 
             <div className="formRow">
               <div className="formLabel">

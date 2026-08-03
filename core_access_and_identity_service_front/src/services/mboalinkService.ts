@@ -14,6 +14,7 @@ export interface CaptivePortalEntity {
   ssid: string;
   port: number;
   status: "ACTIVE" | "INACTIVE";
+  authMode: "HOTEL_GUEST" | "UUID_ONLY";
   isDefault: boolean;
   captivePortalUrl?: string | null;
   createdAt: string;
@@ -36,6 +37,11 @@ export interface HotelEntity {
   amenities: string[];
   photos: Array<{ url: string; isMain?: boolean; name?: string }>;
   status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
+  siteType: "HOTEL" | "ESTABLISHMENT";
+  primarySsid?: string;
+  wifiConfig?: {
+    ssid?: string;
+  } | null;
   captivePortalPort?: number | null;
   captivePortalUrl?: string | null;
   captivePortalCount?: number;
@@ -379,13 +385,13 @@ export const mboalinkService = {
   listCaptivePortals(hotelId: string) {
     return authedRequest<CaptivePortalEntity[]>(`/hotels/${hotelId}/captive-portals`);
   },
-  createCaptivePortal(hotelId: string, payload: Pick<CaptivePortalEntity, "name" | "ssid"> & { status?: "ACTIVE" | "INACTIVE" }) {
+  createCaptivePortal(hotelId: string, payload: Pick<CaptivePortalEntity, "name" | "ssid"> & { status?: "ACTIVE" | "INACTIVE"; authMode?: "HOTEL_GUEST" | "UUID_ONLY" }) {
     return authedRequest<CaptivePortalEntity>(`/hotels/${hotelId}/captive-portals`, {
       method: "POST",
       body: payload,
     });
   },
-  updateCaptivePortal(hotelId: string, portalId: string, payload: Partial<Pick<CaptivePortalEntity, "name" | "ssid" | "status">>) {
+  updateCaptivePortal(hotelId: string, portalId: string, payload: Partial<Pick<CaptivePortalEntity, "name" | "ssid" | "status" | "authMode">>) {
     return authedRequest<CaptivePortalEntity>(`/hotels/${hotelId}/captive-portals/${portalId}`, {
       method: "PATCH",
       body: payload,

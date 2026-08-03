@@ -5,6 +5,7 @@ const captiveAuthSchema = z.object({
   uuid: z.string().min(1).max(64).optional(),
   clientName: z.string().max(120).optional(),
   roomNumber: z.string().max(80).optional(),
+  portalId: z.string().max(80).optional(),
   hotelId: z.string().max(80).optional(),
   ssid: z.string().max(120).optional(),
   ipAddress: z.string().max(64).optional(),

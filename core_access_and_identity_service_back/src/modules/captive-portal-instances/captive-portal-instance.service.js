@@ -15,6 +15,10 @@ function defaultSsidForHotel(hotel) {
   return `${normalizeText(hotel.name).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim()} CLIENT`.trim();
 }
 
+function defaultAuthModeForHotel(hotel) {
+  return hotel.siteType === 'ESTABLISHMENT' ? 'UUID_ONLY' : 'HOTEL_GUEST';
+}
+
 function ensureCanManageHotel(hotelId, reqMetaOrUser = {}) {
   const role = reqMetaOrUser.actorRole || reqMetaOrUser.role;
   const scopedHotel = reqMetaOrUser.actorHotelId || reqMetaOrUser.hotelId;
@@ -72,14 +76,16 @@ async function ensureDefaultCaptivePortal(hotelId, options = {}) {
 
   const port = hotel.captivePortalPort || await allocateCaptivePortalPort();
   const ssid = normalizeSsid(options.ssid) || defaultSsidForHotel(hotel);
+  const authMode = options.authMode || defaultAuthModeForHotel(hotel);
 
   const portal = await prisma.captivePortalInstance.create({
     data: {
       hotelId,
-      name: options.name || 'Client',
+      name: options.name || (hotel.siteType === 'ESTABLISHMENT' ? 'Principal' : 'Client'),
       ssid,
       port,
       status: 'ACTIVE',
+      authMode,
       isDefault: true,
     },
   });
@@ -93,7 +99,7 @@ async function ensureDefaultCaptivePortal(hotelId, options = {}) {
 
 async function createCaptivePortal(hotelId, data, reqMeta) {
   ensureCanManageHotel(hotelId, reqMeta);
-  await getHotelOrThrow(hotelId);
+  const hotel = await getHotelOrThrow(hotelId);
 
   const ssid = normalizeSsid(data.ssid);
   const existingPortal = await prisma.captivePortalInstance.findFirst({
@@ -114,6 +120,7 @@ async function createCaptivePortal(hotelId, data, reqMeta) {
       ssid,
       port,
       status: data.status || 'ACTIVE',
+      authMode: data.authMode || defaultAuthModeForHotel(hotel),
       isDefault: false,
     },
   });
@@ -126,7 +133,7 @@ async function createCaptivePortal(hotelId, data, reqMeta) {
     action: 'create',
     actorUserId: reqMeta.actorUserId,
     hotelId,
-    payload: { name: portal.name, ssid: portal.ssid, port: portal.port },
+    payload: { name: portal.name, ssid: portal.ssid, port: portal.port, authMode: portal.authMode },
   });
 
   triggerCaptiveInstanceSync({
@@ -153,6 +160,7 @@ async function updateCaptivePortal(hotelId, portalId, data, reqMeta) {
     name: data.name !== undefined ? normalizeText(data.name) : undefined,
     ssid: data.ssid !== undefined ? normalizeSsid(data.ssid) : undefined,
     status: data.status || undefined,
+    authMode: data.authMode || undefined,
   };
 
   Object.keys(nextData).forEach((key) => nextData[key] === undefined && delete nextData[key]);
@@ -180,6 +188,7 @@ async function updateCaptivePortal(hotelId, portalId, data, reqMeta) {
     port: portal.port,
     ssid: portal.ssid,
     status: portal.status,
+    authMode: portal.authMode,
   });
 
   return withPortalUrl(portal);

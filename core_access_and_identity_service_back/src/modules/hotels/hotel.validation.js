@@ -1,6 +1,7 @@
 const { z } = require('zod');
 
 const hotelStatus = z.enum(['ACTIVE', 'MAINTENANCE', 'INACTIVE']);
+const siteType = z.enum(['HOTEL', 'ESTABLISHMENT']);
 
 const photoSchema = z.object({
   url: z.string().min(1),
@@ -23,6 +24,8 @@ const createHotelSchema = z.object({
   amenities: z.array(z.string()).default([]),
   photos: z.array(photoSchema).default([]),
   status: hotelStatus.default('ACTIVE'),
+  siteType: siteType.default('HOTEL'),
+  primarySsid: z.string().min(2).max(120).optional(),
   captivePortalPort: z.number().int().positive().max(65535).optional(),
 });
 

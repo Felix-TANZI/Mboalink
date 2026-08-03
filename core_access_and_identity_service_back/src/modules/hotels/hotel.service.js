@@ -77,6 +77,7 @@ function withCaptivePortalAccess(hotel) {
     captivePortals: portals,
     captivePortalCount: hotel._count?.captivePortals ?? portals.length,
     captivePortalPort: port || null,
+    primarySsid: hotel.wifiConfig?.ssid || ssid || null,
     captivePortalUrl: defaultPortal?.captivePortalUrl || buildCaptivePortalUrl(port, {
       hotelId: hotel.id,
       ssid,
@@ -86,7 +87,10 @@ function withCaptivePortalAccess(hotel) {
 
 async function createHotel(data, reqMeta) {
   const captivePortalPort = await allocateCaptivePortalPort(data.captivePortalPort);
-  const { captivePortalPort: _ignoredPort, ...hotelData } = data;
+  const { captivePortalPort: _ignoredPort, primarySsid, ...hotelData } = data;
+  const siteType = hotelData.siteType || 'HOTEL';
+  const defaultPortalName = siteType === 'ESTABLISHMENT' ? 'Principal' : 'Client';
+  const defaultAuthMode = siteType === 'ESTABLISHMENT' ? 'UUID_ONLY' : 'HOTEL_GUEST';
 
   const hotel = await prisma.hotel.create({
     data: {
@@ -114,7 +118,20 @@ async function createHotel(data, reqMeta) {
     },
   });
 
-  await ensureDefaultCaptivePortal(hotel.id, { name: 'Client' });
+  if (primarySsid) {
+    await prisma.wifiConfig.create({
+      data: {
+        hotelId: hotel.id,
+        ssid: primarySsid,
+      },
+    });
+  }
+
+  await ensureDefaultCaptivePortal(hotel.id, {
+    name: defaultPortalName,
+    ssid: primarySsid,
+    authMode: defaultAuthMode,
+  });
 
   return getHotelById(hotel.id);
 }
@@ -130,7 +147,7 @@ async function updateHotel(hotelId, data, reqMeta) {
 
   await getHotelById(hotelId);
 
-  const { captivePortalPort, ...hotelData } = data;
+  const { captivePortalPort, primarySsid, ...hotelData } = data;
   const nextData = { ...hotelData };
 
   if (captivePortalPort !== undefined) {
@@ -149,6 +166,19 @@ async function updateHotel(hotelId, data, reqMeta) {
     data: nextData,
   });
 
+  if (primarySsid) {
+    await prisma.wifiConfig.upsert({
+      where: { hotelId },
+      create: {
+        hotelId,
+        ssid: primarySsid,
+      },
+      update: {
+        ssid: primarySsid,
+      },
+    });
+  }
+
   await writeAuditLog({
     requestId: reqMeta.requestId,
     eventType: 'hotel.lifecycle',
@@ -160,7 +190,7 @@ async function updateHotel(hotelId, data, reqMeta) {
     payload: nextData,
   });
 
-  return withCaptivePortalAccess(hotel);
+  return getHotelById(hotel.id);
 }
 
 async function deleteHotel(hotelId, reqMeta) {

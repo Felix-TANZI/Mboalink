@@ -28,6 +28,8 @@ const mapHotelFromApi = (hotel: Record<string, any>) => ({
   captivePortalUrl: hotel.captivePortalUrl || '',
   captivePortalCount: hotel.captivePortalCount ?? hotel._count?.captivePortals ?? hotel.captivePortals?.length ?? 0,
   captivePortals: hotel.captivePortals || [],
+  siteType: hotel.siteType || 'HOTEL',
+  primarySsid: hotel.wifiConfig?.ssid || hotel.captivePortals?.[0]?.ssid || '',
 })
 
 const getCaptivePortalUrl = (portal: Record<string, any>) => {
@@ -98,6 +100,8 @@ export default function HotelList() {
       city: hotelData.city,
       country: hotelData.country,
       address: hotelData.address,
+      siteType: hotelData.siteType || 'HOTEL',
+      primarySsid: hotelData.primarySsid || '',
       contactEmail: hotelData.contact || '',
       phone: hotelData.phone || '',
       website: hotelData.website || '',

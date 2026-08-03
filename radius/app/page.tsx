@@ -20,6 +20,13 @@ type CaptiveHotel = {
       welcomeMessage?: string;
     };
   };
+  siteType?: "HOTEL" | "ESTABLISHMENT";
+  activeCaptivePortal?: {
+    id: string;
+    name: string;
+    ssid: string;
+    authMode?: "HOTEL_GUEST" | "UUID_ONLY";
+  } | null;
 };
 
 function LoginContent() {
@@ -57,8 +64,12 @@ function LoginContent() {
     e.preventDefault();
     setError("");
 
-    if (!accessCode.trim() && (!identifiantClient.trim() || !numeroChambre.trim())) {
-      setError("Veuillez saisir votre code Wi-Fi, code conférence, UUID ou votre nom avec votre numéro de chambre.");
+    const isUuidOnly = hotel?.activeCaptivePortal?.authMode === "UUID_ONLY";
+
+    if (!accessCode.trim() && (isUuidOnly || !identifiantClient.trim() || !numeroChambre.trim())) {
+      setError(isUuidOnly
+        ? "Veuillez saisir votre UUID ou code Wi-Fi."
+        : "Veuillez saisir votre code Wi-Fi, code conférence, UUID ou votre nom avec votre numéro de chambre.");
       return;
     }
 
@@ -123,6 +134,7 @@ function LoginContent() {
 
   const hotelName = hotel?.name || "MboaLink";
   const mainPhoto = hotel?.photos?.find((photo) => photo.isMain)?.url || hotel?.photos?.[0]?.url;
+  const isUuidOnly = hotel?.activeCaptivePortal?.authMode === "UUID_ONLY";
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f5f5f5" }}>
@@ -189,7 +201,9 @@ function LoginContent() {
           {/* En-tête carte */}
           <div className="px-7 pt-7 pb-4 text-center border-b border-gray-100">
             <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-1 leading-relaxed">
-              Entrez votre code Wi-Fi, code conférence, UUID, ou votre nom avec votre numéro de chambre
+              {isUuidOnly
+                ? "Entrez votre UUID ou votre code Wi-Fi"
+                : "Entrez votre code Wi-Fi, code conférence, UUID, ou votre nom avec votre numéro de chambre"}
             </p>
             <h2
               className="text-gray-900 text-xl font-black uppercase mt-2"
@@ -210,7 +224,7 @@ function LoginContent() {
                 type="text"
                 value={accessCode}
                 onChange={(e) => setAccessCode(e.target.value)}
-                placeholder="Code Wi-Fi, code conférence ou UUID"
+                placeholder={isUuidOnly ? "UUID ou code Wi-Fi" : "Code Wi-Fi, code conférence ou UUID"}
                 autoComplete="off"
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition text-sm"
                 style={{ "--tw-ring-color": "#C8963E" } as CSSProperties}
@@ -218,6 +232,8 @@ function LoginContent() {
               />
             </div>
 
+            {!isUuidOnly && (
+              <>
             <div className="text-center text-xs uppercase tracking-widest text-gray-400">ou</div>
 
             {/* Nom client */}
@@ -255,6 +271,8 @@ function LoginContent() {
                 disabled={loading}
               />
             </div>
+              </>
+            )}
 
             {/* Erreur */}
             {error && (
@@ -294,7 +312,7 @@ function LoginContent() {
           {/* Footer carte */}
           <div className="px-7 pb-5 text-center">
             <p className="text-xs text-gray-400">
-              En vous connectant, vous acceptez les conditions d'utilisation du réseau Wi-Fi de l'hôtel.
+              En vous connectant, vous acceptez les conditions d'utilisation du réseau Wi-Fi de {hotel?.siteType === "ESTABLISHMENT" ? "l'établissement" : "l'hôtel"}.
             </p>
           </div>
         </div>

@@ -217,6 +217,33 @@ async function resolveCaptiveHotelId({ hotelId, portalId, ssid } = {}) {
   return hotel.id;
 }
 
+async function resolveCaptivePortal({ portalId, hotelId, ssid } = {}) {
+  const normalizedPortalId = normalizeText(portalId);
+  if (normalizedPortalId) {
+    return prisma.captivePortalInstance.findFirst({
+      where: {
+        id: normalizedPortalId,
+        status: 'ACTIVE',
+        hotel: { status: 'ACTIVE' },
+      },
+      select: { id: true, hotelId: true, authMode: true, ssid: true },
+    });
+  }
+
+  const normalizedSsid = normalizeText(ssid);
+  if (!normalizedSsid) return null;
+
+  return prisma.captivePortalInstance.findFirst({
+    where: {
+      ssid: normalizedSsid,
+      hotelId: normalizeText(hotelId) || undefined,
+      status: 'ACTIVE',
+      hotel: { status: 'ACTIVE' },
+    },
+    select: { id: true, hotelId: true, authMode: true, ssid: true },
+  });
+}
+
 async function authenticateCaptivePortal(payload) {
   const code = normalizeCode(payload.code);
   const uuid = normalizeText(payload.uuid);
@@ -227,6 +254,18 @@ async function authenticateCaptivePortal(payload) {
     portalId: payload.portalId,
     ssid: payload.ssid,
   });
+  const portal = await resolveCaptivePortal({
+    hotelId,
+    portalId: payload.portalId,
+    ssid: payload.ssid,
+  });
+
+  if (portal?.authMode === 'UUID_ONLY' && !code && !uuid) {
+    const err = new Error('Ce portail accepte uniquement un UUID ou un code Wi-Fi.');
+    err.status = 400;
+    throw err;
+  }
+
   const now = new Date();
   const include = {
     hotel: { select: { id: true, name: true } },
@@ -359,6 +398,7 @@ async function getCaptiveHotel(params = {}) {
     select: {
       id: true,
       name: true,
+      siteType: true,
       city: true,
       country: true,
       address: true,
@@ -371,7 +411,7 @@ async function getCaptiveHotel(params = {}) {
       amenities: true,
       photos: true,
       captivePortals: {
-        where: portalId ? { id: portalId } : undefined,
+        where: portalId ? { id: portalId } : (ssid ? { ssid } : undefined),
         orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
       },
       wifiConfig: {
@@ -392,6 +432,7 @@ async function getCaptiveHotel(params = {}) {
 
   return {
     ...hotel,
+    activeCaptivePortal: hotel.captivePortals?.[0] || null,
     captivePortalUrl: buildCaptivePortalUrl(hotel.captivePortals?.[0]?.port || hotel.captivePortalPort, {
       portalId: hotel.captivePortals?.[0]?.id,
       hotelId: hotel.id,

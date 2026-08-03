@@ -13,7 +13,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
   const [portals, setPortals] = useState<CaptivePortalEntity[]>([])
-  const [portalForm, setPortalForm] = useState({ name: '', ssid: '' })
+  const [portalForm, setPortalForm] = useState({ name: '', ssid: '', authMode: 'HOTEL_GUEST' as 'HOTEL_GUEST' | 'UUID_ONLY' })
   const [isSavingPortal, setIsSavingPortal] = useState(false)
   const [isPortalFormOpen, setIsPortalFormOpen] = useState(false)
 
@@ -29,7 +29,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
 
   useEffect(() => {
     if (!isOpen || !hotel?.id) return
-    setPortalForm({ name: '', ssid: '' })
+    setPortalForm({ name: '', ssid: '', authMode: hotel.siteType === 'ESTABLISHMENT' ? 'UUID_ONLY' : 'HOTEL_GUEST' })
     setIsPortalFormOpen(false)
     loadPortals()
   }, [isOpen, hotel?.id])
@@ -50,8 +50,9 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
         name: portalForm.name.trim(),
         ssid: portalForm.ssid.trim(),
         status: 'ACTIVE',
+        authMode: portalForm.authMode,
       })
-      setPortalForm({ name: '', ssid: '' })
+      setPortalForm({ name: '', ssid: '', authMode: hotel.siteType === 'ESTABLISHMENT' ? 'UUID_ONLY' : 'HOTEL_GUEST' })
       setIsPortalFormOpen(false)
       await loadPortals()
       onChanged?.()
@@ -62,7 +63,7 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
     }
   }
 
-  const handleUpdatePortal = async (portal: CaptivePortalEntity, field: 'name' | 'ssid' | 'status', value: string) => {
+  const handleUpdatePortal = async (portal: CaptivePortalEntity, field: 'name' | 'ssid' | 'status' | 'authMode', value: string) => {
     if (!hotel?.id) return
     try {
       await mboalinkService.updateCaptivePortal(hotel.id, portal.id, { [field]: value })
@@ -259,6 +260,10 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
                 onChange={(event) => setPortalForm((prev) => ({ ...prev, ssid: event.target.value }))}
                 placeholder="SSID: OBEN CLIENT"
               />
+              <select value={portalForm.authMode} onChange={(event) => setPortalForm((prev) => ({ ...prev, authMode: event.target.value as 'HOTEL_GUEST' | 'UUID_ONLY' }))}>
+                <option value="HOTEL_GUEST">Hôtel : nom/chambre ou UUID</option>
+                <option value="UUID_ONLY">UUID/code uniquement</option>
+              </select>
               <button type="button" onClick={handleCreatePortal} disabled={isSavingPortal}>Ajouter</button>
             </div>
             )}
@@ -293,6 +298,13 @@ export default function HotelDetailsModal({ isOpen, onClose, hotel, onChanged }:
                       <select value={portal.status} onChange={(event) => handleUpdatePortal(portal, 'status', event.target.value)}>
                         <option value="ACTIVE">Actif</option>
                         <option value="INACTIVE">Inactif</option>
+                      </select>
+                    </label>
+                    <label>
+                      Mode d'accès
+                      <select value={portal.authMode || 'HOTEL_GUEST'} onChange={(event) => handleUpdatePortal(portal, 'authMode', event.target.value)}>
+                        <option value="HOTEL_GUEST">Hôtel : nom/chambre ou UUID</option>
+                        <option value="UUID_ONLY">UUID/code uniquement</option>
                       </select>
                     </label>
                   </div>

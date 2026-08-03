@@ -73,6 +73,8 @@ const defaultUserForm = {
 
 const defaultHotelForm = {
   name: '',
+  siteType: 'HOTEL' as 'HOTEL' | 'ESTABLISHMENT',
+  primarySsid: '',
   city: '',
   country: 'Cameroun',
   address: '',
@@ -95,6 +97,7 @@ const defaultPortalForm = {
   hotelName: '',
   name: 'Client',
   ssid: '',
+  authMode: 'HOTEL_GUEST' as 'HOTEL_GUEST' | 'UUID_ONLY',
 }
 
 const getCaptivePortalUrl = (portal: NonNullable<HotelEntity['captivePortals']>[number]) => {
@@ -295,11 +298,13 @@ export default function MboaAdminDashboard() {
     const hasPortal = (hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0) > 0
     const defaultName = hasPortal ? 'Bureau' : 'Client'
     const defaultSsid = `${hotel.name} ${defaultName}`.toUpperCase().replace(/\s+/g, ' ').trim()
+    const defaultAuthMode = hotel.siteType === 'ESTABLISHMENT' ? 'UUID_ONLY' : 'HOTEL_GUEST'
     setPortalForm({
       hotelId: hotel.id,
       hotelName: hotel.name,
       name: defaultName,
       ssid: defaultSsid,
+      authMode: defaultAuthMode,
     })
     setActiveForm('portal')
   }
@@ -359,6 +364,9 @@ export default function MboaAdminDashboard() {
         amenities: [],
         photos: [],
         status: 'ACTIVE',
+      }
+      if (!payload.captivePortalPort) {
+        delete payload.captivePortalPort
       }
       if (editingHotelId) {
         await mboalinkService.updateHotel(editingHotelId, payload)
@@ -422,6 +430,8 @@ export default function MboaAdminDashboard() {
     setEditingHotelId(hotel.id)
     setHotelForm({
       name: hotel.name,
+      siteType: hotel.siteType || 'HOTEL',
+      primarySsid: hotel.primarySsid || hotel.wifiConfig?.ssid || hotel.captivePortals?.[0]?.ssid || '',
       city: hotel.city,
       country: hotel.country,
       address: hotel.address,
@@ -477,6 +487,7 @@ export default function MboaAdminDashboard() {
         name: portalForm.name.trim(),
         ssid: portalForm.ssid.trim(),
         status: 'ACTIVE',
+        authMode: portalForm.authMode,
       })
       closeForm()
       await loadData()
@@ -1105,6 +1116,15 @@ export default function MboaAdminDashboard() {
             </div>
             <label>Nom de l'établissement<input value={hotelForm.name} onChange={(event) => setHotelForm((prev) => ({ ...prev, name: event.target.value }))} required /></label>
             <div className="mboaFormGrid">
+              <label>Type de site
+                <select value={hotelForm.siteType} onChange={(event) => setHotelForm((prev) => ({ ...prev, siteType: event.target.value as 'HOTEL' | 'ESTABLISHMENT' }))}>
+                  <option value="HOTEL">Hôtel</option>
+                  <option value="ESTABLISHMENT">Établissement</option>
+                </select>
+              </label>
+              <label>SSID principal<input value={hotelForm.primarySsid} onChange={(event) => setHotelForm((prev) => ({ ...prev, primarySsid: event.target.value }))} placeholder="OBEN CLIENT" required /></label>
+            </div>
+            <div className="mboaFormGrid">
               <label>Ville<input value={hotelForm.city} onChange={(event) => setHotelForm((prev) => ({ ...prev, city: event.target.value }))} required /></label>
               <label>Pays<input value={hotelForm.country} onChange={(event) => setHotelForm((prev) => ({ ...prev, country: event.target.value }))} required /></label>
             </div>
@@ -1138,6 +1158,12 @@ export default function MboaAdminDashboard() {
               <label>Établissement<input type="text" value={portalForm.hotelName} disabled readOnly /></label>
               <label>Nom du portail<input value={portalForm.name} onChange={(event) => setPortalForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Client, Bureau, Staff..." required /></label>
               <label>SSID<input value={portalForm.ssid} onChange={(event) => setPortalForm((prev) => ({ ...prev, ssid: event.target.value }))} placeholder="OBEN CLIENT" required /></label>
+              <label>Mode d'accès
+                <select value={portalForm.authMode} onChange={(event) => setPortalForm((prev) => ({ ...prev, authMode: event.target.value as 'HOTEL_GUEST' | 'UUID_ONLY' }))}>
+                  <option value="HOTEL_GUEST">Hôtel : UUID, nom client ou chambre</option>
+                  <option value="UUID_ONLY">Établissement : UUID/code uniquement</option>
+                </select>
+              </label>
               <label>Port<input type="text" value="Automatique" disabled readOnly /></label>
             </section>
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />Créer le portail</button>

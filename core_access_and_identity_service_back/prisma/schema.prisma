@@ -41,6 +41,16 @@ enum CaptivePortalStatus {
   INACTIVE
 }
 
+enum SiteType {
+  HOTEL
+  ESTABLISHMENT
+}
+
+enum CaptivePortalAuthMode {
+  HOTEL_GUEST
+  UUID_ONLY
+}
+
 enum DeviceStatus {
   ONLINE
   OFFLINE
@@ -121,6 +131,7 @@ model Hotel {
   amenities    Json?
   photos       Json?
   status       HotelStatus @default(ACTIVE)
+  siteType     SiteType    @default(HOTEL)
   captivePortalPort Int?   @unique
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -187,6 +198,7 @@ model CaptivePortalInstance {
   ssid      String
   port      Int                 @unique
   status    CaptivePortalStatus @default(ACTIVE)
+  authMode  CaptivePortalAuthMode @default(HOTEL_GUEST)
   isDefault Boolean             @default(false)
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
