@@ -1,0 +1,11 @@
+[Unit]
+Description=Watch MboaLink generated captive portal compose file
+After=docker.service
+
+[Path]
+PathModified=/home/junior/Mboalink/core_access_and_identity_service_back/docker-compose.captive-instances.yml
+PathChanged=/home/junior/Mboalink/core_access_and_identity_service_back/docker-compose.captive-instances.yml
+Unit=mboalink-captive-instances.service
+
+[Install]
+WantedBy=multi-user.target

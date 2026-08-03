@@ -40,6 +40,40 @@ sudo docker compose -f docker-compose.yml -f docker-compose.captive-instances.ym
 sudo docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml ps
 ```
 
+### Déploiement automatique des nouveaux portails
+
+En production, l'IT ne doit pas relancer Docker manuellement après chaque création de portail. Le fonctionnement recommandé est :
+
+```text
+Création portail dans MboaLink
+    -> backend écrit /home/junior/Mboalink/core_access_and_identity_service_back/docker-compose.captive-instances.yml
+    -> systemd détecte la modification
+    -> radius/scripts/apply-captive-instances.sh applique les instances Docker
+```
+
+Installer le watcher une seule fois sur le serveur :
+
+```bash
+cd /home/junior/Mboalink/radius
+sudo chmod +x scripts/apply-captive-instances.sh
+sudo cp systemd/mboalink-captive-instances.service /etc/systemd/system/
+sudo cp systemd/mboalink-captive-instances.path /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now mboalink-captive-instances.path
+```
+
+Tester immédiatement l'application du fichier généré :
+
+```bash
+sudo systemctl start mboalink-captive-instances.service
+sudo systemctl status mboalink-captive-instances.service --no-pager
+sudo journalctl -u mboalink-captive-instances.service -n 80 --no-pager
+```
+
+À partir de là, lorsqu'un portail est créé ou modifié dans MboaLink, le backend régénère le fichier compose et le serveur démarre automatiquement le nouveau conteneur. Le portail devient normalement accessible après quelques secondes sur son port dédié.
+
+Le script fourni est volontairement non destructif : il démarre et met à jour les instances déclarées, mais ne supprime pas automatiquement les anciens conteneurs orphelins. Pour supprimer physiquement une instance après suppression d'un portail, il faut exécuter une opération contrôlée avec `--remove-orphans`.
+
 Chaque service généré reçoit :
 
 - `MBOALINK_DEFAULT_HOTEL_ID` : hôtel servi par défaut par cette instance ;

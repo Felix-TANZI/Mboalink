@@ -1,0 +1,13 @@
+[Unit]
+Description=MboaLink captive portal instances deployment
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+Environment=MBOALINK_BACKEND_DIR=/home/junior/Mboalink/core_access_and_identity_service_back
+Environment=MBOALINK_RADIUS_DIR=/home/junior/Mboalink/radius
+ExecStart=/usr/bin/env bash /home/junior/Mboalink/radius/scripts/apply-captive-instances.sh
+
+[Install]
+WantedBy=multi-user.target
