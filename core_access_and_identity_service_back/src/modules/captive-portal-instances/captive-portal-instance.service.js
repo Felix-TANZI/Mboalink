@@ -1,6 +1,7 @@
 const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 const { allocateCaptivePortalPort, buildCaptivePortalUrl } = require('../hotels/captive-portal-port.service');
+const { triggerCaptiveInstanceSync } = require('./captive-instance-sync.service');
 
 function normalizeText(value) {
   return String(value || '').trim();
@@ -126,6 +127,14 @@ async function createCaptivePortal(hotelId, data, reqMeta) {
     actorUserId: reqMeta.actorUserId,
     hotelId,
     payload: { name: portal.name, ssid: portal.ssid, port: portal.port },
+  });
+
+  triggerCaptiveInstanceSync({
+    action: 'create',
+    portalId: portal.id,
+    hotelId,
+    port: portal.port,
+    ssid: portal.ssid,
   });
 
   return withPortalUrl(portal);
