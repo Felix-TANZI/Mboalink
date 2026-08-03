@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodic safety sync for MboaLink captive portal instances
+Requires=mboalink-captive-instances.service
+
+[Timer]
+OnBootSec=20s
+OnUnitActiveSec=15s
+AccuracySec=5s
+Unit=mboalink-captive-instances.service
+
+[Install]
+WantedBy=timers.target

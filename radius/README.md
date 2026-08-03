@@ -58,8 +58,10 @@ cd /home/junior/Mboalink/radius
 sudo chmod +x scripts/apply-captive-instances.sh
 sudo cp systemd/mboalink-captive-instances.service /etc/systemd/system/
 sudo cp systemd/mboalink-captive-instances.path /etc/systemd/system/
+sudo cp systemd/mboalink-captive-instances.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now mboalink-captive-instances.path
+sudo systemctl enable --now mboalink-captive-instances.timer
 ```
 
 Tester immédiatement l'application du fichier généré :
@@ -70,7 +72,7 @@ sudo systemctl status mboalink-captive-instances.service --no-pager
 sudo journalctl -u mboalink-captive-instances.service -n 80 --no-pager
 ```
 
-À partir de là, lorsqu'un portail est créé, modifié ou supprimé dans MboaLink, le backend régénère le fichier compose et le serveur applique automatiquement l'état attendu. Le portail devient normalement accessible après quelques secondes sur son port dédié.
+À partir de là, lorsqu'un portail est créé, modifié ou supprimé dans MboaLink, le backend régénère le fichier compose et le serveur applique automatiquement l'état attendu. Le fichier `.path` réagit immédiatement aux modifications, et le fichier `.timer` repasse périodiquement comme filet de sécurité si un événement est manqué. Le portail devient normalement accessible après quelques secondes sur son port dédié.
 
 Le script utilise `--remove-orphans` afin de retirer les anciennes instances Docker qui ne sont plus déclarées dans `docker-compose.captive-instances.yml`. C'est nécessaire lorsqu'un portail est renommé, supprimé ou recréé, car un ancien conteneur peut sinon continuer à occuper son port.
 

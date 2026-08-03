@@ -5,6 +5,7 @@ BACKEND_DIR="${MBOALINK_BACKEND_DIR:-/home/junior/Mboalink/core_access_and_ident
 RADIUS_DIR="${MBOALINK_RADIUS_DIR:-/home/junior/Mboalink/radius}"
 SOURCE_COMPOSE="${CAPTIVE_INSTANCES_SOURCE:-$BACKEND_DIR/docker-compose.captive-instances.yml}"
 TARGET_COMPOSE="${CAPTIVE_INSTANCES_TARGET:-$RADIUS_DIR/docker-compose.captive-instances.yml}"
+STATE_FILE="${CAPTIVE_INSTANCES_STATE_FILE:-$RADIUS_DIR/.captive-instances.sha256}"
 LOCK_FILE="${CAPTIVE_INSTANCES_LOCK_FILE:-/tmp/mboalink-captive-instances.lock}"
 
 log() {
@@ -32,6 +33,17 @@ if ! grep -q '^services:' "$SOURCE_COMPOSE"; then
   exit 1
 fi
 
+new_hash="$(sha256sum "$SOURCE_COMPOSE" | awk '{print $1}')"
+old_hash=""
+if [[ -s "$STATE_FILE" ]]; then
+  old_hash="$(cat "$STATE_FILE")"
+fi
+
+if [[ "$new_hash" == "$old_hash" && -s "$TARGET_COMPOSE" ]]; then
+  log "generated compose file unchanged; nothing to apply"
+  exit 0
+fi
+
 log "copying generated compose file"
 install -m 0644 "$SOURCE_COMPOSE" "$TARGET_COMPOSE.tmp"
 mv "$TARGET_COMPOSE.tmp" "$TARGET_COMPOSE"
@@ -43,6 +55,7 @@ docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml con
 
 log "applying captive portal instances and removing obsolete containers"
 docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml up -d --build --remove-orphans
+printf '%s\n' "$new_hash" > "$STATE_FILE"
 
 log "current captive portal services"
 docker compose -f docker-compose.yml -f docker-compose.captive-instances.yml ps
