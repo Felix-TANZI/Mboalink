@@ -287,11 +287,13 @@ export default function MboaAdminDashboard() {
   }
 
   const openPortalForm = (hotel: HotelEntity) => {
-    const defaultSsid = `${hotel.name} CLIENT`.toUpperCase().replace(/\s+/g, ' ').trim()
+    const hasPortal = (hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0) > 0
+    const defaultName = hasPortal ? 'Bureau' : 'Client'
+    const defaultSsid = `${hotel.name} ${defaultName}`.toUpperCase().replace(/\s+/g, ' ').trim()
     setPortalForm({
       hotelId: hotel.id,
       hotelName: hotel.name,
-      name: 'Client',
+      name: defaultName,
       ssid: defaultSsid,
     })
     setActiveForm('portal')

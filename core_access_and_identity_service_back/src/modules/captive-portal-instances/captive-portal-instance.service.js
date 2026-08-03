@@ -94,12 +94,23 @@ async function createCaptivePortal(hotelId, data, reqMeta) {
   ensureCanManageHotel(hotelId, reqMeta);
   await getHotelOrThrow(hotelId);
 
+  const ssid = normalizeSsid(data.ssid);
+  const existingPortal = await prisma.captivePortalInstance.findFirst({
+    where: { hotelId, ssid },
+    select: { id: true },
+  });
+  if (existingPortal) {
+    const err = new Error('Un portail captif utilise déjà ce SSID pour cet établissement.');
+    err.status = 409;
+    throw err;
+  }
+
   const port = await allocateCaptivePortalPort();
   const portal = await prisma.captivePortalInstance.create({
     data: {
       hotelId,
       name: normalizeText(data.name) || 'Client',
-      ssid: normalizeSsid(data.ssid),
+      ssid,
       port,
       status: data.status || 'ACTIVE',
       isDefault: false,
