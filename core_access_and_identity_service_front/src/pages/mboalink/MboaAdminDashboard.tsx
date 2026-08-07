@@ -82,6 +82,15 @@ const defaultHotelForm = {
   address: '',
   description: '',
   captivePortalPort: '',
+  bannerUrl: '',
+  portalSimpleEnabled: false,
+  portalSimpleSsid: '',
+  portalSimpleBasePort: '',
+  portalSimpleInterfaces: 1,
+  portalHotelEnabled: false,
+  portalHotelSsid: '',
+  portalHotelBasePort: '',
+  portalHotelInterfaces: 1,
 }
 
 const defaultDeviceForm = {
@@ -319,12 +328,14 @@ export default function MboaAdminDashboard() {
     const defaultName = hasPortal ? 'Bureau' : 'Client'
     const defaultSsid = `${hotel.name} ${defaultName}`.toUpperCase().replace(/\s+/g, ' ').trim()
     const defaultAuthMode = hotel.siteType === 'ESTABLISHMENT' ? 'UUID_ONLY' : 'HOTEL_GUEST'
+    // allow overriding authMode when opening the form
+    const authMode = arguments[1] || defaultAuthMode
     setPortalForm({
       hotelId: hotel.id,
       hotelName: hotel.name,
       name: defaultName,
       ssid: defaultSsid,
-      authMode: defaultAuthMode,
+      authMode,
     })
     setActiveForm('portal')
   }
@@ -379,11 +390,32 @@ export default function MboaAdminDashboard() {
     event.preventDefault()
     try {
       setIsSaving(true)
+      // Build captivePortalConfigs from form flags
+      const captivePortalConfigs: any[] = []
+      if (hotelForm.portalSimpleEnabled) {
+        captivePortalConfigs.push({
+          authMode: 'UUID_ONLY',
+          ssid: hotelForm.portalSimpleSsid || hotelForm.primarySsid || 'CLIENT',
+          basePort: hotelForm.portalSimpleBasePort ? Number(hotelForm.portalSimpleBasePort) : undefined,
+          interfacesCount: Number(hotelForm.portalSimpleInterfaces) || 1,
+        })
+      }
+      if (hotelForm.portalHotelEnabled) {
+        captivePortalConfigs.push({
+          authMode: 'HOTEL_GUEST',
+          ssid: hotelForm.portalHotelSsid || hotelForm.primarySsid || 'CLIENT',
+          basePort: hotelForm.portalHotelBasePort ? Number(hotelForm.portalHotelBasePort) : undefined,
+          interfacesCount: Number(hotelForm.portalHotelInterfaces) || 1,
+        })
+      }
+
       const payload = {
         ...hotelForm,
         amenities: [],
         photos: [],
         status: 'ACTIVE',
+        bannerUrl: hotelForm.bannerUrl || undefined,
+        captivePortalConfigs: captivePortalConfigs.length > 0 ? captivePortalConfigs : undefined,
       }
       if (!payload.captivePortalPort) {
         delete payload.captivePortalPort
@@ -457,6 +489,15 @@ export default function MboaAdminDashboard() {
       address: hotel.address,
       description: hotel.description || '',
       captivePortalPort: hotel.captivePortalPort ? String(hotel.captivePortalPort) : '',
+      bannerUrl: hotel.bannerUrl || '',
+      portalSimpleEnabled: false,
+      portalSimpleSsid: '',
+      portalSimpleBasePort: '',
+      portalSimpleInterfaces: 1,
+      portalHotelEnabled: false,
+      portalHotelSsid: '',
+      portalHotelBasePort: '',
+      portalHotelInterfaces: 1,
     })
   }
 
@@ -1105,39 +1146,77 @@ export default function MboaAdminDashboard() {
           <div className="mboaAdminDataPanel">
             <PanelHeader title="Gestion des établissements" subtitle="Liste de tous les établissements enregistrés" actionLabel="Nouvel établissement" onAction={resetHotelForm} />
             <table className="mboaAdminTable">
-              <thead><tr><th>Nom de l'établissement</th><th>Ville</th><th>Adresse</th><th>Portail captif</th><th>Statut</th><th>Date création</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Nom de l'établissement</th>
+                  <th>Ville</th>
+                  <th>Adresse</th>
+                  <th>Portail simple</th>
+                  <th>Portail hôtel</th>
+                  <th>Statut</th>
+                  <th>Date création</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody>
                 {filteredHotels.map((hotel) => (
                   <tr key={hotel.id}>
                     <td><strong>{hotel.name}</strong></td>
                     <td>{hotel.city}</td>
                     <td>{hotel.address}</td>
-                    <td>
-                      <div className="mboaPortalCell">
-                        <strong>{hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0} portail{(hotel.captivePortalCount ?? hotel.captivePortals?.length ?? 0) > 1 ? 's' : ''}</strong>
-                        <div className="mboaPortalPortList">
-                          {(hotel.captivePortals || []).length > 0 ? (
-                            hotel.captivePortals?.map((portal) => (
-                              <span key={portal.id} className="mboaPortalPortItem">
-                                <a href={getCaptivePortalUrl(portal)} target="_blank" rel="noreferrer">
-                                  {portal.name} <b>:{portal.port}</b>
-                                </a>
-                                {portal.isDefault ? (
-                                  <em>Principal</em>
+                    {(() => {
+                      const simple = (hotel.captivePortals || []).filter((p) => p.authMode === 'UUID_ONLY')
+                      const hotelP = (hotel.captivePortals || []).filter((p) => p.authMode === 'HOTEL_GUEST')
+                      return (
+                        <>
+                          <td>
+                            <div className="mboaPortalCell">
+                              <strong>{simple.length} portail{simple.length > 1 ? 's' : ''}</strong>
+                              <div className="mboaPortalPortList">
+                                {simple.length > 0 ? (
+                                  simple.map((portal) => (
+                                    <span key={portal.id} className="mboaPortalPortItem">
+                                      <a href={getCaptivePortalUrl(portal)} target="_blank" rel="noreferrer">
+                                        {portal.name} <b>:{portal.port}</b>
+                                      </a>
+                                      {portal.isDefault ? <em>Principal</em> : <button type="button" onClick={() => deleteCaptivePortalForHotel(hotel, portal)}>Supprimer</button>}
+                                    </span>
+                                  ))
                                 ) : (
-                                  <button type="button" onClick={() => deleteCaptivePortalForHotel(hotel, portal)}>Supprimer</button>
+                                  <span className="mboaPortalPortItem"><span>Principal <b>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Automatique'}</b></span></span>
                                 )}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="mboaPortalPortItem"><span>Principal <b>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Automatique'}</b></span></span>
-                          )}
-                        </div>
-                        <div className="mboaPortalActions">
-                          <button type="button" onClick={() => openPortalForm(hotel)}>Créer</button>
-                        </div>
-                      </div>
-                    </td>
+                              </div>
+                              <div className="mboaPortalActions">
+                                <button type="button" onClick={() => openPortalForm(hotel, 'UUID_ONLY')}>Créer</button>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="mboaPortalCell">
+                              <strong>{hotelP.length} portail{hotelP.length > 1 ? 's' : ''}</strong>
+                              <div className="mboaPortalPortList">
+                                {hotelP.length > 0 ? (
+                                  hotelP.map((portal) => (
+                                    <span key={portal.id} className="mboaPortalPortItem">
+                                      <a href={getCaptivePortalUrl(portal)} target="_blank" rel="noreferrer">
+                                        {portal.name} <b>:{portal.port}</b>
+                                      </a>
+                                      {portal.isDefault ? <em>Principal</em> : <button type="button" onClick={() => deleteCaptivePortalForHotel(hotel, portal)}>Supprimer</button>}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="mboaPortalPortItem"><span>Principal <b>{hotel.captivePortalPort ? `:${hotel.captivePortalPort}` : 'Automatique'}</b></span></span>
+                                )}
+                              </div>
+                              <div className="mboaPortalActions">
+                                <button type="button" onClick={() => openPortalForm(hotel, 'HOTEL_GUEST')}>Créer</button>
+                              </div>
+                            </div>
+                          </td>
+                        </>
+                      )
+                    })()}
                     <td><span className="mboaStatusBadge active">{hotel.status === 'ACTIVE' ? 'Actif' : hotel.status}</span></td>
                     <td>{formatDate(hotel.createdAt)}</td>
                     <td><RowActions onEdit={() => editHotel(hotel)} onDelete={() => deleteHotel(hotel)} /></td>
@@ -1178,6 +1257,45 @@ export default function MboaAdminDashboard() {
               {editingHotelId && hotelForm.captivePortalPort && (
                 <a className="mboaPortalPreviewLink" href={`http://13.140.183.51:${hotelForm.captivePortalPort}/?hotelId=${editingHotelId}`} target="_blank" rel="noreferrer">Ouvrir le portail captif</a>
               )}
+            </section>
+            <section className="mboaPortalFormSection">
+              <h3>Types de portails</h3>
+              <div className="mboaPortalTypeRow">
+                <label><input type="checkbox" checked={!!hotelForm.portalSimpleEnabled} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleEnabled: e.target.checked }))} /> Portail captif simple (UUID)</label>
+                {hotelForm.portalSimpleEnabled && (
+                  <div className="mboaPortalTypeConfig">
+                    <label>SSID<input value={hotelForm.portalSimpleSsid} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleSsid: e.target.value }))} placeholder="client" /></label>
+                    <label>Base Port (optionnel)<input value={hotelForm.portalSimpleBasePort} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleBasePort: e.target.value }))} placeholder="3309" /></label>
+                    <label>Nombre d'interfaces<input type="number" min={1} value={hotelForm.portalSimpleInterfaces} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleInterfaces: Number(e.target.value) }))} /></label>
+                  </div>
+                )}
+              </div>
+              <div className="mboaPortalTypeRow">
+                <label><input type="checkbox" checked={!!hotelForm.portalHotelEnabled} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelEnabled: e.target.checked }))} /> Portail captif hôtel (UUID + client + chambre)</label>
+                {hotelForm.portalHotelEnabled && (
+                  <div className="mboaPortalTypeConfig">
+                    <label>SSID<input value={hotelForm.portalHotelSsid} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelSsid: e.target.value }))} placeholder="client" /></label>
+                    <label>Base Port (optionnel)<input value={hotelForm.portalHotelBasePort} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelBasePort: e.target.value }))} placeholder="3310" /></label>
+                    <label>Nombre d'interfaces<input type="number" min={1} value={hotelForm.portalHotelInterfaces} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelInterfaces: Number(e.target.value) }))} /></label>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="mboaBannerSection">
+              <h3>Bannière du portail (optionnel)</h3>
+              <p>Importer une image pour remplacer la bannière par défaut pour tous les portails de cet établissement.</p>
+              <label>URL de l'image<input value={hotelForm.bannerUrl} onChange={(e) => setHotelForm((prev) => ({ ...prev, bannerUrl: e.target.value }))} placeholder="https://..." /></label>
+              <label>Ou téléverser une image<input type="file" accept="image/*" onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = () => {
+                  setHotelForm((prev) => ({ ...prev, bannerUrl: String(reader.result) }))
+                }
+                reader.readAsDataURL(file)
+              }} /></label>
+              {hotelForm.bannerUrl && <div className="bannerPreview"><img src={hotelForm.bannerUrl} alt="Bannière" style={{ maxWidth: 300 }} /></div>}
             </section>
             <label>Description<textarea value={hotelForm.description} onChange={(event) => setHotelForm((prev) => ({ ...prev, description: event.target.value }))} /></label>
             <button className="mboaPrimaryButton" disabled={isSaving}><Save size={16} />{editingHotelId ? "Enregistrer l'établissement" : "Créer l'établissement"}</button>

@@ -27,6 +27,17 @@ const createHotelSchema = z.object({
   siteType: siteType.default('HOTEL'),
   primarySsid: z.string().min(2).max(120).optional(),
   captivePortalPort: z.number().int().positive().max(65535).optional(),
+  bannerUrl: z.string().url().optional().or(z.literal('')),
+  captivePortalConfigs: z
+    .array(
+      z.object({
+        authMode: z.enum(['HOTEL_GUEST', 'UUID_ONLY']),
+        ssid: z.string().min(1).max(120),
+        basePort: z.number().int().positive().max(65535).optional(),
+        interfacesCount: z.number().int().positive().max(100).default(1),
+      })
+    )
+    .optional(),
 });
 
 const updateHotelSchema = createHotelSchema.partial();

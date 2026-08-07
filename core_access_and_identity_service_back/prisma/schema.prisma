@@ -130,6 +130,7 @@ model Hotel {
   longitude    Float?
   amenities    Json?
   photos       Json?
+  bannerUrl    String?
   status       HotelStatus @default(ACTIVE)
   siteType     SiteType    @default(HOTEL)
   captivePortalPort Int?   @unique
@@ -148,6 +149,7 @@ model Hotel {
   alerts           Alert[]
   auditLogs        AuditLog[]
   notifications    Notification[]
+  captivePortalConfigs CaptivePortalConfig[]
 }
 
 model Room {
@@ -206,6 +208,22 @@ model CaptivePortalInstance {
   hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 
   @@unique([hotelId, ssid])
+  @@index([hotelId])
+}
+
+model CaptivePortalConfig {
+  id              String                  @id @default(cuid())
+  hotelId         String
+  authMode        CaptivePortalAuthMode
+  ssid            String
+  basePort        Int?
+  interfacesCount Int                     @default(1)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@unique([hotelId, authMode])
   @@index([hotelId])
 }
 

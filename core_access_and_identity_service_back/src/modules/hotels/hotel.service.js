@@ -98,6 +98,7 @@ async function createHotel(data, reqMeta) {
       captivePortalPort,
       amenities: data.amenities || [],
       photos: data.photos || [],
+      bannerUrl: data.bannerUrl || null,
     },
   });
 
@@ -127,11 +128,50 @@ async function createHotel(data, reqMeta) {
     });
   }
 
-  await ensureDefaultCaptivePortal(hotel.id, {
-    name: defaultPortalName,
-    ssid: primarySsid,
-    authMode: defaultAuthMode,
-  });
+  // Create captive portal configs if provided
+  if (Array.isArray(data.captivePortalConfigs) && data.captivePortalConfigs.length > 0) {
+    for (const cfg of data.captivePortalConfigs) {
+      const authMode = cfg.authMode || defaultAuthMode;
+      const ssid = cfg.ssid || primarySsid || defaultPortalName;
+      const basePort = cfg.basePort || undefined;
+      const interfacesCount = cfg.interfacesCount || 1;
+
+      // store the config
+      await prisma.captivePortalConfig.create({
+        data: {
+          hotelId: hotel.id,
+          authMode,
+          ssid,
+          basePort,
+          interfacesCount,
+        },
+      });
+
+      // create actual instances for the number of interfaces
+      for (let i = 0; i < interfacesCount; i += 1) {
+        const port = i === 0 ? await allocateCaptivePortalPort(basePort) : await allocateCaptivePortalPort();
+        const instanceSsid = i === 0 ? ssid : `${ssid}-${i}`;
+        await prisma.captivePortalInstance.create({
+          data: {
+            hotelId: hotel.id,
+            name: i === 0 ? defaultPortalName : `${defaultPortalName} ${i + 1}`,
+            ssid: instanceSsid,
+            port,
+            status: 'ACTIVE',
+            authMode,
+            isDefault: i === 0,
+          },
+        });
+      }
+    }
+  } else {
+    // fallback: ensure a default captive portal exists
+    await ensureDefaultCaptivePortal(hotel.id, {
+      name: defaultPortalName,
+      ssid: primarySsid,
+      authMode: defaultAuthMode,
+    });
+  }
 
   return getHotelById(hotel.id);
 }
