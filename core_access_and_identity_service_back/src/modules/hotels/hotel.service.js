@@ -2,6 +2,7 @@ const prisma = require('../../config/prisma');
 const { writeAuditLog } = require('../audit-logs/audit-log.service');
 const { allocateCaptivePortalPort, buildCaptivePortalUrl } = require('./captive-portal-port.service');
 const { ensureDefaultCaptivePortal, withPortalUrl } = require('../captive-portal-instances/captive-portal-instance.service');
+const { triggerCaptiveInstanceSync } = require('../captive-portal-instances/captive-instance-sync.service');
 
 function ensureReceptionistHotel(user) {
   if (user?.role !== 'RECEPTIONIST' && user?.role !== 'HOTEL_IT') return null;
@@ -172,6 +173,12 @@ async function createHotel(data, reqMeta) {
       authMode: defaultAuthMode,
     });
   }
+
+  triggerCaptiveInstanceSync({
+    action: 'hotel.create',
+    hotelId: hotel.id,
+    name: hotel.name,
+  });
 
   return getHotelById(hotel.id);
 }

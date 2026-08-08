@@ -551,6 +551,99 @@
   line-height: 1.45;
 }
 
+.mboaPortalChoiceSection,
+.mboaBannerSection {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dce5ef;
+  border-radius: 8px;
+  background: #f8fbff;
+}
+
+.mboaPortalChoiceSection h3,
+.mboaBannerSection h3 {
+  margin: 0 0 4px;
+  color: #172033;
+  font-size: 0.94rem;
+}
+
+.mboaPortalChoiceSection p,
+.mboaBannerSection p {
+  margin: 0;
+  color: #69788e;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.mboaPortalChoiceGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.mboaPortalChoiceGrid article {
+  display: grid;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid #d8e2ee;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.mboaPortalChoiceGrid article.selected {
+  border-color: rgba(29, 79, 143, 0.45);
+  box-shadow: 0 0 0 3px rgba(29, 79, 143, 0.08);
+}
+
+.mboaPortalCheckLabel {
+  grid-template-columns: auto 1fr;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mboaPortalCheckLabel input {
+  width: 18px;
+  min-height: 18px;
+  margin-top: 2px;
+  accent-color: #1d4f8f;
+}
+
+.mboaPortalCheckLabel span {
+  display: grid;
+  gap: 3px;
+}
+
+.mboaPortalCheckLabel strong {
+  color: #172033;
+}
+
+.mboaPortalCheckLabel small {
+  color: #69788e;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.mboaPortalTypeConfig {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 0.7fr);
+  gap: 9px;
+}
+
+.bannerPreview {
+  overflow: hidden;
+  border: 1px solid #dce5ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.bannerPreview img {
+  display: block;
+  width: 100%;
+  max-height: 130px;
+  object-fit: cover;
+}
+
 .mboaRowActions {
   display: flex;
   gap: 8px;
@@ -967,6 +1060,10 @@
   }
 
   .mboaFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mboaPortalTypeConfig {
     grid-template-columns: 1fr;
   }
 

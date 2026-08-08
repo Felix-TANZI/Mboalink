@@ -390,7 +390,6 @@ export default function MboaAdminDashboard() {
     event.preventDefault()
     try {
       setIsSaving(true)
-      // Build captivePortalConfigs from form flags
       const captivePortalConfigs: any[] = []
       if (hotelForm.portalSimpleEnabled) {
         captivePortalConfigs.push({
@@ -407,6 +406,12 @@ export default function MboaAdminDashboard() {
           basePort: hotelForm.portalHotelBasePort ? Number(hotelForm.portalHotelBasePort) : undefined,
           interfacesCount: Number(hotelForm.portalHotelInterfaces) || 1,
         })
+      }
+
+      if (!editingHotelId && captivePortalConfigs.length === 0) {
+        alert('Choisissez au moins un type de portail captif pour cet établissement.')
+        setIsSaving(false)
+        return
       }
 
       const payload = {
@@ -1234,6 +1239,47 @@ export default function MboaAdminDashboard() {
               <button type="button" onClick={closeForm}>Fermer</button>
             </div>
             <label>Nom de l'établissement<input value={hotelForm.name} onChange={(event) => setHotelForm((prev) => ({ ...prev, name: event.target.value }))} required /></label>
+            <section className="mboaPortalChoiceSection">
+              <div>
+                <h3>Portails à créer</h3>
+                <p>Choisissez le ou les types de portails, puis indiquez le SSID, le premier port et le nombre d'interfaces.</p>
+              </div>
+              <div className="mboaPortalChoiceGrid">
+                <article className={hotelForm.portalSimpleEnabled ? 'selected' : ''}>
+                  <label className="mboaPortalCheckLabel">
+                    <input type="checkbox" checked={!!hotelForm.portalSimpleEnabled} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalSimpleEnabled: event.target.checked }))} />
+                    <span>
+                      <strong>Portail simple</strong>
+                      <small>Connexion par UUID/code uniquement.</small>
+                    </span>
+                  </label>
+                  {hotelForm.portalSimpleEnabled && (
+                    <div className="mboaPortalTypeConfig">
+                      <label>SSID<input value={hotelForm.portalSimpleSsid} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalSimpleSsid: event.target.value }))} placeholder="client" /></label>
+                      <label>Premier port<input value={hotelForm.portalSimpleBasePort} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalSimpleBasePort: event.target.value }))} placeholder="3309" inputMode="numeric" /></label>
+                      <label>Interfaces<input type="number" min={1} value={hotelForm.portalSimpleInterfaces} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalSimpleInterfaces: Number(event.target.value) }))} /></label>
+                    </div>
+                  )}
+                </article>
+
+                <article className={hotelForm.portalHotelEnabled ? 'selected' : ''}>
+                  <label className="mboaPortalCheckLabel">
+                    <input type="checkbox" checked={!!hotelForm.portalHotelEnabled} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalHotelEnabled: event.target.checked }))} />
+                    <span>
+                      <strong>Portail hôtel</strong>
+                      <small>UUID/code, nom client et numéro de chambre.</small>
+                    </span>
+                  </label>
+                  {hotelForm.portalHotelEnabled && (
+                    <div className="mboaPortalTypeConfig">
+                      <label>SSID<input value={hotelForm.portalHotelSsid} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalHotelSsid: event.target.value }))} placeholder="client" /></label>
+                      <label>Premier port<input value={hotelForm.portalHotelBasePort} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalHotelBasePort: event.target.value }))} placeholder="3310" inputMode="numeric" /></label>
+                      <label>Interfaces<input type="number" min={1} value={hotelForm.portalHotelInterfaces} onChange={(event) => setHotelForm((prev) => ({ ...prev, portalHotelInterfaces: Number(event.target.value) }))} /></label>
+                    </div>
+                  )}
+                </article>
+              </div>
+            </section>
             <div className="mboaFormGrid">
               <label>Type de site
                 <select value={hotelForm.siteType} onChange={(event) => setHotelForm((prev) => ({ ...prev, siteType: event.target.value as 'HOTEL' | 'ESTABLISHMENT' }))}>
@@ -1248,40 +1294,6 @@ export default function MboaAdminDashboard() {
               <label>Pays<input value={hotelForm.country} onChange={(event) => setHotelForm((prev) => ({ ...prev, country: event.target.value }))} required /></label>
             </div>
             <label>Adresse<input value={hotelForm.address} onChange={(event) => setHotelForm((prev) => ({ ...prev, address: event.target.value }))} required /></label>
-            <section className="mboaPortalFormSection">
-              <div>
-                <h3>Portails captifs de l'établissement</h3>
-                <p>Les ports sont octroyés automatiquement. Gérez les noms et SSID depuis la fiche de l'établissement.</p>
-              </div>
-              <label>Port principal<input type="text" value={hotelForm.captivePortalPort ? `:${hotelForm.captivePortalPort}` : 'Automatique'} disabled readOnly /></label>
-              {editingHotelId && hotelForm.captivePortalPort && (
-                <a className="mboaPortalPreviewLink" href={`http://13.140.183.51:${hotelForm.captivePortalPort}/?hotelId=${editingHotelId}`} target="_blank" rel="noreferrer">Ouvrir le portail captif</a>
-              )}
-            </section>
-            <section className="mboaPortalFormSection">
-              <h3>Types de portails</h3>
-              <div className="mboaPortalTypeRow">
-                <label><input type="checkbox" checked={!!hotelForm.portalSimpleEnabled} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleEnabled: e.target.checked }))} /> Portail captif simple (UUID)</label>
-                {hotelForm.portalSimpleEnabled && (
-                  <div className="mboaPortalTypeConfig">
-                    <label>SSID<input value={hotelForm.portalSimpleSsid} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleSsid: e.target.value }))} placeholder="client" /></label>
-                    <label>Base Port (optionnel)<input value={hotelForm.portalSimpleBasePort} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleBasePort: e.target.value }))} placeholder="3309" /></label>
-                    <label>Nombre d'interfaces<input type="number" min={1} value={hotelForm.portalSimpleInterfaces} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalSimpleInterfaces: Number(e.target.value) }))} /></label>
-                  </div>
-                )}
-              </div>
-              <div className="mboaPortalTypeRow">
-                <label><input type="checkbox" checked={!!hotelForm.portalHotelEnabled} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelEnabled: e.target.checked }))} /> Portail captif hôtel (UUID + client + chambre)</label>
-                {hotelForm.portalHotelEnabled && (
-                  <div className="mboaPortalTypeConfig">
-                    <label>SSID<input value={hotelForm.portalHotelSsid} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelSsid: e.target.value }))} placeholder="client" /></label>
-                    <label>Base Port (optionnel)<input value={hotelForm.portalHotelBasePort} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelBasePort: e.target.value }))} placeholder="3310" /></label>
-                    <label>Nombre d'interfaces<input type="number" min={1} value={hotelForm.portalHotelInterfaces} onChange={(e) => setHotelForm((prev) => ({ ...prev, portalHotelInterfaces: Number(e.target.value) }))} /></label>
-                  </div>
-                )}
-              </div>
-            </section>
-
             <section className="mboaBannerSection">
               <h3>Bannière du portail (optionnel)</h3>
               <p>Importer une image pour remplacer la bannière par défaut pour tous les portails de cet établissement.</p>

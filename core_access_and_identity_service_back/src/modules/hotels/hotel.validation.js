@@ -27,7 +27,7 @@ const createHotelSchema = z.object({
   siteType: siteType.default('HOTEL'),
   primarySsid: z.string().min(2).max(120).optional(),
   captivePortalPort: z.number().int().positive().max(65535).optional(),
-  bannerUrl: z.string().url().optional().or(z.literal('')),
+  bannerUrl: z.string().max(5000000).optional().or(z.literal('')),
   captivePortalConfigs: z
     .array(
       z.object({
